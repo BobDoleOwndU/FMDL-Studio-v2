@@ -451,13 +451,13 @@ namespace FmdlTool
             //go to and get the section 0xD entry info.
             reader.BaseStream.Position = section0Info[13].offset + section0Offset;
 
-            for (int i = 0; i < section0BlockDEntries.Length; i++)
+            /*for (int i = 0; i < section0BlockDEntries.Length; i++)
             {
                 section0BlockEEntries[i].unknown0 = reader.ReadUInt32();
                 section0BlockEEntries[i].length = reader.ReadUInt32();
                 section0BlockEEntries[i].offset = reader.ReadUInt32();
                 reader.BaseStream.Position += 0x4;
-            } //for
+            } //for */
 
             /****************************************************************
              *
@@ -503,7 +503,7 @@ namespace FmdlTool
 
             /****************************************************************
              *
-             * IMPORT DATA
+             * VERTEX DATA
              *
              ****************************************************************/
             reader.BaseStream.Position = section1Info[1].offset + section1Offset;
@@ -524,52 +524,111 @@ namespace FmdlTool
                     reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
             } //for
 
-                /*
-                Need offset code before the face loop can read its data.
+            /****************************************************************
+             *
+             * FACES DATA
+             *
+             ****************************************************************/
+            //Need offset code before the face loop can read its data.
+            /// <example>
+            /// reader.BaseStream.Position = section1Info[1].offset + section1Offset;
+            /// </example>
 
-                for(int i = 0; i < section3Entries.Length; i++)
+            for (int i = 0; i < section0Block3Entries.Length; i++)
+            {
+                objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
+
+                for(int j = 0; j < section0Block3Entries[i].numFaceVertices / 3; j++)
                 {
-                    objects[i].faces = new Face[section3Entries[i].numFaceVertices / 3];
+                    objects[i].faces[j].v1 = reader.ReadUInt16();
+                    objects[i].faces[j].v2 = reader.ReadUInt16();
+                    objects[i].faces[j].v3 = reader.ReadUInt16();
+                } //forSection0Block3Entry
+            } //for
+                
 
-                    for(int j = 0; j < section3Entries[i].numFaceVertices / 3; j++)
-                    {
-                        objects[i].faces[j].v1 = reader.ReadUInt16();
-                        objects[i].faces[j].v2 = reader.ReadUInt16();
-                        objects[i].faces[j].v3 = reader.ReadUInt16();
-                    } //for
-                } //for
-                */
+            /****************************************************************
+             *
+             * VERTEX BUFFER, KINDA
+             *
+             ****************************************************************/
+            /*reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[1].offset;
 
-                /****************************************************************
-                 *
-                 * VERTEX BUFFER, KINDA
-                 *
-                 ****************************************************************/
-                /*reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[1].offset;
+            for (int i = 0; i < section0BlockEEntries[1].length; i++) //This .length thing won't actually work but I am going to leave it for now because we don't actually know how much padding and how it is formatted right now.
+            {
+                vbuffer[i].nX = reader.ReadHalf();
+                vbuffer[i].nY = reader.ReadHalf();
+                vbuffer[i].nZ = reader.ReadHalf();
+                vbuffer[i].nW = reader.ReadHalf();
 
-                for (int i = 0; i < section0BlockEEntries[1].length; i++) //This .length thing won't actually work but I am going to leave it for now because we don't actually know how much padding and how it is formatted right now.
-                {
-                    vbuffer[i].nX = reader.ReadHalf();
-                    vbuffer[i].nY = reader.ReadHalf();
-                    vbuffer[i].nZ = reader.ReadHalf();
-                    vbuffer[i].nW = reader.ReadHalf();
+                vbuffer[i].unknownFloat0 = reader.ReadHalf();
+                vbuffer[i].unknownFloat1 = reader.ReadHalf();
+                vbuffer[i].unknownFloat2 = reader.ReadHalf();
+                vbuffer[i].unknownFloat3 = reader.ReadHalf();
 
-                    vbuffer[i].unknownFloat0 = reader.ReadHalf();
-                    vbuffer[i].unknownFloat1 = reader.ReadHalf();
-                    vbuffer[i].unknownFloat2 = reader.ReadHalf();
-                    vbuffer[i].unknownFloat3 = reader.ReadHalf();
+                vbuffer[i].floatDivisor = reader.ReadUInt32();
+                vbuffer[i].unknown5 = reader.ReadUInt32();
 
-                    vbuffer[i].floatDivisor = reader.ReadUInt32();
-                    vbuffer[i].unknown5 = reader.ReadUInt32();
+                vbuffer[i].uvX = reader.ReadHalf();
+                vbuffer[i].uvY = reader.ReadHalf();
 
-                    vbuffer[i].uvX = reader.ReadHalf();
-                    vbuffer[i].uvY = reader.ReadHalf();
-
-                    vbuffer[i].unknownFloat0 = vbuffer[i].unknownFloat0 / vbuffer[i].floatDivisor;
-                    vbuffer[i].unknownFloat1 = vbuffer[i].unknownFloat1 / vbuffer[i].floatDivisor;
-                    vbuffer[i].unknownFloat2 = vbuffer[i].unknownFloat2 / vbuffer[i].floatDivisor;
-                    vbuffer[i].unknownFloat3 = vbuffer[i].unknownFloat3 / vbuffer[i].floatDivisor;
-                } //for */
+                vbuffer[i].unknownFloat0 = vbuffer[i].unknownFloat0 / vbuffer[i].floatDivisor;
+                vbuffer[i].unknownFloat1 = vbuffer[i].unknownFloat1 / vbuffer[i].floatDivisor;
+                vbuffer[i].unknownFloat2 = vbuffer[i].unknownFloat2 / vbuffer[i].floatDivisor;
+                vbuffer[i].unknownFloat3 = vbuffer[i].unknownFloat3 / vbuffer[i].floatDivisor;
+            } //for */
         } //Read
+
+        public void MeshReader()
+        {
+            Vector3[] unityVertices;
+            int[] unityFaces;
+            HalfVector4[] unityNormals;
+            HalfVector2[] unityUVs;
+            HalfVector4[] unityBoneWeights;
+
+            MeshFilter meshFilter = new MeshFilter();
+            Mesh mesh = new Mesh();
+            meshFilter.mesh = mesh;
+
+            //Vertices
+            for (int i = 0; i < section0Block3Entries.Length; i++)
+            {
+                unityVertices = new Vector3[section0Block3Entries[i].numVertices];
+
+                for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
+                {
+                    unityVertices[i] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
+                } //for
+            } //for
+
+            //Faces
+            for (int i = 0; i < section0Block3Entries.Length; i++)
+            {
+                unityFaces = new int[section0Block3Entries[i].numFaceVertices];
+
+                for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
+                {
+                    unityFaces[i] = /*objects[i].faces[j].v1 and then objects[i].faces[j].v2 and then objects[i].faces[j].v3*/;
+                } //for
+            } //for
+
+            //Normals
+
+            //UVs
+
+            //BoneWeights
+
+            //Bones
+
+            /// <summary>
+            /// This is what takes the arrays and assigns them to the mesh class for use in Unity.
+            /// </summary>
+            mesh.vertices = unityVertices;
+            mesh.triangles = unityFaces;
+            mesh.normals = unityNormals;
+            mesh.uv = unityUVs;
+            mesh.boneWeights = unityBoneWeights; //I think this one can probably be done easier. Also, when bone weights are implemented, "MeshRenderer" in the GameObjOpener class will need to be changed to "SkinnedMeshRenderer"
+        } //MeshReader
     } //class
 } //namespace

@@ -93,7 +93,7 @@ MonoBehaviour:
   m_MinSize: {x: 683, y: 492}
   m_MaxSize: {x: 14004, y: 14042}
   vertical: 0
-  controlID: 9
+  controlID: 21
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -112,8 +112,8 @@ MonoBehaviour:
     y: 0
     width: 395
     height: 616
-  m_MinSize: {x: 202, y: 221}
-  m_MaxSize: {x: 4002, y: 4021}
+  m_MinSize: {x: 200, y: 200}
+  m_MaxSize: {x: 4000, y: 4000}
   m_ActualView: {fileID: 17}
   m_Panes:
   - {fileID: 17}
@@ -231,7 +231,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 492}
   m_MaxSize: {x: 10002, y: 14042}
   vertical: 1
-  controlID: 10
+  controlID: 22
 --- !u!114 &11
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -255,7 +255,7 @@ MonoBehaviour:
   m_MinSize: {x: 406, y: 221}
   m_MaxSize: {x: 8006, y: 4021}
   vertical: 0
-  controlID: 11
+  controlID: 23
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -460,18 +460,18 @@ MonoBehaviour:
     m_ShowAllHits: 0
     m_SearchArea: 0
     m_Folders:
-    - Assets
+    - Assets/editor
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets
+  - Assets/editor
   m_LastFoldersGridSize: -1
-  m_LastProjectPath: C:\Users\joey3\Documents\GitHub\FMDL Studio v2
+  m_LastProjectPath: C:\Users\joey3\Documents\GitHub\FMDL-Studio-v2
   m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 0}
-    m_SelectedIDs: 20260000
-    m_LastClickedID: 9760
+    m_SelectedIDs: 24260000
+    m_LastClickedID: 9764
     m_ExpandedIDs: 000000002026000000ca9a3bffffff7f
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -585,7 +585,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 1afcffff00000000
+    m_ExpandedIDs: 18fcffff00000000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -640,9 +640,9 @@ MonoBehaviour:
   m_isRotationLocked: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 0, y: 0, z: 0}
+    m_Target: {x: -0.9828408, y: -0.6759748, z: -0.9496281}
     speed: 2
-    m_Value: {x: 0, y: 0, z: 0}
+    m_Value: {x: -0.9828408, y: -0.6759748, z: -0.9496281}
   m_RenderMode: 0
   m_ValidateTrueMetals: 0
   m_SceneViewState:
@@ -665,13 +665,13 @@ MonoBehaviour:
       speed: 2
       m_Value: 0
   m_Rotation:
-    m_Target: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
+    m_Target: {x: -0.08732969, y: 0.90062165, z: -0.2135455, w: -0.36831033}
     speed: 2
-    m_Value: {x: -0.08717229, y: 0.89959055, z: -0.21045254, w: -0.3726226}
+    m_Value: {x: -0.08732969, y: 0.90062165, z: -0.2135455, w: -0.36831033}
   m_Size:
-    m_Target: 6.607396
+    m_Target: 1.9619608
     speed: 2
-    m_Value: 6.607396
+    m_Value: 1.9619608
   m_Ortho:
     m_Target: 0
     speed: 2
