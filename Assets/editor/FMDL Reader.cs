@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using static System.Half;
 using UnityEngine;
+using Codes.Linus.IntVectors;
 
 namespace FmdlTool
 {
@@ -172,6 +173,7 @@ namespace FmdlTool
 
         private Object[] objects;
 
+        Vector3
         /*
          * There are 20 (0x14) sections in The Phantom Pain's models. Sections 0xC, 0xF and 0x13 do not exist.
          * 0 = 0x0
@@ -529,10 +531,7 @@ namespace FmdlTool
              * FACES DATA
              *
              ****************************************************************/
-            //Need offset code before the face loop can read its data.
-            /// <example>
-            /// reader.BaseStream.Position = section1Info[1].offset + section1Offset;
-            /// </example>
+            reader.BaseStream.Position = section1Info[2].offset + section1Offset;
 
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
@@ -582,7 +581,7 @@ namespace FmdlTool
         public void MeshReader()
         {
             Vector3[] unityVertices;
-            int[] unityFaces;
+            UInt16[] unityFaces;
             HalfVector4[] unityNormals;
             HalfVector2[] unityUVs;
             HalfVector4[] unityBoneWeights;
@@ -591,7 +590,9 @@ namespace FmdlTool
             Mesh mesh = new Mesh();
             meshFilter.mesh = mesh;
 
-            //Vertices
+            /// <summary> 
+            /// Vertex Section
+            /// </summary>
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
                 unityVertices = new Vector3[section0Block3Entries[i].numVertices];
@@ -602,14 +603,20 @@ namespace FmdlTool
                 } //for
             } //for
 
-            //Faces
+            /// <summary> 
+            /// Face Section, kinda done-ish.
+            /// </summary>
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
-                unityFaces = new int[section0Block3Entries[i].numFaceVertices];
+                unityFaces = new UInt16[section0Block3Entries[i].numFaceVertices];
 
                 for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
                 {
-                    unityFaces[i] = /*objects[i].faces[j].v1 and then objects[i].faces[j].v2 and then objects[i].faces[j].v3*/;
+                    unityFaces[j] = new UInt16[objects[i].faces[j].v1];
+                    j++;
+                    unityFaces[j] = new UInt16[objects[i].faces[j].v2];
+                    j++;
+                    unityFaces[j] = new UInt16[objects[i].faces[j].v3];
                 } //for
             } //for
 

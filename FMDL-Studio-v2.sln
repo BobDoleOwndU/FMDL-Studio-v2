@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2017
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMDL-Studio-v2.Editor", "FMDL-Studio-v2.Editor.csproj", "{CB014A0D-EA58-4A44-A6B7-95F9FD8855BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FMDL-Studio-v2", "FMDL-Studio-v2.csproj", "{CDB934DB-0C1F-45A9-BFBE-EF14300D81AD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +15,10 @@ Global
 		{CB014A0D-EA58-4A44-A6B7-95F9FD8855BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB014A0D-EA58-4A44-A6B7-95F9FD8855BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB014A0D-EA58-4A44-A6B7-95F9FD8855BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CDB934DB-0C1F-45A9-BFBE-EF14300D81AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CDB934DB-0C1F-45A9-BFBE-EF14300D81AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CDB934DB-0C1F-45A9-BFBE-EF14300D81AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CDB934DB-0C1F-45A9-BFBE-EF14300D81AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
