@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using static System.Half;
 using UnityEngine;
+using System.Collections.Generic;
 
 public class Fmdl
 {
@@ -222,7 +223,7 @@ public class Fmdl
     private Section0BlockDEntry[] section0BlockDEntries;
     private Section0BlockEEntry[] section0BlockEEntries;
     private Section0Block10Entry[] section0Block10Entries;
-    private VBuffer[] vbuffer;
+    Dictionary<Section0Block3Entry, VBuffer[]> vbufferTable = new Dictionary<Section0Block3Entry, VBuffer[]>();
     private ulong[] section0Block15Entries;
     private ulong[] section0Block16Entries;
 
@@ -562,7 +563,7 @@ public class Fmdl
 
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
-            vbuffer = new VBuffer[section0Block3Entries[i].numVertices];
+            var vbuffer = new VBuffer[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
@@ -625,6 +626,8 @@ public class Fmdl
             //align the stream.
             if (reader.BaseStream.Position % 0x10 != 0)
                 reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
+
+            vbufferTable.Add(section0Block3Entries[i], vbuffer);
         } //for
 
         /****************************************************************
@@ -779,11 +782,11 @@ public class Fmdl
 
     public void MeshReader()
     {
-        Vector3[] unityVertices = new Vector3[0];
-        Vector3[] unityNormals = new Vector3[0];
+        var unityVerticesTable = new Dictionary<Section0Block3Entry, Vector3[]>();
+        var unityNormalsTable = new Dictionary<Section0Block3Entry, Vector3[]>();
         //BoneWeight[] unityBoneWeights = new BoneWeight[0];
-        Vector2[] unityUVs = new Vector2[0];
-        int[] unityFaces = new int[0];
+        var unityUVsTable = new Dictionary<Section0Block3Entry, Vector2[]>();
+        var unityFacesTable = new Dictionary<Section0Block3Entry, int[]>();
 
         //Finds the right section 0xA entry for use with the entryLength and entryType elements.
         byte currentEntryLength;
@@ -799,23 +802,24 @@ public class Fmdl
         //Position
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
-            unityVertices = new Vector3[section0Block3Entries[i].numVertices];
+            var unityVertices = new Vector3[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
                 unityVertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
             } //for
+
+            unityVerticesTable.Add(section0Block3Entries[i], unityVertices);
         } //for
 
         //Normals, Bone Weights, Bone Group Ids and UVs
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
-            unityNormals = new Vector3[section0Block3Entries[i].numVertices];
+            var vbuffer = vbufferTable[section0Block3Entries[i]];
 
-            if (currentEntryLength == 0x20 || currentEntryLength == 0x1C || currentEntryLength == 0x2C || currentEntryLength == 0x28 || currentEntryLength == 0x24)
-            {
-                unityUVs = new Vector2[section0Block3Entries[i].numVertices];
-            }
+            var unityNormals = new Vector3[section0Block3Entries[i].numVertices];
+
+            var unityUVs = new Vector2[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
@@ -833,16 +837,19 @@ public class Fmdl
                     //unityBoneWeights[i].boneIndex2 = vbuffer[j].boneID3;
                     //unityBoneWeights[i].boneIndex3 = vbuffer[j].boneID4;
 
-                    //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityUVs.Length);
-                    //unityUVs[j] = new Vector2(vbuffer[j].textureU, vbuffer[j].textureV);
+                    UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityUVs.Length);
+                    unityUVs[j] = new Vector2(vbuffer[j].textureU, vbuffer[j].textureV);
                 } //if
             } //for
+
+            unityNormalsTable.Add(section0Block3Entries[i], unityNormals);
+            unityUVsTable.Add(section0Block3Entries[i], unityUVs);
         } //for
 
         //Faces
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
-            unityFaces = new int[section0Block3Entries[i].numFaceVertices];
+            var unityFaces = new int[section0Block3Entries[i].numFaceVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
             {
@@ -853,21 +860,30 @@ public class Fmdl
                 unityFaces[j] = objects[i].faces[j].vertex3Id;
                 j++;
             } //for
+
+            unityFacesTable.Add(section0Block3Entries[i], unityFaces);
         } //for
 
         //Instances a new GameObject and also a new MeshFilter and MeshRenderer 
         GameObject fmdlGameObject = new GameObject();
         MeshFilter meshFilter = fmdlGameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = fmdlGameObject.AddComponent<MeshRenderer>(); //This will be replaced with SkinnedMeshRenderer later
+        
+        var meshes = new List<Mesh>();
+        for (int i = 0; i < section0Block3Entries.Length; i++)
+        {
+            var key = section0Block3Entries[i];
 
-        Mesh fmdl = new Mesh();
-        fmdl.vertices = unityVertices;
-        fmdl.triangles = unityFaces;
-        fmdl.normals = unityNormals;
-        //mesh.boneWeights = unityBoneWeights;
-        fmdl.uv = unityUVs;
+            Mesh fmdl = new Mesh();
+            fmdl.vertices = unityVerticesTable[key];
+            fmdl.triangles = unityFacesTable[key];
+            fmdl.normals = unityNormalsTable[key];
+            //mesh.boneWeights = unityBoneWeights;
+            fmdl.uv = unityUVsTable[key];
 
-        meshFilter.mesh = fmdl;
+            meshes.Add(fmdl);
+            meshFilter.mesh = fmdl;
+        }
         fmdlGameObject.AddComponent<MeshCollider>();
     } //MeshReader
 } //class
