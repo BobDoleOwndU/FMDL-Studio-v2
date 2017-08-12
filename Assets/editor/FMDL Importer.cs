@@ -14,7 +14,7 @@ namespace FmdlTool
             file.Read(stream);
             GameObjCreator gameObj = new GameObjCreator();
             gameObj.Start();
-            meshImporter();
+            file.MeshReader();
             stream.Close();
         }
     }
