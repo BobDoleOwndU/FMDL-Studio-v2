@@ -548,21 +548,18 @@ public class Fmdl
          ****************************************************************/
 
         //Finds the right section 0xA entry for use with the entryLength and entryType elements.
-        byte currentEntryLength;
-        int blockACounter = 0;
+        int section0BlockACount = 0;
         float unusedUnknown = 0;
-
-        while (section0BlockAEntries[blockACounter].entryType != 1)
-        {
-            blockACounter++;
-        } //while
-
-        currentEntryLength = section0BlockAEntries[blockACounter].entryLength;
 
         reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[1].offset;
 
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
+            while (section0BlockAEntries[section0BlockACount].entryType != 1)
+            {
+                section0BlockACount++;
+            } //while
+
             var vbuffer = new VBuffer[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
@@ -577,7 +574,7 @@ public class Fmdl
                 vbuffer[j].unknownHalf2 = ToHalf(reader.ReadUInt16());
                 vbuffer[j].unknownHalf3 = ToHalf(reader.ReadUInt16());
 
-                if (currentEntryLength == 0x20 || currentEntryLength == 0x1C || currentEntryLength == 0x2C || currentEntryLength == 0x28 || currentEntryLength == 0x24)
+                if (section0BlockAEntries[section0BlockACount].entryLength == 0x20 || section0BlockAEntries[section0BlockACount].entryLength == 0x1C || section0BlockAEntries[section0BlockACount].entryLength == 0x2C || section0BlockAEntries[section0BlockACount].entryLength == 0x28 || section0BlockAEntries[section0BlockACount].entryLength == 0x24)
                 {
                     vbuffer[j].boneWeightX = (float)(reader.ReadByte() / 255);
                     vbuffer[j].boneWeightY = (float)(reader.ReadByte() / 255);
@@ -588,12 +585,12 @@ public class Fmdl
                     vbuffer[j].boneID3 = reader.ReadByte();
                     vbuffer[j].boneID4 = reader.ReadByte();
 
-                    if (currentEntryLength == 0x2C)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
                     {
                         unusedUnknown = reader.ReadSingle();
                     } //if
 
-                    if (currentEntryLength == 0x20)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x20)
                     {
                         unusedUnknown = reader.ReadSingle();
                     } //if
@@ -601,20 +598,20 @@ public class Fmdl
                     vbuffer[j].textureU = ToHalf(reader.ReadUInt16());
                     vbuffer[j].textureV = ToHalf(reader.ReadUInt16());
 
-                    if (currentEntryLength == 0x28)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x28)
                     {
                         unusedUnknown = reader.ReadSingle();
                         unusedUnknown = reader.ReadSingle();
                         unusedUnknown = reader.ReadSingle();
                     } //if
 
-                    if (currentEntryLength == 0x24)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x24)
                     {
                         unusedUnknown = reader.ReadSingle();
                         unusedUnknown = reader.ReadSingle();
                     } //if
 
-                    if (currentEntryLength == 0x2C)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
                     {
                         unusedUnknown = reader.ReadSingle();
                         unusedUnknown = reader.ReadSingle();
@@ -789,15 +786,7 @@ public class Fmdl
         var unityFacesTable = new Dictionary<Section0Block3Entry, int[]>();
 
         //Finds the right section 0xA entry for use with the entryLength and entryType elements.
-        byte currentEntryLength;
-        int blockACounter = 0;
-
-        while (section0BlockAEntries[blockACounter].entryType != 1)
-        {
-            blockACounter++;
-        } //while
-
-        currentEntryLength = section0BlockAEntries[blockACounter].entryLength;
+        int section0BlockACount = 0;
 
         //Position
         for (int i = 0; i < section0Block3Entries.Length; i++)
@@ -815,6 +804,11 @@ public class Fmdl
         //Normals, Bone Weights, Bone Group Ids and UVs
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
+            while (section0BlockAEntries[section0BlockACount].entryType != 1)
+            {
+                section0BlockACount++;
+            } //while
+
             var vbuffer = vbufferTable[section0Block3Entries[i]];
 
             var unityNormals = new Vector3[section0Block3Entries[i].numVertices];
@@ -823,10 +817,10 @@ public class Fmdl
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
-                UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityNormals.Length);
+                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityNormals.Length);
                 unityNormals[j] = new Vector3(vbuffer[j].normalX, vbuffer[j].normalY, vbuffer[j].normalZ);
 
-                if (currentEntryLength == 0x20 || currentEntryLength == 0x1C || currentEntryLength == 0x2C || currentEntryLength == 0x28 || currentEntryLength == 0x24)
+                if (section0BlockAEntries[section0BlockACount].entryLength == 0x20 || section0BlockAEntries[section0BlockACount].entryLength == 0x1C || section0BlockAEntries[section0BlockACount].entryLength == 0x2C || section0BlockAEntries[section0BlockACount].entryLength == 0x28 || section0BlockAEntries[section0BlockACount].entryLength == 0x24)
                 {
                     //unityBoneWeights[i].weight0 = vbuffer[j].boneWeightX;
                     //unityBoneWeights[i].weight1 = vbuffer[j].boneWeightY;
@@ -837,7 +831,7 @@ public class Fmdl
                     //unityBoneWeights[i].boneIndex2 = vbuffer[j].boneID3;
                     //unityBoneWeights[i].boneIndex3 = vbuffer[j].boneID4;
 
-                    UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityUVs.Length);
+                    //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityUVs.Length);
                     unityUVs[j] = new Vector2(vbuffer[j].textureU, vbuffer[j].textureV);
                 } //if
             } //for
@@ -849,17 +843,27 @@ public class Fmdl
         //Faces
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
-            var unityFaces = new int[section0Block3Entries[i].numFaceVertices];
+            var unityFaces = new int[section0Block3Entries[i].numFaceVertices]; //numFaceVertices
 
-            for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
+            for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
             {
-                unityFaces[j] = objects[i].faces[j].vertex1Id;
-                j++;
-                unityFaces[j] = objects[i].faces[j].vertex2Id;
-                j++;
-                unityFaces[j] = objects[i].faces[j].vertex3Id;
-                j++;
+                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
+                unityFaces[h] = objects[i].faces[j].vertex1Id;
+                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
+                unityFaces[h + 1] = objects[i].faces[j].vertex2Id;
+                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
+                unityFaces[h + 2] = objects[i].faces[j].vertex3Id;
             } //for
+
+            //for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
+            //{
+            //    //UnityEngine.Debug.Log("FACE 1 - Index: " + j + ", array length: " + unityFaces.Length);
+            //    unityFaces[j] = objects[i].faces[j].vertex1Id;
+            //    //UnityEngine.Debug.Log("FACE 2 - Index: " + j + ", array length: " + unityFaces.Length);
+            //    unityFaces[j] = objects[i].faces[j].vertex2Id;
+            //    //UnityEngine.Debug.Log("FACE 3- Index: " + j + ", array length: " + unityFaces.Length);
+            //    unityFaces[j] = objects[i].faces[j].vertex3Id;
+            //} //for
 
             unityFacesTable.Add(section0Block3Entries[i], unityFaces);
         } //for
@@ -868,12 +872,14 @@ public class Fmdl
         GameObject fmdlGameObject = new GameObject();
         MeshFilter meshFilter = fmdlGameObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = fmdlGameObject.AddComponent<MeshRenderer>(); //This will be replaced with SkinnedMeshRenderer later
-        
+
         var meshes = new List<Mesh>();
         for (int i = 0; i < section0Block3Entries.Length; i++)
         {
             var key = section0Block3Entries[i];
 
+            UnityEngine.Debug.Log("Amount of faces in section0Block3Entries[i].numFaceVertices / 3: " + section0Block3Entries[i].numFaceVertices / 3);
+            UnityEngine.Debug.Log("Amount of faces in the unity faces table: " + unityFacesTable[key].Length);
             Mesh fmdl = new Mesh();
             fmdl.vertices = unityVerticesTable[key];
             fmdl.triangles = unityFacesTable[key];
@@ -884,6 +890,7 @@ public class Fmdl
             meshes.Add(fmdl);
             meshFilter.mesh = fmdl;
         }
+
         fmdlGameObject.AddComponent<MeshCollider>();
     } //MeshReader
 } //class
