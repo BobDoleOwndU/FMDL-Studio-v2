@@ -807,9 +807,9 @@ public class Fmdl
                 section0BlockACount++;
             } //while
 
-            unityMesh[i].normals = new Vector3[section0Block3Entries[i].numFaceVertices];
+            unityMesh[i].normals = new Vector3[section0Block3Entries[i].numVertices];
 
-            unityMesh[i].UVs = new Vector2[section0Block3Entries[i].numFaceVertices];
+            unityMesh[i].UVs = new Vector2[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
