@@ -129,23 +129,17 @@ public class Fmdl
         public float z;
     } //struct
 
-    private struct Object
-    {
-        public Vertex[] vertices;
-        public Face[] faces;
-    } //struct
-
-    private struct VBuffer //Not actually the vbuffer, the entire section containing the vertex positions, add. vertex data and faces all make up the VBuffer.
+    private struct AdditionalVertexData
     {
         public Half normalX;
         public Half normalY;
         public Half normalZ;
         public Half normalW;
 
-        public Half unknownHalf0;
-        public Half unknownHalf1;
-        public Half unknownHalf2;
-        public Half unknownHalf3;
+        public Half unknown0;
+        public Half unknown1;
+        public Half unknown2;
+        public Half unknown3;
 
         // These bytes are the bone weights, which are divided by 255
         public float boneWeightX;
@@ -154,13 +148,19 @@ public class Fmdl
         public float boneWeightW;
 
         // These bytes correspond to a bone id in 0x5
-        public byte boneID1;
-        public byte boneID2;
-        public byte boneID3;
-        public byte boneID4;
+        public byte boneGroup0Id;
+        public byte boneGroup1Id;
+        public byte boneGroup2Id;
+        public byte boneGroup3Id;
+
+        public float unknown4;
 
         public Half textureU; //UV U coordinate
         public Half textureV; //UV V coordinate
+
+        public float unknown5;
+        public float unknown6;
+        public float unknown7;
     } //struct
 
     private struct Face
@@ -169,6 +169,22 @@ public class Fmdl
         public ushort vertex2Id;
         public ushort vertex3Id;
     } //struct
+
+    private struct Object
+    {
+        public Vertex[] vertices;
+        public AdditionalVertexData[] additionalVertexData;
+        public Face[] faces;
+    }
+
+    private struct UnityMesh
+    {
+        public Vector3[] vertices;
+        public Vector3[] normals;
+        //public BoneWeight[] boneWeights;
+        public Vector2[] UVs;
+        public int[] faces;
+    }
 
     //local variables
     private uint signature;
@@ -184,6 +200,7 @@ public class Fmdl
     private uint section1Length;
 
     private Object[] objects;
+    private UnityMesh[] unityMesh;
 
     /*
      * There are 20 (0x14) sections in The Phantom Pain's models. Sections 0xC, 0xF and 0x13 do not exist.
@@ -223,7 +240,6 @@ public class Fmdl
     private Section0BlockDEntry[] section0BlockDEntries;
     private Section0BlockEEntry[] section0BlockEEntries;
     private Section0Block10Entry[] section0Block10Entries;
-    Dictionary<Section0Block3Entry, VBuffer[]> vbufferTable = new Dictionary<Section0Block3Entry, VBuffer[]>();
     private ulong[] section0Block15Entries;
     private ulong[] section0Block16Entries;
 
@@ -278,7 +294,9 @@ public class Fmdl
         section0Block10Entries = new Section0Block10Entry[section0Info[14].numEntries];
         section0Block15Entries = new ulong[section0Info[18].numEntries];
         section0Block16Entries = new ulong[section0Info[19].numEntries];
+
         objects = new Object[section0Info[3].numEntries];
+        unityMesh = new UnityMesh[section0Info[3].numEntries];
 
         /****************************************************************
          *
@@ -520,16 +538,16 @@ public class Fmdl
 
         /****************************************************************
          *
-         * POSITION
+         * VERTICES
          *
          ****************************************************************/
-        reader.BaseStream.Position = section0BlockEEntries[0].offset + section1Offset + section1Info[1].offset;
+        reader.BaseStream.Position = section1Info[1].offset + section1Offset;
 
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
             objects[i].vertices = new Vertex[section0Block3Entries[i].numVertices];
 
-            for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
+            for (int j = 0; j < objects[i].vertices.Length; j++)
             {
                 objects[i].vertices[j].x = reader.ReadSingle();
                 objects[i].vertices[j].y = reader.ReadSingle();
@@ -543,79 +561,67 @@ public class Fmdl
 
         /****************************************************************
          *
-         * VBUFFER
+         * ADDITIONAL VERTEX DATA
          *
          ****************************************************************/
-
-        //Finds the right section 0xA entry for use with the entryLength and entryType elements.
-        int section0BlockACount = 0;
-        float unusedUnknown = 0;
-
         reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[1].offset;
 
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        int section0BlockACount = 0;
+
+        for (int i = 0; i < objects.Length; i++)
         {
+            objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
+
             while (section0BlockAEntries[section0BlockACount].entryType != 1)
-            {
                 section0BlockACount++;
-            } //while
 
-            var vbuffer = new VBuffer[section0Block3Entries[i].numVertices];
-
-            for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
+            for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
-                vbuffer[j].normalX = ToHalf(reader.ReadUInt16());
-                vbuffer[j].normalY = ToHalf(reader.ReadUInt16());
-                vbuffer[j].normalZ = ToHalf(reader.ReadUInt16());
-                vbuffer[j].normalW = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].normalX = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].unknown0 = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].unknown1 = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
 
-                vbuffer[j].unknownHalf0 = ToHalf(reader.ReadUInt16()); //I am suspicious of this section. I am wondering if the normal tangent and bitangent are both stored which would bring this down to four unknown bytes.
-                vbuffer[j].unknownHalf1 = ToHalf(reader.ReadUInt16()); //They also could be vertex colors, the most likely other possibility.
-                vbuffer[j].unknownHalf2 = ToHalf(reader.ReadUInt16());
-                vbuffer[j].unknownHalf3 = ToHalf(reader.ReadUInt16());
-
-                if (section0BlockAEntries[section0BlockACount].entryLength == 0x20 || section0BlockAEntries[section0BlockACount].entryLength == 0x1C || section0BlockAEntries[section0BlockACount].entryLength == 0x2C || section0BlockAEntries[section0BlockACount].entryLength == 0x28 || section0BlockAEntries[section0BlockACount].entryLength == 0x24)
+                if (section0BlockAEntries[section0BlockACount].entryLength == 0x1C ||
+                    section0BlockAEntries[section0BlockACount].entryLength == 0x20 ||
+                    section0BlockAEntries[section0BlockACount].entryLength == 0x24 ||
+                    section0BlockAEntries[section0BlockACount].entryLength == 0x28 ||
+                    section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
                 {
-                    vbuffer[j].boneWeightX = (float)(reader.ReadByte() / 255);
-                    vbuffer[j].boneWeightY = (float)(reader.ReadByte() / 255);
-                    vbuffer[j].boneWeightZ = (float)(reader.ReadByte() / 255);
-                    vbuffer[j].boneWeightW = (float)(reader.ReadByte() / 255);
-                    vbuffer[j].boneID1 = reader.ReadByte();
-                    vbuffer[j].boneID2 = reader.ReadByte();
-                    vbuffer[j].boneID3 = reader.ReadByte();
-                    vbuffer[j].boneID4 = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
 
-                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x20 ||
+                        section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
                     {
-                        unusedUnknown = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown4 = reader.ReadSingle();
                     } //if
 
-                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x20)
-                    {
-                        unusedUnknown = reader.ReadSingle();
-                    } //if
-
-                    vbuffer[j].textureU = ToHalf(reader.ReadUInt16());
-                    vbuffer[j].textureV = ToHalf(reader.ReadUInt16());
-
-                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x28)
-                    {
-                        unusedUnknown = reader.ReadSingle();
-                        unusedUnknown = reader.ReadSingle();
-                        unusedUnknown = reader.ReadSingle();
-                    } //if
+                    objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
+                    objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16()) * -1; //value is negated.
 
                     if (section0BlockAEntries[section0BlockACount].entryLength == 0x24)
                     {
-                        unusedUnknown = reader.ReadSingle();
-                        unusedUnknown = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
                     } //if
 
-                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
+                    if (section0BlockAEntries[section0BlockACount].entryLength == 0x28 ||
+                        section0BlockAEntries[section0BlockACount].entryLength == 0x2C)
                     {
-                        unusedUnknown = reader.ReadSingle();
-                        unusedUnknown = reader.ReadSingle();
-                        unusedUnknown = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
+                        objects[i].additionalVertexData[j].unknown7 = reader.ReadSingle();
                     } //if
                 } //if
             } //for
@@ -624,7 +630,7 @@ public class Fmdl
             if (reader.BaseStream.Position % 0x10 != 0)
                 reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
 
-            vbufferTable.Add(section0Block3Entries[i], vbuffer);
+            section0BlockACount++;
         } //for
 
         /****************************************************************
@@ -634,11 +640,11 @@ public class Fmdl
          ****************************************************************/
         reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[1].offset;
 
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
             objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
 
-            for (int j = 0; j < section0Block3Entries[i].numFaceVertices / 3; j++)
+            for (int j = 0; j < objects[i].faces.Length; j++)
             {
                 objects[i].faces[j].vertex1Id = reader.ReadUInt16();
                 objects[i].faces[j].vertex2Id = reader.ReadUInt16();
@@ -779,46 +785,36 @@ public class Fmdl
 
     public void MeshReader()
     {
-        var unityVerticesTable = new Dictionary<Section0Block3Entry, Vector3[]>();
-        var unityNormalsTable = new Dictionary<Section0Block3Entry, Vector3[]>();
-        //BoneWeight[] unityBoneWeights = new BoneWeight[0];
-        var unityUVsTable = new Dictionary<Section0Block3Entry, Vector2[]>();
-        var unityFacesTable = new Dictionary<Section0Block3Entry, int[]>();
-
         //Finds the right section 0xA entry for use with the entryLength and entryType elements.
         int section0BlockACount = 0;
 
         //Position
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
-            var unityVertices = new Vector3[section0Block3Entries[i].numVertices];
+            unityMesh[i].vertices = new Vector3[section0Block3Entries[i].numVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
-                unityVertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
+                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
             } //for
-
-            unityVerticesTable.Add(section0Block3Entries[i], unityVertices);
         } //for
 
         //Normals, Bone Weights, Bone Group Ids and UVs
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
             while (section0BlockAEntries[section0BlockACount].entryType != 1)
             {
                 section0BlockACount++;
             } //while
 
-            var vbuffer = vbufferTable[section0Block3Entries[i]];
+            unityMesh[i].normals = new Vector3[section0Block3Entries[i].numFaceVertices];
 
-            var unityNormals = new Vector3[section0Block3Entries[i].numVertices];
-
-            var unityUVs = new Vector2[section0Block3Entries[i].numVertices];
+            unityMesh[i].UVs = new Vector2[section0Block3Entries[i].numFaceVertices];
 
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
-                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityNormals.Length);
-                unityNormals[j] = new Vector3(vbuffer[j].normalX, vbuffer[j].normalY, vbuffer[j].normalZ);
+
+                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
 
                 if (section0BlockAEntries[section0BlockACount].entryLength == 0x20 || section0BlockAEntries[section0BlockACount].entryLength == 0x1C || section0BlockAEntries[section0BlockACount].entryLength == 0x2C || section0BlockAEntries[section0BlockACount].entryLength == 0x28 || section0BlockAEntries[section0BlockACount].entryLength == 0x24)
                 {
@@ -831,41 +827,25 @@ public class Fmdl
                     //unityBoneWeights[i].boneIndex2 = vbuffer[j].boneID3;
                     //unityBoneWeights[i].boneIndex3 = vbuffer[j].boneID4;
 
-                    //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityUVs.Length);
-                    unityUVs[j] = new Vector2(vbuffer[j].textureU, vbuffer[j].textureV);
+                    unityMesh[i].UVs[j] = new Vector2(objects[i].additionalVertexData[j].textureU, objects[i].additionalVertexData[j].textureV);
                 } //if
             } //for
-
-            unityNormalsTable.Add(section0Block3Entries[i], unityNormals);
-            unityUVsTable.Add(section0Block3Entries[i], unityUVs);
         } //for
 
         //Faces
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
-            var unityFaces = new int[section0Block3Entries[i].numFaceVertices]; //numFaceVertices
+            unityMesh[i].faces = new int[section0Block3Entries[i].numFaceVertices / 3];
 
-            for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
+            for (int j = 0, h = 0; j < (section0Block3Entries[i].numVertices / 3); j++, h += 3)
             {
                 //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityFaces[h] = objects[i].faces[j].vertex1Id;
+                unityMesh[i].faces[h] = objects[i].faces[j].vertex1Id;
                 //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityFaces[h + 1] = objects[i].faces[j].vertex2Id;
+                unityMesh[i].faces[h + 1] = objects[i].faces[j].vertex2Id;
                 //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityFaces[h + 2] = objects[i].faces[j].vertex3Id;
+                unityMesh[i].faces[h + 2] = objects[i].faces[j].vertex3Id;
             } //for
-
-            //for (int j = 0; j < section0Block3Entries[i].numFaceVertices; j++)
-            //{
-            //    //UnityEngine.Debug.Log("FACE 1 - Index: " + j + ", array length: " + unityFaces.Length);
-            //    unityFaces[j] = objects[i].faces[j].vertex1Id;
-            //    //UnityEngine.Debug.Log("FACE 2 - Index: " + j + ", array length: " + unityFaces.Length);
-            //    unityFaces[j] = objects[i].faces[j].vertex2Id;
-            //    //UnityEngine.Debug.Log("FACE 3- Index: " + j + ", array length: " + unityFaces.Length);
-            //    unityFaces[j] = objects[i].faces[j].vertex3Id;
-            //} //for
-
-            unityFacesTable.Add(section0Block3Entries[i], unityFaces);
         } //for
 
         //Instances a new GameObject and also a new MeshFilter and MeshRenderer 
@@ -874,18 +854,14 @@ public class Fmdl
         MeshRenderer meshRenderer = fmdlGameObject.AddComponent<MeshRenderer>(); //This will be replaced with SkinnedMeshRenderer later
 
         var meshes = new List<Mesh>();
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
-            var key = section0Block3Entries[i];
-
-            UnityEngine.Debug.Log("Amount of faces in section0Block3Entries[i].numFaceVertices / 3: " + section0Block3Entries[i].numFaceVertices / 3);
-            UnityEngine.Debug.Log("Amount of faces in the unity faces table: " + unityFacesTable[key].Length);
             Mesh fmdl = new Mesh();
-            fmdl.vertices = unityVerticesTable[key];
-            fmdl.triangles = unityFacesTable[key];
-            fmdl.normals = unityNormalsTable[key];
+            fmdl.vertices = unityMesh[i].vertices;
+            fmdl.triangles = unityMesh[i].faces;
+            fmdl.normals = unityMesh[i].normals;
             //mesh.boneWeights = unityBoneWeights;
-            fmdl.uv = unityUVsTable[key];
+            fmdl.uv = unityMesh[i].UVs;
 
             meshes.Add(fmdl);
             meshFilter.mesh = fmdl;
