@@ -1,4 +1,0 @@
-sceneSetups:
-- path: Assets/FMDL Studio v2.unity
-  isLoaded: 1
-  isActive: 1
