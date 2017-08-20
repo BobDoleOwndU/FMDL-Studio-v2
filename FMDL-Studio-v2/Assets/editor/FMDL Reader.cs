@@ -572,7 +572,7 @@ public class Fmdl
         {
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
 
-            while (section0BlockAEntries[section0BlockACount].length != 1)
+            while (section0BlockAEntries[section0BlockACount].type != 1)
                 section0BlockACount++;
 
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
@@ -773,6 +773,30 @@ public class Fmdl
         } //for
     } //OutputSection2Info
 
+    public void OutputObjectInfo2()
+    {
+        for (int i = 0; i < objects.Length; i++)
+        {
+            Console.WriteLine("================================");
+            Console.WriteLine("Entry No: " + i.ToString("x"));
+            Console.WriteLine("Num Vertices: " + objects[i].vertices.Length.ToString("x"));
+
+            int greatestFaceVertexId = 0;
+
+            for (int j = 0; j < objects[i].faces.Length; j++)
+            {
+                if (objects[i].faces[j].vertex1Id > greatestFaceVertexId)
+                    greatestFaceVertexId = objects[i].faces[j].vertex1Id;
+                if (objects[i].faces[j].vertex2Id > greatestFaceVertexId)
+                    greatestFaceVertexId = objects[i].faces[j].vertex2Id;
+                if (objects[i].faces[j].vertex3Id > greatestFaceVertexId)
+                    greatestFaceVertexId = objects[i].faces[j].vertex3Id;
+            } //for
+
+            Console.WriteLine("Greatest Face Id: " + greatestFaceVertexId.ToString("x"));
+        } //for
+    } //OutputObjectInfo
+
     public void MeshReader()
     {
         //Finds the right section 0xA entry for use with the entryLength and entryType elements.
@@ -804,7 +828,7 @@ public class Fmdl
             for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
             {
 
-                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
+                unityMesh[i].normals[j] = new Vector3(-objects[i].additionalVertexData[j].normalX, -objects[i].additionalVertexData[j].normalY, -objects[i].additionalVertexData[j].normalZ);
 
                 if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x1C || section0BlockAEntries[section0BlockACount].length == 0x2C || section0BlockAEntries[section0BlockACount].length == 0x28 || section0BlockAEntries[section0BlockACount].length == 0x24)
                 {
@@ -849,7 +873,8 @@ public class Fmdl
             Mesh fmdl = new Mesh();
             fmdl.vertices = unityMesh[i].vertices;
             fmdl.triangles = unityMesh[i].faces;
-            fmdl.normals = unityMesh[i].normals;
+            fmdl.RecalculateNormals();
+            //fmdl.normals = unityMesh[i].normals;
             //mesh.boneWeights = unityBoneWeights;
             fmdl.uv = unityMesh[i].UVs;
 
