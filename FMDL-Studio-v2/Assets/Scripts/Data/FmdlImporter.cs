@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.IO;
 
-public static class FMDLImporter
+public static class FmdlImporter
 {
     public static void FMDLStream(string path)
     {
