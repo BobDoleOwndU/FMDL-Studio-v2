@@ -802,6 +802,42 @@ public class Fmdl
     {
         GameObject fmdlGameObject = new GameObject();
         GameObject[] subFmdlGameObjects = new GameObject[objects.Length];
+        Transform[] bones = new Transform[section0Block0Entries.Length];
+
+        for(int i = 0; i < bones.Length; i++)
+        {
+            bones[i] = new GameObject(section0Block0Entries[i].nameId.ToString()).transform;
+            bones[i].position = new Vector3(section0Block0Entries[i].positionX, section0Block0Entries[i].positionY, section0Block0Entries[i].positionZ);
+
+            if (section0Block0Entries[i].parentId == 0xFFFF)
+                bones[i].parent = fmdlGameObject.transform;
+            else
+            {
+                bones[i].parent = bones[section0Block0Entries[i].parentId];
+
+                Matrix4x4 matrix0 = bones[i].localToWorldMatrix;
+                Matrix4x4 matrix1 = bones[i].parent.localToWorldMatrix;
+
+                matrix0 *= matrix1;
+
+                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);
+
+                /*Vector3 forward;
+                forward.x = matrix0.m02;
+                forward.y = matrix0.m12;
+                forward.z = matrix0.m22;
+
+                Vector3 upwards;
+                upwards.x = matrix0.m01;
+                upwards.y = matrix0.m11;
+                upwards.z = matrix0.m21;
+
+                bones[i].rotation = Quaternion.LookRotation(forward, upwards);*/
+            } //else ends
+
+            //Not 100% sure how rotation is supposed to be done. I think this looks right?
+            bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationW);
+        } //for
 
         for (int i = 0; i < objects.Length; i++)
         {
