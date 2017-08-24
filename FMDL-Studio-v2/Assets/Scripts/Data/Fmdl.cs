@@ -5,6 +5,7 @@ using System.Text;
 using static System.Half;
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEditor;
 
 public class Fmdl
 {
@@ -592,10 +593,10 @@ public class Fmdl
                     section0BlockAEntries[section0BlockACount].length == 0x28 ||
                     section0BlockAEntries[section0BlockACount].length == 0x2C)
                 {
-                    objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte();
+                    objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255;
+                    objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255;
+                    objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255;
+                    objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255;
                     objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
                     objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
                     objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
@@ -606,23 +607,23 @@ public class Fmdl
                     {
                         objects[i].additionalVertexData[j].unknown4 = reader.ReadSingle();
                     } //if
+                } //if
 
-                    objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16()) * -1; //value is negated.
+                objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
+                objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //value is negated.
 
-                    if (section0BlockAEntries[section0BlockACount].length == 0x24)
-                    {
-                        objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
-                        objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
-                    } //if
+                if (section0BlockAEntries[section0BlockACount].length == 0x24)
+                {
+                    objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
+                    objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
+                } //if
 
-                    if (section0BlockAEntries[section0BlockACount].length == 0x28 ||
-                        section0BlockAEntries[section0BlockACount].length == 0x2C)
-                    {
-                        objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
-                        objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
-                        objects[i].additionalVertexData[j].unknown7 = reader.ReadSingle();
-                    } //if
+                if (section0BlockAEntries[section0BlockACount].length == 0x28 ||
+                    section0BlockAEntries[section0BlockACount].length == 0x2C)
+                {
+                    objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
+                    objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
+                    objects[i].additionalVertexData[j].unknown7 = reader.ReadSingle();
                 } //if
             } //for
 
@@ -647,9 +648,9 @@ public class Fmdl
 
             for (int j = 0; j < objects[i].faces.Length; j++)
             {
-                objects[i].faces[j].vertex1Id = reader.ReadUInt16();
-                objects[i].faces[j].vertex2Id = reader.ReadUInt16();
                 objects[i].faces[j].vertex3Id = reader.ReadUInt16();
+                objects[i].faces[j].vertex2Id = reader.ReadUInt16();
+                objects[i].faces[j].vertex1Id = reader.ReadUInt16();
             } //for
         } //for
     } //Read
@@ -799,89 +800,89 @@ public class Fmdl
 
     public void MeshReader()
     {
-        //Finds the right section 0xA entry for use with the entryLength and entryType elements.
-        int section0BlockACount = 0;
-
-        //Position
-        for (int i = 0; i < objects.Length; i++)
-        {
-            unityMesh[i].vertices = new Vector3[section0Block3Entries[i].numVertices];
-
-            for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
-            {
-                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
-            } //for
-        } //for
-
-        //Normals, Bone Weights, Bone Group Ids and UVs
-        for (int i = 0; i < objects.Length; i++)
-        {
-            while (section0BlockAEntries[section0BlockACount].type != 1)
-            {
-                section0BlockACount++;
-            } //while
-
-            unityMesh[i].normals = new Vector3[section0Block3Entries[i].numVertices];
-
-            unityMesh[i].UVs = new Vector2[section0Block3Entries[i].numVertices];
-
-            for (int j = 0; j < section0Block3Entries[i].numVertices; j++)
-            {
-
-                unityMesh[i].normals[j] = new Vector3(-objects[i].additionalVertexData[j].normalX, -objects[i].additionalVertexData[j].normalY, -objects[i].additionalVertexData[j].normalZ);
-
-                if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x1C || section0BlockAEntries[section0BlockACount].length == 0x2C || section0BlockAEntries[section0BlockACount].length == 0x28 || section0BlockAEntries[section0BlockACount].length == 0x24)
-                {
-                    //unityBoneWeights[i].weight0 = vbuffer[j].boneWeightX;
-                    //unityBoneWeights[i].weight1 = vbuffer[j].boneWeightY;
-                    //unityBoneWeights[i].weight2 = vbuffer[j].boneWeightZ;
-                    //unityBoneWeights[i].weight3 = vbuffer[j].boneWeightW;
-                    //unityBoneWeights[i].boneIndex0 = vbuffer[j].boneID1;
-                    //unityBoneWeights[i].boneIndex1 = vbuffer[j].boneID2;
-                    //unityBoneWeights[i].boneIndex2 = vbuffer[j].boneID3;
-                    //unityBoneWeights[i].boneIndex3 = vbuffer[j].boneID4;
-
-                    unityMesh[i].UVs[j] = new Vector2(objects[i].additionalVertexData[j].textureU, objects[i].additionalVertexData[j].textureV);
-                } //if
-            } //for
-        } //for
-
-        //Faces
-        for (int i = 0; i < objects.Length; i++)
-        {
-            unityMesh[i].faces = new int[section0Block3Entries[i].numFaceVertices];
-
-            for (int j = 0, h = 0; j < (section0Block3Entries[i].numFaceVertices / 3); j++, h += 3)
-            {
-                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityMesh[i].faces[h] = (int)objects[i].faces[j].vertex1Id;
-                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityMesh[i].faces[h + 1] = (int)objects[i].faces[j].vertex2Id;
-                //UnityEngine.Debug.Log("Index: " + j + ", array length: " + unityFaces.Length);
-                unityMesh[i].faces[h + 2] = (int)objects[i].faces[j].vertex3Id;
-            } //for
-        } //for
-
-        //Instances a new GameObject and also a new MeshFilter and MeshRenderer 
         GameObject fmdlGameObject = new GameObject();
-        MeshFilter meshFilter = fmdlGameObject.AddComponent<MeshFilter>();
-        MeshRenderer meshRenderer = fmdlGameObject.AddComponent<MeshRenderer>(); //This will be replaced with SkinnedMeshRenderer later
+        GameObject[] subFmdlGameObjects = new GameObject[objects.Length];
+        Transform[] bones = new Transform[section0Block0Entries.Length];
 
-        var meshes = new List<Mesh>();
+        for(int i = 0; i < bones.Length; i++)
+        {
+            bones[i] = new GameObject(section0Block0Entries[i].nameId.ToString()).transform;
+            bones[i].position = new Vector3(section0Block0Entries[i].positionX, section0Block0Entries[i].positionY, section0Block0Entries[i].positionZ);
+
+            if (section0Block0Entries[i].parentId == 0xFFFF)
+                bones[i].parent = fmdlGameObject.transform;
+            else
+            {
+                bones[i].parent = bones[section0Block0Entries[i].parentId];
+
+                Matrix4x4 matrix0 = bones[i].localToWorldMatrix;
+                Matrix4x4 matrix1 = bones[i].parent.localToWorldMatrix;
+
+                matrix0 *= matrix1;
+
+                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);
+
+                /*Vector3 forward;
+                forward.x = matrix0.m02;
+                forward.y = matrix0.m12;
+                forward.z = matrix0.m22;
+
+                Vector3 upwards;
+                upwards.x = matrix0.m01;
+                upwards.y = matrix0.m11;
+                upwards.z = matrix0.m21;
+
+                bones[i].rotation = Quaternion.LookRotation(forward, upwards);*/
+            } //else ends
+
+            //Not 100% sure how rotation is supposed to be done. I think this looks right?
+            bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationW);
+        } //for
+
         for (int i = 0; i < objects.Length; i++)
         {
-            Mesh fmdl = new Mesh();
-            fmdl.vertices = unityMesh[i].vertices;
-            fmdl.triangles = unityMesh[i].faces;
-            fmdl.RecalculateNormals();
-            //fmdl.normals = unityMesh[i].normals;
+
+            unityMesh[i].vertices = new Vector3[objects[i].vertices.Length];
+            unityMesh[i].normals = new Vector3[objects[i].additionalVertexData.Length];
+            unityMesh[i].UVs = new Vector2[objects[i].additionalVertexData.Length];
+            unityMesh[i].faces = new int[objects[i].faces.Length * 3];
+
+            //Position
+            for (int j = 0; j < objects[i].vertices.Length; j++)
+                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
+
+            //Normals, Bone Weights, Bone Group Ids and UVs
+            for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
+            {
+                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
+                unityMesh[i].UVs[j] = new Vector2(objects[i].additionalVertexData[j].textureU, objects[i].additionalVertexData[j].textureV);
+            } //for
+
+            //Faces
+            for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
+            {
+                UnityEngine.Debug.Log("i: " + i + " h: " + h);
+                unityMesh[i].faces[h] = objects[i].faces[j].vertex1Id;
+                unityMesh[i].faces[h + 1] = objects[i].faces[j].vertex2Id;
+                unityMesh[i].faces[h + 2] = objects[i].faces[j].vertex3Id;
+            } //for
+
+            //Render the mesh in Unity.
+            subFmdlGameObjects[i] = new GameObject();
+            subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
+            MeshFilter meshFilter = subFmdlGameObjects[i].AddComponent<MeshFilter>();
+            MeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<MeshRenderer>();
+            meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+
+            Mesh mesh = new Mesh();
+            mesh.vertices = unityMesh[i].vertices;
+            mesh.uv = unityMesh[i].UVs;
+            mesh.normals = unityMesh[i].normals;
+            mesh.triangles = unityMesh[i].faces;
             //mesh.boneWeights = unityBoneWeights;
-            fmdl.uv = unityMesh[i].UVs;
 
-            meshes.Add(fmdl);
-            meshFilter.mesh = fmdl;
-        }
-
-        fmdlGameObject.AddComponent<MeshCollider>();
+            meshFilter.mesh = mesh;
+            subFmdlGameObjects[i].AddComponent<MeshCollider>();
+        } //for
     } //MeshReader
 } //class
