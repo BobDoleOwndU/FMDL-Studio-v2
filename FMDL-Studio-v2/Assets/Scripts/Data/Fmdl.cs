@@ -142,6 +142,8 @@ public class Fmdl
         public Half unknown2;
         public Half unknown3;
 
+        public uint unknown4; //Dunno what this is. Always seems to be 00 00 00 FF though. So it might be colour.
+
         // These bytes are the bone weights, which are divided by 255
         public float boneWeightX;
         public float boneWeightY;
@@ -154,14 +156,20 @@ public class Fmdl
         public byte boneGroup2Id;
         public byte boneGroup3Id;
 
-        public float unknown4;
-
         public Half textureU; //UV U coordinate
         public Half textureV; //UV V coordinate
 
-        public float unknown5;
-        public float unknown6;
-        public float unknown7;
+        //These bytes add up to 0xFF. Seems like they're a second set of weights? Possibly LOD related?
+        public byte unknown5;
+        public byte unknown6;
+        public byte unknown7;
+        public byte unknown8;
+
+        //These look like ids of some sort. Possibly LOD related?
+        public ushort unknown9;
+        public ushort unknown10;
+        public ushort unknown11;
+        public ushort unknown12;
     } //struct
 
     private struct Face
@@ -575,6 +583,16 @@ public class Fmdl
 
             while (section0BlockAEntries[section0BlockACount].type != 1)
                 section0BlockACount++;
+            
+            if(section0BlockAEntries[section0BlockACount].length != 0x1C &&
+                section0BlockAEntries[section0BlockACount].length != 0x20 &&
+                section0BlockAEntries[section0BlockACount].length != 0x28 &&
+                section0BlockAEntries[section0BlockACount].length != 0x2C)
+            {
+                UnityEngine.Debug.Log("You've found an unknown additional vertex data length! Please report which model you used to BobDoleOwndU so he can analyze it.");
+                UnityEngine.Debug.Log("Additional Info:\n" + "Id: " + section0BlockACount.ToString("x") + "\nLength: " + section0BlockAEntries[section0BlockACount].length.ToString("x"));
+                return;
+            } //if
 
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
@@ -587,43 +605,31 @@ public class Fmdl
                 objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x1C ||
-                    section0BlockAEntries[section0BlockACount].length == 0x20 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x24 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x28 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x2C)
-                {
-                    objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255;
-                    objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255;
-                    objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255;
-                    objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255;
-                    objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
+                if(section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x2C)
+                    objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
 
-                    if (section0BlockAEntries[section0BlockACount].length == 0x20 ||
-                        section0BlockAEntries[section0BlockACount].length == 0x2C)
-                    {
-                        objects[i].additionalVertexData[j].unknown4 = reader.ReadSingle();
-                    } //if
-                } //if
+                objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255;
+                objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255;
+                objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255;
+                objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255;
+                objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
+                objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
+                objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
+                objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
 
                 objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //value is negated.
+                objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x24)
+                if (section0BlockAEntries[section0BlockACount].length == 0x28 || section0BlockAEntries[section0BlockACount].length == 0x2C)
                 {
-                    objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
-                    objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
-                } //if
-
-                if (section0BlockAEntries[section0BlockACount].length == 0x28 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x2C)
-                {
-                    objects[i].additionalVertexData[j].unknown5 = reader.ReadSingle();
-                    objects[i].additionalVertexData[j].unknown6 = reader.ReadSingle();
-                    objects[i].additionalVertexData[j].unknown7 = reader.ReadSingle();
+                    objects[i].additionalVertexData[j].unknown5 = reader.ReadByte();
+                    objects[i].additionalVertexData[j].unknown6 = reader.ReadByte();
+                    objects[i].additionalVertexData[j].unknown7 = reader.ReadByte();
+                    objects[i].additionalVertexData[j].unknown8 = reader.ReadByte();
+                    objects[i].additionalVertexData[j].unknown9 = reader.ReadUInt16();
+                    objects[i].additionalVertexData[j].unknown10 = reader.ReadUInt16();
+                    objects[i].additionalVertexData[j].unknown11 = reader.ReadUInt16();
+                    objects[i].additionalVertexData[j].unknown12 = reader.ReadUInt16();
                 } //if
             } //for
 
@@ -776,26 +782,24 @@ public class Fmdl
 
     public void OutputObjectInfo2()
     {
+        int greatest = 0;
+
         for (int i = 0; i < objects.Length; i++)
         {
-            Console.WriteLine("================================");
-            Console.WriteLine("Entry No: " + i.ToString("x"));
-            Console.WriteLine("Num Vertices: " + objects[i].vertices.Length.ToString("x"));
-
-            int greatestFaceVertexId = 0;
-
-            for (int j = 0; j < objects[i].faces.Length; j++)
+            for(int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
-                if (objects[i].faces[j].vertex1Id > greatestFaceVertexId)
-                    greatestFaceVertexId = objects[i].faces[j].vertex1Id;
-                if (objects[i].faces[j].vertex2Id > greatestFaceVertexId)
-                    greatestFaceVertexId = objects[i].faces[j].vertex2Id;
-                if (objects[i].faces[j].vertex3Id > greatestFaceVertexId)
-                    greatestFaceVertexId = objects[i].faces[j].vertex3Id;
+                if (objects[i].additionalVertexData[j].boneGroup0Id > greatest)
+                    greatest = objects[i].additionalVertexData[j].boneGroup0Id;
+                if (objects[i].additionalVertexData[j].boneGroup1Id > greatest)
+                    greatest = objects[i].additionalVertexData[j].boneGroup1Id;
+                if (objects[i].additionalVertexData[j].boneGroup2Id > greatest)
+                    greatest = objects[i].additionalVertexData[j].boneGroup2Id;
+                if (objects[i].additionalVertexData[j].boneGroup3Id > greatest)
+                    greatest = objects[i].additionalVertexData[j].boneGroup3Id;
             } //for
-
-            Console.WriteLine("Greatest Face Id: " + greatestFaceVertexId.ToString("x"));
         } //for
+
+        UnityEngine.Debug.Log("Greatest Bone Group Id: " + greatest);
     } //OutputObjectInfo
 
     public void MeshReader()
@@ -820,8 +824,6 @@ public class Fmdl
 
                 matrix0 *= matrix1;
 
-                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);
-
                 /*Vector3 forward;
                 forward.x = matrix0.m02;
                 forward.y = matrix0.m12;
@@ -833,6 +835,8 @@ public class Fmdl
                 upwards.z = matrix0.m21;
 
                 bones[i].rotation = Quaternion.LookRotation(forward, upwards);*/
+
+                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);
             } //else ends
 
             //Not 100% sure how rotation is supposed to be done. I think this looks right?
@@ -861,7 +865,6 @@ public class Fmdl
             //Faces
             for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
             {
-                UnityEngine.Debug.Log("i: " + i + " h: " + h);
                 unityMesh[i].faces[h] = objects[i].faces[j].vertex1Id;
                 unityMesh[i].faces[h + 1] = objects[i].faces[j].vertex2Id;
                 unityMesh[i].faces[h + 2] = objects[i].faces[j].vertex3Id;
