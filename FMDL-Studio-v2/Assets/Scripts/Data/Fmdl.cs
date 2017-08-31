@@ -4,7 +4,6 @@ using System.IO;
 using System.Text;
 using static System.Half;
 using UnityEngine;
-using System.Collections.Generic;
 using UnityEditor;
 
 public class Fmdl
@@ -156,8 +155,12 @@ public class Fmdl
         public byte boneGroup2Id;
         public byte boneGroup3Id;
 
-        public Half textureU; //UV U coordinate
-        public Half textureV; //UV V coordinate
+        public Half textureU; //UV U coordinate.
+        public Half textureV; //UV V coordinate.
+
+        //Dunno what these are for.
+        public Half unknown13;
+        public Half unknown14;
 
         //These bytes add up to 0xFF. Seems like they're a second set of weights? Possibly LOD related?
         public byte unknown5;
@@ -586,7 +589,8 @@ public class Fmdl
 
 			if (section0BlockAEntries[section0BlockACount].length != 0x1C &&
 				section0BlockAEntries[section0BlockACount].length != 0x20 &&
-				section0BlockAEntries[section0BlockACount].length != 0x28 &&
+                section0BlockAEntries[section0BlockACount].length != 0x24 &&
+                section0BlockAEntries[section0BlockACount].length != 0x28 &&
 				section0BlockAEntries[section0BlockACount].length != 0x2C)
 			{
 				UnityEngine.Debug.Log("You've found an unknown additional vertex data length! Please report which model you used to BobDoleOwndU so he can analyze it.");
@@ -605,7 +609,7 @@ public class Fmdl
 				objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
 				objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
 
-				if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x2C)
+				if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x24 || section0BlockAEntries[section0BlockACount].length == 0x2C)
 					objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
 
 				objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255;
@@ -619,6 +623,12 @@ public class Fmdl
 
 				objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
 				objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
+
+                if (section0BlockAEntries[section0BlockACount].length == 0x24)
+                {
+                    objects[i].additionalVertexData[j].unknown13 = ToHalf(reader.ReadUInt16());
+                    objects[i].additionalVertexData[j].unknown14 = ToHalf(reader.ReadUInt16());
+                } //if ends
 
 				if (section0BlockAEntries[section0BlockACount].length == 0x28 || section0BlockAEntries[section0BlockACount].length == 0x2C)
 				{
@@ -809,10 +819,10 @@ public class Fmdl
         Transform[] bones = new Transform[section0Block0Entries.Length];
         Matrix4x4[] bindPoses = new Matrix4x4[section0Block0Entries.Length];
 
-        UnityEngine.Debug.Log("This is the bone definition section's end.");
+        //UnityEngine.Debug.Log("This is the bone definition section's end.");
         for (int i = 0; i < bones.Length; i++)
         {
-            bones[i] = new GameObject(section0Block0Entries[i].nameId.ToString()).transform;
+            bones[i] = new GameObject(i.ToString("x")).transform;
             bones[i].position = new Vector3(section0Block0Entries[i].positionX, section0Block0Entries[i].positionY, section0Block0Entries[i].positionZ);
 
             if (section0Block0Entries[i].parentId == 0xFFFF)
@@ -843,10 +853,9 @@ public class Fmdl
 
             //Not 100% sure how rotation is supposed to be done. I think this looks right?
             bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationW);
-            bindPoses[i] = bones[i].worldToLocalMatrix * bones[i].transform.localToWorldMatrix;
         } //for
 
-        UnityEngine.Debug.Log("This is the bone section's end.");
+        //UnityEngine.Debug.Log("This is the bone section's end.");
 
         for (int i = 0; i < objects.Length; i++)
         {
@@ -859,32 +868,32 @@ public class Fmdl
             //Position
             for (int j = 0; j < objects[i].vertices.Length; j++)
                 unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
-            UnityEngine.Debug.Log("This is the position section's end.");
+            //UnityEngine.Debug.Log("This is the position section's end.");
 
             //Normals, Bone Weights, Bone Group Ids and UVs
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
-                //unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
-                //unityMesh[i].boneWeights[j].boneIndex0 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup0Id];
-                //UnityEngine.Debug.Log("unityMesh bone index0 #" + j + ": " + unityMesh[i].boneWeights[j].boneIndex0);
-                //UnityEngine.Debug.Log("unityMesh bone thingy " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup0Id]);
-                //unityMesh[i].boneWeights[j].boneIndex1 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup1Id];
-                //UnityEngine.Debug.Log("unityMesh bone index1 #" + j + ": " + unityMesh[i].boneWeights[j].boneIndex1);
-                //UnityEngine.Debug.Log("unityMesh bone thingy " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup1Id]);
-                //unityMesh[i].boneWeights[j].boneIndex2 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup2Id];
-                //UnityEngine.Debug.Log("unityMesh bone index2 #" + j + ": " + unityMesh[i].boneWeights[j].boneIndex2);
-                //UnityEngine.Debug.Log("unityMesh bone thingy " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup2Id]);
-                //unityMesh[i].boneWeights[j].boneIndex3 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup3Id];
-                //UnityEngine.Debug.Log("unityMesh bone index3 #" + j + ": " + unityMesh[i].boneWeights[j].boneIndex3);
-                //UnityEngine.Debug.Log("unityMesh bone thingy " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup3Id]);
+                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
+
                 unityMesh[i].boneWeights[j].weight0 = objects[i].additionalVertexData[j].boneWeightX;
-                unityMesh[i].boneWeights[j].weight3 = objects[i].additionalVertexData[j].boneWeightY;
+                unityMesh[i].boneWeights[j].weight1 = objects[i].additionalVertexData[j].boneWeightY;
                 unityMesh[i].boneWeights[j].weight2 = objects[i].additionalVertexData[j].boneWeightZ;
-                unityMesh[i].boneWeights[j].weight1 = objects[i].additionalVertexData[j].boneWeightW;
+                unityMesh[i].boneWeights[j].weight3 = objects[i].additionalVertexData[j].boneWeightW;
+
+                unityMesh[i].boneWeights[j].boneIndex0 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup0Id];
+                UnityEngine.Debug.Log("Object: " + i.ToString("x") + " Vertex: " + j.ToString("x") + " Bone Id 0: " + unityMesh[i].boneWeights[j].boneIndex0.ToString("x"));
+                unityMesh[i].boneWeights[j].boneIndex1 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup1Id];
+                UnityEngine.Debug.Log("Object: " + i.ToString("x") + " Vertex: " + j.ToString("x") + " Bone Id 1: " + unityMesh[i].boneWeights[j].boneIndex1.ToString("x"));
+                unityMesh[i].boneWeights[j].boneIndex2 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup2Id];
+                UnityEngine.Debug.Log("Object: " + i.ToString("x") + " Vertex: " + j.ToString("x") + " Bone Id 2: " + unityMesh[i].boneWeights[j].boneIndex2.ToString("x"));
+                unityMesh[i].boneWeights[j].boneIndex3 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup3Id];
+                UnityEngine.Debug.Log("Object: " + i.ToString("x") + " Vertex: " + j.ToString("x") + " Bone Id 3: " + unityMesh[i].boneWeights[j].boneIndex3.ToString("x"));
+
+
                 unityMesh[i].UVs[j] = new Vector2(objects[i].additionalVertexData[j].textureU, objects[i].additionalVertexData[j].textureV);
             } //for
 
-            UnityEngine.Debug.Log("This is the additional vertex data section's end.");
+            //UnityEngine.Debug.Log("This is the additional vertex data section's end.");
 
             //Faces
             for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
@@ -893,15 +902,17 @@ public class Fmdl
                 unityMesh[i].faces[h + 1] = objects[i].faces[j].vertex2Id;
                 unityMesh[i].faces[h + 2] = objects[i].faces[j].vertex3Id;
             } //for
-            UnityEngine.Debug.Log("This is the face section's end.");
+            //UnityEngine.Debug.Log("This is the face section's end.");
 
             //Render the mesh in Unity.
             subFmdlGameObjects[i] = new GameObject();
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
-            MeshFilter meshFilter = subFmdlGameObjects[i].AddComponent<MeshFilter>();
-            MeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<MeshRenderer>();
+            //MeshFilter meshFilter = subFmdlGameObjects[i].AddComponent<MeshFilter>();
+            SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
+
+            //meshRenderer.rootBone = bones[0];
             meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
-            UnityEngine.Debug.Log("This is the mesh creation section's end.");
+            //UnityEngine.Debug.Log("This is the mesh creation section's end.");
 
             Mesh mesh = new Mesh();
             mesh.vertices = unityMesh[i].vertices;
@@ -909,10 +920,18 @@ public class Fmdl
             mesh.normals = unityMesh[i].normals;
             mesh.triangles = unityMesh[i].faces;
             mesh.boneWeights = unityMesh[i].boneWeights;
-            mesh.bindposes = bindPoses;
-            UnityEngine.Debug.Log("This is the mesh section's end.");
 
-            meshFilter.mesh = mesh;
+            for(int j = 0; j < bones.Length; j++)
+            {
+                bindPoses[j] = bones[j].worldToLocalMatrix * subFmdlGameObjects[i].transform.localToWorldMatrix;
+            } //for
+
+            mesh.bindposes = bindPoses;
+            //UnityEngine.Debug.Log("This is the mesh section's end.");
+
+            //meshFilter.mesh = mesh;
+            meshRenderer.bones = bones;
+            meshRenderer.sharedMesh = mesh;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
     } //MeshReader
