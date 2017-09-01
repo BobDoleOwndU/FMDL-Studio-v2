@@ -612,10 +612,10 @@ public class Fmdl
 				if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x24 || section0BlockAEntries[section0BlockACount].length == 0x2C)
 					objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
 
-				objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255;
-				objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255;
-				objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255;
-				objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255;
+				objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
+				objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
+				objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255.0f;
+				objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255.0f;
 				objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
 				objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
 				objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
