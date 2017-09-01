@@ -711,7 +711,7 @@ public class Fmdl
         {
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
 
-            while (section0BlockAEntries[section0BlockACount].type != 1)
+            while (section0BlockAEntries[section0BlockACount].type != 3)
                 section0BlockACount++;
 
             if (section0BlockAEntries[section0BlockACount].length != 0x14 &&
@@ -738,7 +738,7 @@ public class Fmdl
                 objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x20 || section0BlockAEntries[section0BlockACount].length == 0x24 || section0BlockAEntries[section0BlockACount].length == 0x2C)
+                if ((section0BlockAEntries[section0BlockACount].length == 0x20 && section0BlockAEntries[section0BlockACount - 1].type == 2) || section0BlockAEntries[section0BlockACount].length == 0x24 || section0BlockAEntries[section0BlockACount].length == 0x2C)
                     objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
 
                 if (section0BlockAEntries[section0BlockACount].length == 0x1C ||
@@ -760,7 +760,7 @@ public class Fmdl
                 objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x18 || section0BlockAEntries[section0BlockACount].length == 0x24)
+                if (section0BlockAEntries[section0BlockACount].length == 0x18 || (section0BlockAEntries[section0BlockACount].length == 0x20 && section0BlockAEntries[section0BlockACount - 1].type != 2) || section0BlockAEntries[section0BlockACount].length == 0x24)
                 {
                     objects[i].additionalVertexData[j].unknown13 = ToHalf(reader.ReadUInt16());
                     objects[i].additionalVertexData[j].unknown14 = ToHalf(reader.ReadUInt16());
@@ -1030,6 +1030,11 @@ public class Fmdl
                     unityMesh[i].boneWeights[j].weight2 = objects[i].additionalVertexData[j].boneWeightZ;
                     unityMesh[i].boneWeights[j].weight3 = objects[i].additionalVertexData[j].boneWeightW;
 
+                    /*UnityEngine.Debug.Log("i: " + i + " j: " + j);
+                    UnityEngine.Debug.Log("Block 5 Entries: " + section0Block5Entries.Length);
+                    UnityEngine.Debug.Log("Block 3 Bone Group Id: " + section0Block3Entries[i].boneGroupId);
+                    UnityEngine.Debug.Log("Block 5 subentries length: " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length);
+                    UnityEngine.Debug.Log("Bone Group 0 Id: " + objects[i].additionalVertexData[j].boneGroup0Id);*/
                     unityMesh[i].boneWeights[j].boneIndex0 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup0Id];
                     unityMesh[i].boneWeights[j].boneIndex1 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup1Id];
                     unityMesh[i].boneWeights[j].boneIndex2 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup2Id];
