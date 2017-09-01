@@ -8,7 +8,7 @@ using static System.Half;
 
 public class Fmdl
 {
-    private enum BlockType
+    private enum Section0BlockType
     {
         Bones = 0,
         MeshGroups = 1,
@@ -30,7 +30,13 @@ public class Fmdl
         Type14 = 20,
         TextureList = 21,
         NameList = 22
-    }; //BlockType
+    }; //Section0BlockType
+
+    private enum Section1BlockType
+    {
+        Type0 = 0,
+        MeshData = 2
+    }; //Section1BlockType
 
     private struct Section0Info
     {
@@ -256,6 +262,9 @@ public class Fmdl
     private int textureListPosition = -1;
     private int nameListPosition = -1;
 
+    private int unknownPosition = -1;
+    private int meshDataPosition = -1;
+
     private Object[] objects;
     private UnityMesh[] unityMesh;
 
@@ -305,77 +314,77 @@ public class Fmdl
 
             switch (section0Info[i].id)
             {
-                case (ushort)BlockType.Bones:
+                case (ushort)Section0BlockType.Bones:
                     bonesPosition = i;
                     section0Block0Entries = new Section0Block0Entry[section0Info[bonesPosition].numEntries];
                     break;
-                case (ushort)BlockType.MeshGroups:
+                case (ushort)Section0BlockType.MeshGroups:
                     meshGroupsPosition = i;
                     section0Block1Entries = new Section0Block1Entry[section0Info[meshGroupsPosition].numEntries];
                     break;
-                case (ushort)BlockType.ObjectAssignment:
+                case (ushort)Section0BlockType.ObjectAssignment:
                     objectAssignmentPosition = i;
                     section0Block2Entries = new Section0Block2Entry[section0Info[objectAssignmentPosition].numEntries];
                     break;
-                case (ushort)BlockType.MeshInfo:
+                case (ushort)Section0BlockType.MeshInfo:
                     meshInfoPosition = i;
                     section0Block3Entries = new Section0Block3Entry[section0Info[meshInfoPosition].numEntries];
                     break;
-                case (ushort)BlockType.Type4:
+                case (ushort)Section0BlockType.Type4:
                     type4Position = i;
                     break;
-                case (ushort)BlockType.BoneGroups:
+                case (ushort)Section0BlockType.BoneGroups:
                     boneGroupsPosition = i;
                     section0Block5Entries = new Section0Block5Entry[section0Info[boneGroupsPosition].numEntries];
                     break;
-                case (ushort)BlockType.Type6:
+                case (ushort)Section0BlockType.Type6:
                     type6Position = i;
                     section0Block6Entries = new Section0Block6Entry[section0Info[type6Position].numEntries];
                     break;
-                case (ushort)BlockType.TextureTypes:
+                case (ushort)Section0BlockType.TextureTypes:
                     textureTypesPosition = i;
                     section0Block7Entries = new Section0Block7Entry[section0Info[textureTypesPosition].numEntries];
                     break;
-                case (ushort)BlockType.Type8:
+                case (ushort)Section0BlockType.Type8:
                     type8Position = i;
                     section0Block8Entries = new Section0Block8Entry[section0Info[type8Position].numEntries];
                     break;
-                case (ushort)BlockType.Type9:
+                case (ushort)Section0BlockType.Type9:
                     type9Position = i;
                     break;
-                case (ushort)BlockType.MeshDataSectionInfo:
+                case (ushort)Section0BlockType.MeshDataSectionInfo:
                     meshDataSectionInfoPosition = i;
                     section0BlockAEntries = new Section0BlockAEntry[section0Info[meshDataSectionInfoPosition].numEntries];
                     break;
-                case (ushort)BlockType.TypeB:
+                case (ushort)Section0BlockType.TypeB:
                     typeBPosition = i;
                     break;
-                case (ushort)BlockType.TypeD:
+                case (ushort)Section0BlockType.TypeD:
                     typeDPosition = i;
                     section0BlockDEntries = new Section0BlockDEntry[section0Info[typeDPosition].numEntries];
                     break;
-                case (ushort)BlockType.BufferOffsets:
+                case (ushort)Section0BlockType.BufferOffsets:
                     bufferOffsetsPosition = i;
                     section0BlockEEntries = new Section0BlockEEntry[section0Info[bufferOffsetsPosition].numEntries];
                     break;
-                case (ushort)BlockType.LodInfo:
+                case (ushort)Section0BlockType.LodInfo:
                     lodInfoPosition = i;
                     section0Block10Entries = new Section0Block10Entry[section0Info[lodInfoPosition].numEntries];
                     break;
-                case (ushort)BlockType.FaceIndices:
+                case (ushort)Section0BlockType.FaceIndices:
                     faceIndicesPosition = i;
                     break;
-                case (ushort)BlockType.Type12:
+                case (ushort)Section0BlockType.Type12:
                     type12Position = i;
                     break;
-                case (ushort)BlockType.Type14:
+                case (ushort)Section0BlockType.Type14:
                     type14Position = i;
                     break;
-                case (ushort)BlockType.TextureList:
+                case (ushort)Section0BlockType.TextureList:
                     textureListPosition = i;
                     section0Block15Entries = new ulong[section0Info[textureListPosition].numEntries];
                     break;
-                case (ushort)BlockType.NameList:
+                case (ushort)Section0BlockType.NameList:
                     nameListPosition = i;
                     section0Block16Entries = new ulong[section0Info[nameListPosition].numEntries];
                     break;
@@ -392,6 +401,18 @@ public class Fmdl
             section1Info[i].id = reader.ReadUInt32();
             section1Info[i].offset = reader.ReadUInt32();
             section1Info[i].length = reader.ReadUInt32();
+
+            switch(section1Info[i].id)
+            {
+                case (uint)Section1BlockType.Type0:
+                    unknownPosition = i;
+                    break;
+                case (uint)Section1BlockType.MeshData:
+                    meshDataPosition = i;
+                    break;
+                default:
+                    break;
+            } //switch
         } //for
 
         objects = new Object[section0Info[meshInfoPosition].numEntries];
@@ -487,7 +508,7 @@ public class Fmdl
                 reader.BaseStream.Position += 0x4;
                 section0Block3Entries[i].numPrecedingFaceVertices = reader.ReadUInt32();
                 section0Block3Entries[i].numFaceVertices = reader.ReadUInt32();
-                section0Block3Entries[1].unknown2 = reader.ReadUInt64();
+                section0Block3Entries[i].unknown2 = reader.ReadUInt64();
                 reader.BaseStream.Position += 0x10;
             } //for
         } //if
@@ -680,7 +701,7 @@ public class Fmdl
          * POSITION
          *
          ****************************************************************/
-        reader.BaseStream.Position = section1Info[1].offset + section1Offset;
+        reader.BaseStream.Position = section1Info[meshDataPosition].offset + section1Offset;
 
         for (int i = 0; i < objects.Length; i++)
         {
@@ -703,7 +724,7 @@ public class Fmdl
          * ADDITIONAL VERTEX DATA
          *
          ****************************************************************/
-        reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[1].offset;
+        reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[meshDataPosition].offset;
 
         int section0BlockACount = 0;
 
@@ -794,7 +815,7 @@ public class Fmdl
 
         for (int i = 0; i < objects.Length; i++)
         {
-            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[1].offset + section0Block3Entries[i].numPrecedingFaceVertices * 2;
+            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[meshDataPosition].offset + section0Block3Entries[i].numPrecedingFaceVertices * 2;
 
             objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
 
