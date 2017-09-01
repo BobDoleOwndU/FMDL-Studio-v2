@@ -6,7 +6,9 @@ Open the project in Unity, go to the *FMDL Studio* menu option and select *Impor
 
 ## Credits
 BobDoleOwndU: Programming and reverse-engineering.
+
 Joey35233: Programming.
+
 youarebritish (sai): General help/debugging.
 
 Thanks to Jayveerk, cra0kalo and HeartlessSeph for their previous work on the .fmdl format.
