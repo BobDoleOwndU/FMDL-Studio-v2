@@ -113,7 +113,7 @@ public class Fmdl
     private struct Section0Block7Entry
     {
         public ushort nameId;
-        public ushort textureId;
+        public ushort referenceId;
     } //struct
 
     private struct Section0Block8Entry
@@ -555,7 +555,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x7 - TEXTURE TYPE ASSIGNMENT
+         * SECTION 0 BLOCK 0x7 - TEXTURE TYPE/MATERIAL PARAMETER ASSIGNMENT
          *
          ****************************************************************/
         if (textureTypesPosition != -1)
@@ -566,7 +566,7 @@ public class Fmdl
             for (int i = 0; i < section0Block7Entries.Length; i++)
             {
                 section0Block7Entries[i].nameId = reader.ReadUInt16();
-                section0Block7Entries[i].textureId = reader.ReadUInt16();
+                section0Block7Entries[i].referenceId = reader.ReadUInt16();
             } //for
         } //if
 
@@ -901,8 +901,8 @@ public class Fmdl
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
-            Console.WriteLine("Texture Type Hash: " + section0Block16Entries[section0Block7Entries[i].nameId].ToString("x"));
-            Console.WriteLine("Texture Hash: " + (section0Block15Entries[section0Block7Entries[i].textureId] - 0x1568000000000000).ToString("x"));
+            Console.WriteLine("Texture Type/Material Parameter Hash: " + section0Block16Entries[section0Block7Entries[i].nameId].ToString("x"));
+            Console.WriteLine("Reference Id: " + section0Block7Entries[i].referenceId);
         } //for
     } //OutputSection2Info
 
