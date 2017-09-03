@@ -786,7 +786,7 @@ public class Fmdl
                     position += 4;
                 } //if ends
 
-                if (section0BlockAEntries[section0BlockACount + 1].length == 0x10 || section0BlockAEntries[section0BlockACount + 1].length > 0x18)
+                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2) || section0BlockAEntries[section0BlockACount + 1].length > 0x18)
                 {
                     objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
                     objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
@@ -800,7 +800,7 @@ public class Fmdl
                     position += 8;
                 } //if
 
-                if (section0BlockAEntries[section0BlockACount + 1].length != 0x10)
+                if (!(section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2))
                 {
                     objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
                     objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
