@@ -22,6 +22,7 @@ public class Fmdl
         Type9 = 9,
         MeshDataSectionInfo = 10,
         TypeB = 11,
+        StringTable = 12,
         TypeD = 13,
         BufferOffsets = 14,
         LodInfo = 16,
@@ -35,7 +36,8 @@ public class Fmdl
     private enum Section1BlockType
     {
         Type0 = 0,
-        MeshData = 2
+        MeshData = 2,
+        Strings = 3
     }; //Section1BlockType
 
     private struct Section0Info
@@ -129,6 +131,13 @@ public class Fmdl
         public byte length; //length for whatever data it's pointing to.
         public byte type; //seems to identify the type of data it's associated with. 1 is for the "vertex buffer" I think.
         public uint offset; //this offset is where the entry lands in its respective list.
+    } //struct
+
+    private struct Section0BlockCEntry
+    {
+        public ushort unknown0;
+        public ushort length;
+        public uint offset;
     } //struct
 
     private struct Section0BlockDEntry
@@ -253,6 +262,7 @@ public class Fmdl
     private int type9Position = -1;
     private int meshDataSectionInfoPosition = -1;
     private int typeBPosition = -1;
+    private int stringTablePosition = -1;
     private int typeDPosition = -1;
     private int bufferOffsetsPosition = -1;
     private int lodInfoPosition = -1;
@@ -264,9 +274,11 @@ public class Fmdl
 
     private int unknownPosition = -1;
     private int meshDataPosition = -1;
+    private int stringsPosition = -1;
 
     private Object[] objects;
     private UnityMesh[] unityMesh;
+    private string[] strings;
 
     private Section0Info[] section0Info;
     private Section1Info[] section1Info;
@@ -280,6 +292,7 @@ public class Fmdl
     private Section0Block7Entry[] section0Block7Entries;
     private Section0Block8Entry[] section0Block8Entries;
     private Section0BlockAEntry[] section0BlockAEntries;
+    private Section0BlockCEntry[] section0BlockCEntries;
     private Section0BlockDEntry[] section0BlockDEntries;
     private Section0BlockEEntry[] section0BlockEEntries;
     private Section0Block10Entry[] section0Block10Entries;
@@ -359,6 +372,11 @@ public class Fmdl
                 case (ushort)Section0BlockType.TypeB:
                     typeBPosition = i;
                     break;
+                case (ushort)Section0BlockType.StringTable:
+                    stringTablePosition = i;
+                    section0BlockCEntries = new Section0BlockCEntry[section0Info[stringTablePosition].numEntries];
+                    strings = new string[section0Info[stringTablePosition].numEntries];
+                    break;
                 case (ushort)Section0BlockType.TypeD:
                     typeDPosition = i;
                     section0BlockDEntries = new Section0BlockDEntry[section0Info[typeDPosition].numEntries];
@@ -409,6 +427,9 @@ public class Fmdl
                     break;
                 case (uint)Section1BlockType.MeshData:
                     meshDataPosition = i;
+                    break;
+                case (uint)Section1BlockType.Strings:
+                    stringsPosition = i;
                     break;
                 default:
                     break;
@@ -606,6 +627,43 @@ public class Fmdl
                 section0BlockAEntries[i].offset = reader.ReadUInt32();
             } //for
         } //if ends
+
+        /****************************************************************
+         *
+         * SECTION 0 BLOCK 0xC - STRING TABLE
+         *
+         ****************************************************************/
+        if (stringTablePosition != -1)
+        {
+            //go to and get the section 0xD entry info.
+            reader.BaseStream.Position = section0Info[stringTablePosition].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockCEntries.Length; i++)
+            {
+                section0BlockCEntries[i].unknown0 = reader.ReadUInt16();
+                section0BlockCEntries[i].length = reader.ReadUInt16();
+                section0BlockCEntries[i].offset = reader.ReadUInt32();
+            } //for
+        } //if
+
+        /****************************************************************
+         *
+         * SECTION 0 BLOCK 0xD - UNKNOWN - FLOATS
+         *
+         ****************************************************************/
+        if (typeDPosition != -1)
+        {
+            //go to and get the section 0xD entry info.
+            reader.BaseStream.Position = section0Info[typeDPosition].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockDEntries.Length; i++)
+            {
+                section0BlockDEntries[i].entries = new float[8];
+
+                for (int j = 0; j < section0BlockDEntries[i].entries.Length; j++)
+                    section0BlockDEntries[i].entries[j] = reader.ReadSingle();
+            } //for
+        } //if
 
         /****************************************************************
          *
@@ -872,6 +930,20 @@ public class Fmdl
                 objects[i].faces[j].vertex3Id = reader.ReadUInt16();
             } //for
         } //for
+
+        /****************************************************************
+         *
+         * STRINGS
+         *
+         ****************************************************************/
+        if (stringTablePosition != -1)
+        {
+            for(int i = 0; i < section0BlockCEntries.Length; i++)
+            {
+                reader.BaseStream.Position = section1Offset + section1Info[stringsPosition].offset + section0BlockCEntries[i].offset;
+                strings[i] = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
+            } //for
+        } //if
     } //Read
 
     [Conditional("DEBUG")]
@@ -1014,6 +1086,16 @@ public class Fmdl
 
         UnityEngine.Debug.Log("Greatest Bone Group Id: " + greatest);
     } //OutputObjectInfo
+
+    public void OutputStringInfo()
+    {
+        for(int i = 0; i < strings.Length; i++)
+        {
+            Console.WriteLine("================================");
+            Console.WriteLine("Entry No: " + i);
+            Console.WriteLine("String: " + strings[i]);
+        } //for
+    } //OutputStringInfo
 
     public void MeshReader()
     {
