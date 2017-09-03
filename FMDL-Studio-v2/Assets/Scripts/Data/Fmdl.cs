@@ -730,18 +730,30 @@ public class Fmdl
 
         for (int i = 0; i < objects.Length; i++)
         {
+            int type3Position = 0;
+            int length = 0;
+            int position = 0;
+
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
 
-            while (section0BlockAEntries[section0BlockACount].type != 3)
+            while (section0BlockAEntries[section0BlockACount].type != 0)
                 section0BlockACount++;
 
-            if (section0BlockAEntries[section0BlockACount].length != 0x14 &&
-                section0BlockAEntries[section0BlockACount].length != 0x18 &&
-                section0BlockAEntries[section0BlockACount].length != 0x1C &&
-                section0BlockAEntries[section0BlockACount].length != 0x20 &&
-                section0BlockAEntries[section0BlockACount].length != 0x24 &&
-                section0BlockAEntries[section0BlockACount].length != 0x28 &&
-                section0BlockAEntries[section0BlockACount].length != 0x2C)
+            if (section0BlockAEntries[section0BlockACount + 2].type == 2)
+                type3Position = 3;
+            else
+                type3Position = 2;
+
+            length = section0BlockAEntries[section0BlockACount + 1].length;
+
+            if (section0BlockAEntries[section0BlockACount + 1].length != 0x14 &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x18 &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x1C &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x20 &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x24 &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x28 &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x2C &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x30)
             {
                 UnityEngine.Debug.Log("You've found an unknown additional vertex data length! Please report which model you used to BobDoleOwndU so he can analyze it.");
                 UnityEngine.Debug.Log("Additional Info:\n" + "Id: " + section0BlockACount.ToString("x") + "\nLength: " + section0BlockAEntries[section0BlockACount].length.ToString("x"));
@@ -754,19 +766,26 @@ public class Fmdl
                 objects[i].additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].unknown0 = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].unknown1 = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
 
-                if ((section0BlockAEntries[section0BlockACount].length == 0x20 && section0BlockAEntries[section0BlockACount - 1].type == 2) || section0BlockAEntries[section0BlockACount].length == 0x24 || section0BlockAEntries[section0BlockACount].length == 0x2C)
+                position += 8;
+
+                if (section0BlockAEntries[section0BlockACount + 1].unknown1 > 1)
+                {
+                    objects[i].additionalVertexData[j].unknown0 = ToHalf(reader.ReadUInt16());
+                    objects[i].additionalVertexData[j].unknown1 = ToHalf(reader.ReadUInt16());
+                    objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
+                    objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
+
+                    position += 8;
+                } //if ends
+
+                if (type3Position == 3)
+                {
                     objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
+                    position += 4;
+                } //if ends
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x1C ||
-                    section0BlockAEntries[section0BlockACount].length == 0x20 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x24 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x28 ||
-                    section0BlockAEntries[section0BlockACount].length == 0x2C)
+                if (length > 0x18 && section0BlockAEntries[section0BlockACount + type3Position].unknown1 > 2)
                 {
                     objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
                     objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
@@ -776,18 +795,24 @@ public class Fmdl
                     objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
                     objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
                     objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
+
+                    position += 8;
                 } //if
 
                 objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
                 objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x18 || (section0BlockAEntries[section0BlockACount].length == 0x20 && section0BlockAEntries[section0BlockACount - 1].type != 2) || section0BlockAEntries[section0BlockACount].length == 0x24)
+                position += 4;
+
+                if ((length == 0x18 && type3Position == 2 && section0BlockAEntries[section0BlockACount + type3Position].unknown1 > 1) ||(length > 0x1C && ((section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 4 && type3Position == 2) || section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 6)))
                 {
                     objects[i].additionalVertexData[j].unknown13 = ToHalf(reader.ReadUInt16());
                     objects[i].additionalVertexData[j].unknown14 = ToHalf(reader.ReadUInt16());
+
+                    position += 4;
                 } //if ends
 
-                if (section0BlockAEntries[section0BlockACount].length == 0x28 || section0BlockAEntries[section0BlockACount].length == 0x2C)
+                if (section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 5 || section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 6)
                 {
                     objects[i].additionalVertexData[j].unknown5 = reader.ReadByte();
                     objects[i].additionalVertexData[j].unknown6 = reader.ReadByte();
@@ -797,7 +822,19 @@ public class Fmdl
                     objects[i].additionalVertexData[j].unknown10 = reader.ReadUInt16();
                     objects[i].additionalVertexData[j].unknown11 = reader.ReadUInt16();
                     objects[i].additionalVertexData[j].unknown12 = reader.ReadUInt16();
+
+                    position += 12;
                 } //if
+
+                if (position != length)
+                {
+                    UnityEngine.Debug.Log("i: " + i);
+                    UnityEngine.Debug.Log("j: " + j);
+                    UnityEngine.Debug.Log("Section0BlockACount: " + section0BlockACount);
+                    UnityEngine.Debug.Log("Expected Length: " + length);
+                    UnityEngine.Debug.Log("Calculated Length: " + position);
+                } //if
+                position = 0;
             } //for
 
             //align the stream.
