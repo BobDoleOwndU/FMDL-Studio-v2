@@ -785,7 +785,7 @@ public class Fmdl
                     position += 4;
                 } //if ends
 
-                if (length > 0x18 && section0BlockAEntries[section0BlockACount + type3Position].unknown1 > 2)
+                if (section0BlockAEntries[section0BlockACount + 1].length > 0x18)
                 {
                     objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
                     objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
@@ -804,7 +804,10 @@ public class Fmdl
 
                 position += 4;
 
-                if ((length == 0x18 && type3Position == 2 && section0BlockAEntries[section0BlockACount + type3Position].unknown1 > 1) ||(length > 0x1C && ((section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 4 && type3Position == 2) || section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 6)))
+                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x18 && type3Position == 2) ||
+                    (section0BlockAEntries[section0BlockACount + 1].length == 0x20 && type3Position == 2 && section0BlockAEntries[section0BlockACount + 1].unknown1 != 1) ||
+                    section0BlockAEntries[section0BlockACount + 1].length == 0x24 ||
+                    section0BlockAEntries[section0BlockACount + 1].length == 0x30)
                 {
                     objects[i].additionalVertexData[j].unknown13 = ToHalf(reader.ReadUInt16());
                     objects[i].additionalVertexData[j].unknown14 = ToHalf(reader.ReadUInt16());
@@ -812,7 +815,10 @@ public class Fmdl
                     position += 4;
                 } //if ends
 
-                if (section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 5 || section0BlockAEntries[section0BlockACount + type3Position].unknown1 == 6)
+                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x20 && type3Position == 2 && section0BlockAEntries[section0BlockACount + 1].unknown1 ==1) ||
+                    section0BlockAEntries[section0BlockACount + 1].length == 0x28 ||
+                    section0BlockAEntries[section0BlockACount + 1].length == 0x2C ||
+                    section0BlockAEntries[section0BlockACount + 1].length == 0x30)
                 {
                     objects[i].additionalVertexData[j].unknown5 = reader.ReadByte();
                     objects[i].additionalVertexData[j].unknown6 = reader.ReadByte();
@@ -858,9 +864,9 @@ public class Fmdl
 
             for (int j = 0; j < objects[i].faces.Length; j++)
             {
-                objects[i].faces[j].vertex3Id = reader.ReadUInt16();
-                objects[i].faces[j].vertex2Id = reader.ReadUInt16();
                 objects[i].faces[j].vertex1Id = reader.ReadUInt16();
+                objects[i].faces[j].vertex2Id = reader.ReadUInt16();
+                objects[i].faces[j].vertex3Id = reader.ReadUInt16();
             } //for
         } //for
     } //Read
@@ -1029,7 +1035,7 @@ public class Fmdl
         for (int i = 0; i < bones.Length; i++)
         {
             bones[i] = new GameObject(i.ToString("x")).transform;
-            bones[i].position = new Vector3(section0Block0Entries[i].positionX, section0Block0Entries[i].positionY, section0Block0Entries[i].positionZ);
+            bones[i].position = new Vector3(section0Block0Entries[i].positionZ, section0Block0Entries[i].positionY, section0Block0Entries[i].positionX);
 
             if (section0Block0Entries[i].parentId == 0xFFFF)
                 bones[i].parent = fmdlGameObject.transform;
@@ -1058,7 +1064,7 @@ public class Fmdl
             } //else ends
 
             //Not 100% sure how rotation is supposed to be done. I think this looks right?
-            bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationW);
+            bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationW);
         } //for
 
         //UnityEngine.Debug.Log("This is the bone section's end.");
@@ -1073,13 +1079,13 @@ public class Fmdl
 
             //Position
             for (int j = 0; j < objects[i].vertices.Length; j++)
-                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].x, objects[i].vertices[j].y, objects[i].vertices[j].z);
+                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].z, objects[i].vertices[j].y, objects[i].vertices[j].x);
             //UnityEngine.Debug.Log("This is the position section's end.");
 
             //Normals, Bone Weights, Bone Group Ids and UVs
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
-                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalX, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalZ);
+                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalZ, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalX);
 
                 if (bonesPosition != -1)
                 {
