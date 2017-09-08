@@ -11,4 +11,8 @@ Joey35233: Programming.
 
 youarebritish (sai): General help/debugging.
 
+Tex: Testing.
+
+Highflex: Reverse-engineering.
+
 Thanks to Jayveerk, cra0kalo and HeartlessSeph for their previous work on the .fmdl format.
