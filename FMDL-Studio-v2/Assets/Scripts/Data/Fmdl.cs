@@ -60,14 +60,14 @@ public class Fmdl
         public ushort parentId;
         public ushort unknown0; //id of some sort
         public ushort unknown1; //always 0x1?
-        public float positionX;
-        public float positionY;
-        public float positionZ;
-        public float positionW;
-        public float rotationX;
-        public float rotationY;
-        public float rotationZ;
-        public float rotationW;
+        public float localPositionX;
+        public float localPositionY;
+        public float localPositionZ;
+        public float locaPositionlW;
+        public float worldPositionX;
+        public float worldPositionY;
+        public float worldPositionZ;
+        public float worldPositionW;
     } //struct
 
     private struct Section0Block1Entry
@@ -456,14 +456,14 @@ public class Fmdl
                 section0Block0Entries[i].unknown0 = reader.ReadUInt16();
                 section0Block0Entries[i].unknown1 = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x8;
-                section0Block0Entries[i].positionX = reader.ReadSingle();
-                section0Block0Entries[i].positionY = reader.ReadSingle();
-                section0Block0Entries[i].positionZ = reader.ReadSingle();
-                section0Block0Entries[i].positionW = reader.ReadSingle();
-                section0Block0Entries[i].rotationX = reader.ReadSingle();
-                section0Block0Entries[i].rotationY = reader.ReadSingle();
-                section0Block0Entries[i].rotationZ = reader.ReadSingle();
-                section0Block0Entries[i].rotationW = reader.ReadSingle();
+                section0Block0Entries[i].localPositionX = reader.ReadSingle();
+                section0Block0Entries[i].localPositionY = reader.ReadSingle();
+                section0Block0Entries[i].localPositionZ = reader.ReadSingle();
+                section0Block0Entries[i].locaPositionlW = reader.ReadSingle();
+                section0Block0Entries[i].worldPositionX = reader.ReadSingle();
+                section0Block0Entries[i].worldPositionY = reader.ReadSingle();
+                section0Block0Entries[i].worldPositionZ = reader.ReadSingle();
+                section0Block0Entries[i].worldPositionW = reader.ReadSingle();
             } //for
         } //if
 
@@ -1120,7 +1120,7 @@ public class Fmdl
         for (int i = 0; i < bones.Length; i++)
         {
             bones[i] = new GameObject(i.ToString("x")).transform;
-            bones[i].position = new Vector3(section0Block0Entries[i].positionZ, section0Block0Entries[i].positionY, section0Block0Entries[i].positionX);
+            bones[i].position = new Vector3(section0Block0Entries[i].worldPositionZ, section0Block0Entries[i].worldPositionY, section0Block0Entries[i].worldPositionX);
 
             if (section0Block0Entries[i].parentId == 0xFFFF)
                 bones[i].parent = fmdlGameObject.transform;
@@ -1128,28 +1128,13 @@ public class Fmdl
             {
                 bones[i].parent = bones[section0Block0Entries[i].parentId];
 
-                Matrix4x4 matrix0 = bones[i].localToWorldMatrix;
+                /*Matrix4x4 matrix0 = bones[i].localToWorldMatrix;
                 Matrix4x4 matrix1 = bones[i].parent.localToWorldMatrix;
 
                 matrix0 *= matrix1;
 
-                /*Vector3 forward;
-                forward.x = matrix0.m02;
-                forward.y = matrix0.m12;
-                forward.z = matrix0.m22;
-
-                Vector3 upwards;
-                upwards.x = matrix0.m01;
-                upwards.y = matrix0.m11;
-                upwards.z = matrix0.m21;
-
-                bones[i].rotation = Quaternion.LookRotation(forward, upwards);*/
-
-                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);
+                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);*/
             } //else ends
-
-            //Not 100% sure how rotation is supposed to be done. I think this looks right?
-            bones[i].rotation = new Quaternion(section0Block0Entries[i].rotationZ, section0Block0Entries[i].rotationY, section0Block0Entries[i].rotationX, section0Block0Entries[i].rotationW);
         } //for
 
         //UnityEngine.Debug.Log("This is the bone section's end.");
