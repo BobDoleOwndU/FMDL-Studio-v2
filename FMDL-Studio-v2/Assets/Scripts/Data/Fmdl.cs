@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -1099,6 +1100,10 @@ public class Fmdl
 
     public void MeshReader()
     {
+        //Testing. Need a more permanent solution.
+        if(File.Exists(@"D:\Games\MGSV Research\Mods\FmdlTool\FmdlTool\FmdlTool\bin\Debug\dictionary.txt"))
+            Hashing.ReadDictionary(Path.GetDirectoryName(Assembly.GetExecutingAssembly().ToString()) + "fmdl_dictionary.txt");
+
         GameObject fmdlGameObject = new GameObject();
         GameObject[] subFmdlGameObjects = new GameObject[objects.Length];
         Transform[] bones;
@@ -1119,7 +1124,7 @@ public class Fmdl
 
         for (int i = 0; i < bones.Length; i++)
         {
-            bones[i] = new GameObject(i.ToString("x")).transform;
+            bones[i] = new GameObject(Hashing.TryGetName(section0Block16Entries[section0Block0Entries[i].nameId])).transform;
             bones[i].position = new Vector3(section0Block0Entries[i].worldPositionZ, section0Block0Entries[i].worldPositionY, section0Block0Entries[i].worldPositionX);
 
             if (section0Block0Entries[i].parentId == 0xFFFF)
@@ -1191,6 +1196,17 @@ public class Fmdl
 
             //Render the mesh in Unity.
             subFmdlGameObjects[i] = new GameObject();
+
+            //Get the mesh name.
+            for (int j = 0; j < section0Block2Entries.Length; j++)
+            {
+                if (i >= section0Block2Entries[j].numPrecedingObjects && i < section0Block2Entries[j].numPrecedingObjects + section0Block2Entries[j].numObjects)
+                {
+                    subFmdlGameObjects[i].name = Hashing.TryGetName(section0Block16Entries[section0Block1Entries[section0Block2Entries[j].meshGroupId].nameId]);
+                    break;
+                } //if
+            } //for
+
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             //MeshFilter meshFilter = subFmdlGameObjects[i].AddComponent<MeshFilter>();
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();

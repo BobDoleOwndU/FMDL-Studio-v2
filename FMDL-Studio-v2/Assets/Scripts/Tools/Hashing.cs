@@ -25,6 +25,9 @@ public static class Hashing
 
     public static void ReadDictionary(string path)
     {
+        stringDictionary.Clear();
+        hashDictionary.Clear();
+
         foreach (string line in File.ReadAllLines(path))
         {
             stringDictionary.Add(line);
