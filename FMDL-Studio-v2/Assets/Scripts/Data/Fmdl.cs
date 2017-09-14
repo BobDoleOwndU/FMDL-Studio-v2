@@ -91,7 +91,7 @@ public class Fmdl
     private struct Section0Block3Entry
     {
         public uint unknown0;
-        public ushort unknown1; //probably related to section 0x4
+        public ushort materialId;
         public ushort boneGroupId;
         public ushort id;
         public ushort numVertices;
@@ -302,7 +302,7 @@ public class Fmdl
 
     public void Read(FileStream stream)
     {
-        BinaryReader reader = new BinaryReader(stream, Encoding.Default, true);
+        BinaryReader reader = new BinaryReader(stream, Encoding.Default);
 
         signature = reader.ReadUInt32();
         unknown0 = reader.ReadUInt32();
@@ -523,7 +523,7 @@ public class Fmdl
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
                 section0Block3Entries[i].unknown0 = reader.ReadUInt32();
-                section0Block3Entries[i].unknown1 = reader.ReadUInt16();
+                section0Block3Entries[i].materialId = reader.ReadUInt16();
                 section0Block3Entries[i].boneGroupId = reader.ReadUInt16();
                 section0Block3Entries[i].id = reader.ReadUInt16();
                 section0Block3Entries[i].numVertices = reader.ReadUInt16();
@@ -985,7 +985,7 @@ public class Fmdl
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
             Console.WriteLine("Unknown 0: " + section0Block3Entries[i].unknown0);
-            Console.WriteLine("Unknown 1: " + section0Block3Entries[i].unknown1);
+            Console.WriteLine("Material Id: " + section0Block3Entries[i].materialId);
             Console.WriteLine("Bone Group Id: " + section0Block3Entries[i].boneGroupId);
             Console.WriteLine("Id: " + section0Block3Entries[i].id);
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
@@ -1098,13 +1098,15 @@ public class Fmdl
         } //for
     } //OutputStringInfo
 
-    public void MeshReader()
+    public void MeshReader(string filepath)
     {
         //Testing. Need a more permanent solution.
         if(File.Exists(@"D:\Games\MGSV Research\Mods\FmdlTool\FmdlTool\FmdlTool\bin\Debug\dictionary.txt"))
             Hashing.ReadDictionary(Path.GetDirectoryName(Assembly.GetExecutingAssembly().ToString()) + "fmdl_dictionary.txt");
 
         GameObject fmdlGameObject = new GameObject();
+        string fmdlName = Path.GetFileNameWithoutExtension(filepath);
+        fmdlGameObject.name = fmdlName;
         GameObject[] subFmdlGameObjects = new GameObject[objects.Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
@@ -1121,6 +1123,14 @@ public class Fmdl
         } //else
 
         //UnityEngine.Debug.Log("This is the bone definition section's end.");
+
+        AssetDatabase.CreateFolder("Assets", fmdlName + "Materials");
+
+        for (int i = 0; i < section0Block8Entries.Length; i++)
+        {
+            Material material = new Material(Shader.Find("Standard"));
+            AssetDatabase.CreateAsset(material, "Assets/" + fmdlName + "Materials/" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].nameId]) + " (" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].materialNameId]) + ")"+ ".mat");
+        }
 
         for (int i = 0; i < bones.Length; i++)
         {
@@ -1202,7 +1212,7 @@ public class Fmdl
             {
                 if (i >= section0Block2Entries[j].numPrecedingObjects && i < section0Block2Entries[j].numPrecedingObjects + section0Block2Entries[j].numObjects)
                 {
-                    subFmdlGameObjects[i].name = Hashing.TryGetName(section0Block16Entries[section0Block1Entries[section0Block2Entries[j].meshGroupId].nameId]);
+                    subFmdlGameObjects[i].name = i + " (" + Hashing.TryGetName(section0Block16Entries[section0Block1Entries[section0Block2Entries[j].meshGroupId].nameId]) + ")";
                     break;
                 } //if
             } //for
@@ -1212,7 +1222,9 @@ public class Fmdl
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             //meshRenderer.rootBone = bones[0];
-            meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+            string fmdlMaterial = "Assets/" + fmdlName + "Materials/" + Hashing.TryGetName(section0Block16Entries[section0Block3Entries[i].materialId]) + ".mat";
+            Material material = (Material)AssetDatabase.LoadMainAssetAtPath(fmdlMaterial);
+            meshRenderer.material = material;
             //UnityEngine.Debug.Log("This is the mesh creation section's end.");
 
             Mesh mesh = new Mesh();

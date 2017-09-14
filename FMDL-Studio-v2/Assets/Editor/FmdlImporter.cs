@@ -9,7 +9,7 @@ public static class FmdlImporter
 
         Fmdl file = new Fmdl();
         file.Read(stream);
-        file.MeshReader();
+        file.MeshReader(path);
         stream.Close();
     }
 }
