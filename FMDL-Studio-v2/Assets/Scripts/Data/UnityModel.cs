@@ -31,7 +31,7 @@ public class UnityModel
         Transform[] bones;
         Matrix4x4[] bindPoses;
 
-        if (fmdl.GetSection0Block0Entries().Length > 0)
+        if (fmdl.GetBonesPosition() != -1)
         {
             bones = new Transform[fmdl.GetSection0Block0Entries().Length];
             bindPoses = new Matrix4x4[fmdl.GetSection0Block0Entries().Length];
@@ -84,7 +84,7 @@ public class UnityModel
             {
                 meshes[i].normals[j] = new Vector3(fmdl.GetObjects()[i].additionalVertexData[j].normalZ, fmdl.GetObjects()[i].additionalVertexData[j].normalY, fmdl.GetObjects()[i].additionalVertexData[j].normalX);
 
-                if (fmdl.GetSection0Block0Entries().Length > 0)
+                if (fmdl.GetBonesPosition() != -1)
                 {
                     meshes[i].boneWeights[j].weight0 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightX;
                     meshes[i].boneWeights[j].weight1 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightY;

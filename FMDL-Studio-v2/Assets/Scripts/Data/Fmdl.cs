@@ -226,7 +226,7 @@ public class Fmdl
         public Face[] faces;
     } //struct
 
-    //local variables
+    //Instance Variables
     private string name;
 
     private uint signature;
@@ -945,6 +945,11 @@ public class Fmdl
     {
         return name;
     } //GetName
+
+    public int GetBonesPosition()
+    {
+        return bonesPosition;
+    } //GetBonesPosition
 
     public Object[] GetObjects()
     {
