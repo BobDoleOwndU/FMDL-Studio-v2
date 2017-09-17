@@ -53,8 +53,13 @@ public class UnityModel
 
         for (int i = 0; i < bones.Length; i++)
         {
-            bones[i] = new GameObject(Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].nameId])).transform;
+            bones[i] = new GameObject().transform;
             bones[i].position = new Vector3(fmdl.GetSection0Block0Entries()[i].worldPositionZ, fmdl.GetSection0Block0Entries()[i].worldPositionY, fmdl.GetSection0Block0Entries()[i].worldPositionX);
+
+            if(fmdl.GetStringTablePosition() != -1)
+                bones[i].name = fmdl.GetStrings()[fmdl.GetSection0Block0Entries()[i].nameId];
+            else
+                bones[i].name = Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].nameId]);
 
             if (fmdl.GetSection0Block0Entries()[i].parentId == 0xFFFF)
                 bones[i].parent = fmdlGameObject.transform;
@@ -115,7 +120,10 @@ public class UnityModel
             {
                 if (i >= fmdl.GetSection0Block2Entries()[j].numPrecedingObjects && i < fmdl.GetSection0Block2Entries()[j].numPrecedingObjects + fmdl.GetSection0Block2Entries()[j].numObjects)
                 {
-                    subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]);
+                    if(fmdl.GetStringTablePosition() != -1)
+                        subFmdlGameObjects[i].name = i + " - " + fmdl.GetStrings()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId];
+                    else
+                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]);
                     break;
                 } //if
             } //for
