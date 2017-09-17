@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using System.IO;
+﻿using System.IO;
 
 public static class FmdlImporter
 {
@@ -7,9 +6,10 @@ public static class FmdlImporter
     {
         FileStream stream = new FileStream(path, FileMode.Open);
 
-        Fmdl file = new Fmdl();
-        file.Read(stream);
-        file.MeshReader(path);
+        Fmdl fmdl = new Fmdl(Path.GetFileNameWithoutExtension(path));
+        UnityModel model = new UnityModel();
+        fmdl.Read(stream);
+        model.GetDataFromFmdl(fmdl);
         stream.Close();
     }
 }

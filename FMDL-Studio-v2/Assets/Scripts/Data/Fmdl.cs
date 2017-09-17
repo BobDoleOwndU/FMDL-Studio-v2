@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Text;
-using UnityEditor;
-using UnityEngine;
 using static System.Half;
 
 public class Fmdl
@@ -19,7 +16,7 @@ public class Fmdl
         BoneGroups = 5,
         Type6 = 6,
         TextureTypes = 7,
-        Type8 = 8,
+        Materials = 8,
         Type9 = 9,
         MeshDataSectionInfo = 10,
         TypeB = 11,
@@ -41,21 +38,21 @@ public class Fmdl
         Strings = 3
     }; //Section1BlockType
 
-    private struct Section0Info
+    public struct Section0Info
     {
         public ushort id;
         public ushort numEntries;
         public uint offset;
     } //struct
 
-    private struct Section1Info
+    public struct Section1Info
     {
         public uint id;
         public uint offset;
         public uint length;
     } //struct
 
-    private struct Section0Block0Entry
+    public struct Section0Block0Entry
     {
         public ushort nameId;
         public ushort parentId;
@@ -71,7 +68,7 @@ public class Fmdl
         public float worldPositionW;
     } //struct
 
-    private struct Section0Block1Entry
+    public struct Section0Block1Entry
     {
         public ushort nameId;
         public ushort invisibilityFlag;
@@ -79,7 +76,7 @@ public class Fmdl
         public ushort unknown0; //always 0xFF
     } //struct
 
-    private struct Section0Block2Entry
+    public struct Section0Block2Entry
     {
         public ushort meshGroupId;
         public ushort numObjects;
@@ -88,10 +85,10 @@ public class Fmdl
         public ushort materialId;
     } //struct
 
-    private struct Section0Block3Entry
+    public struct Section0Block3Entry
     {
         public uint unknown0;
-        public ushort materialId;
+        public ushort block4Id;
         public ushort boneGroupId;
         public ushort id;
         public ushort numVertices;
@@ -100,60 +97,71 @@ public class Fmdl
         public ulong unknown2; //probably related to section 0xA or 0x11
     } //struct
 
-    private struct Section0Block5Entry
+    public struct Section0Block4Entry
+    {
+        public ushort nameId;
+        public ushort unknown0; //might just be padding.
+        public ushort block8Id;
+        public byte unknown2;
+        public byte unknown3;
+        public ushort unknown4; //possibly offset
+        public ushort unknown5; //possibly length
+    } //struct
+
+    public struct Section0Block5Entry
     {
         public ushort unknown0;
         public ushort numEntries;
         public ushort[] entries;
     } //struct
 
-    private struct Section0Block6Entry
+    public struct Section0Block6Entry
     {
         public ushort nameId;
         public ushort textureId;
     } //struct
 
-    private struct Section0Block7Entry
+    public struct Section0Block7Entry
     {
         public ushort nameId;
         public ushort referenceId;
     } //struct
 
-    private struct Section0Block8Entry
+    public struct Section0Block8Entry
     {
         public ushort nameId;
-        public ushort materialNameId;
+        public ushort typeId;
     } //struct
 
-    private struct Section0BlockAEntry
+    public struct Section0BlockAEntry
     {
         public byte unknown0; //always 0 for first entry and 1 for others?
-        public byte unknown1; //entry type 0 has 1. entry type 1 has 2. entry type 2 has 1. entry type 3 has 3.
+        public byte unknown1;
         public byte length; //length for whatever data it's pointing to.
         public byte type; //seems to identify the type of data it's associated with. 1 is for the "vertex buffer" I think.
         public uint offset; //this offset is where the entry lands in its respective list.
     } //struct
 
-    private struct Section0BlockCEntry
+    public struct Section0BlockCEntry
     {
         public ushort unknown0;
         public ushort length;
         public uint offset;
     } //struct
 
-    private struct Section0BlockDEntry
+    public struct Section0BlockDEntry
     {
         public float[] entries;
     } //struct
 
-    private struct Section0BlockEEntry
+    public struct Section0BlockEEntry
     {
         public uint unknown0;
         public uint length;
         public uint offset;
     } //struct
 
-    private struct Section0Block10Entry
+    public struct Section0Block10Entry
     {
         //variables here are assumptions. may not be correct.
         public uint unknown0;
@@ -162,14 +170,14 @@ public class Fmdl
         public float lowDetailDistance;
     } //struct
 
-    private struct Vertex
+    public struct Vertex
     {
         public float x;
         public float y;
         public float z;
     } //struct
 
-    private struct AdditionalVertexData
+    public struct AdditionalVertexData
     {
         public Half normalX;
         public Half normalY;
@@ -215,30 +223,23 @@ public class Fmdl
         public ushort unknown12;
     } //struct
 
-    private struct Face
+    public struct Face
     {
         public ushort vertex1Id;
         public ushort vertex2Id;
         public ushort vertex3Id;
     } //struct
 
-    private struct Object
+    public struct Object
     {
         public Vertex[] vertices;
         public AdditionalVertexData[] additionalVertexData;
         public Face[] faces;
-    }
+    } //struct
 
-    private struct UnityMesh
-    {
-        public Vector3[] vertices;
-        public Vector3[] normals;
-        public BoneWeight[] boneWeights;
-        public Vector2[] UVs;
-        public int[] faces;
-    }
+    //Instance Variables
+    private string name;
 
-    //local variables
     private uint signature;
     private uint unknown0;
     private ulong unknown1;
@@ -259,7 +260,7 @@ public class Fmdl
     private int boneGroupsPosition = -1;
     private int type6Position = -1;
     private int textureTypesPosition = -1;
-    private int type8Position = -1;
+    private int materialsPosition = -1;
     private int type9Position = -1;
     private int meshDataSectionInfoPosition = -1;
     private int typeBPosition = -1;
@@ -278,7 +279,6 @@ public class Fmdl
     private int stringsPosition = -1;
 
     private Object[] objects;
-    private UnityMesh[] unityMesh;
     private string[] strings;
 
     private Section0Info[] section0Info;
@@ -288,6 +288,7 @@ public class Fmdl
     private Section0Block1Entry[] section0Block1Entries;
     private Section0Block2Entry[] section0Block2Entries;
     private Section0Block3Entry[] section0Block3Entries;
+    private Section0Block4Entry[] section0Block4Entries;
     private Section0Block5Entry[] section0Block5Entries;
     private Section0Block6Entry[] section0Block6Entries;
     private Section0Block7Entry[] section0Block7Entries;
@@ -300,6 +301,19 @@ public class Fmdl
     private ulong[] section0Block15Entries;
     private ulong[] section0Block16Entries;
 
+    /*
+     * Constructor
+     * Initializes the Fmdl with the name passed to it.
+     */
+    public Fmdl(string name)
+    {
+        this.name = name;
+    } //constructor
+
+    /*
+     * Read
+     * Reads the data from the stream linked to the .fmdl file.
+     */
     public void Read(FileStream stream)
     {
         BinaryReader reader = new BinaryReader(stream, Encoding.Default);
@@ -346,6 +360,7 @@ public class Fmdl
                     break;
                 case (ushort)Section0BlockType.Type4:
                     type4Position = i;
+                    section0Block4Entries = new Section0Block4Entry[section0Info[type4Position].numEntries];
                     break;
                 case (ushort)Section0BlockType.BoneGroups:
                     boneGroupsPosition = i;
@@ -359,9 +374,9 @@ public class Fmdl
                     textureTypesPosition = i;
                     section0Block7Entries = new Section0Block7Entry[section0Info[textureTypesPosition].numEntries];
                     break;
-                case (ushort)Section0BlockType.Type8:
-                    type8Position = i;
-                    section0Block8Entries = new Section0Block8Entry[section0Info[type8Position].numEntries];
+                case (ushort)Section0BlockType.Materials:
+                    materialsPosition = i;
+                    section0Block8Entries = new Section0Block8Entry[section0Info[materialsPosition].numEntries];
                     break;
                 case (ushort)Section0BlockType.Type9:
                     type9Position = i;
@@ -438,7 +453,6 @@ public class Fmdl
         } //for
 
         objects = new Object[section0Info[meshInfoPosition].numEntries];
-        unityMesh = new UnityMesh[section0Info[meshInfoPosition].numEntries];
 
         /****************************************************************
          *
@@ -523,7 +537,7 @@ public class Fmdl
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
                 section0Block3Entries[i].unknown0 = reader.ReadUInt32();
-                section0Block3Entries[i].materialId = reader.ReadUInt16();
+                section0Block3Entries[i].block4Id = reader.ReadUInt16();
                 section0Block3Entries[i].boneGroupId = reader.ReadUInt16();
                 section0Block3Entries[i].id = reader.ReadUInt16();
                 section0Block3Entries[i].numVertices = reader.ReadUInt16();
@@ -532,6 +546,29 @@ public class Fmdl
                 section0Block3Entries[i].numFaceVertices = reader.ReadUInt32();
                 section0Block3Entries[i].unknown2 = reader.ReadUInt64();
                 reader.BaseStream.Position += 0x10;
+            } //for
+        } //if
+
+        /****************************************************************
+         *
+         * SECTION 0 BLOCK 0x4 - OBJECT DATA
+         *
+         ****************************************************************/
+        if (type4Position != -1)
+        {
+            //go to and get the section 0x3 entry info.
+            reader.BaseStream.Position = section0Info[type4Position].offset + section0Offset;
+
+            for (int i = 0; i < section0Block4Entries.Length; i++)
+            {
+                section0Block4Entries[i].nameId = reader.ReadUInt16();
+                section0Block4Entries[i].unknown0 = reader.ReadUInt16();
+                section0Block4Entries[i].block8Id = reader.ReadUInt16();
+                section0Block4Entries[i].unknown2 = reader.ReadByte();
+                section0Block4Entries[i].unknown3 = reader.ReadByte();
+                section0Block4Entries[i].unknown4 = reader.ReadUInt16();
+                section0Block4Entries[i].unknown5 = reader.ReadUInt16();
+                reader.BaseStream.Position += 0x4;
             } //for
         } //if
 
@@ -594,18 +631,18 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x8 - UNKNOWN - MATERIAL RELATED
+         * SECTION 0 BLOCK 0x8 - MATERIAL/MATERIAL TYPE Assignment
          *
          ****************************************************************/
-        if (type8Position != -1)
+        if (materialsPosition != -1)
         {
             //go to and get the section 0x8 entry info.
-            reader.BaseStream.Position = section0Info[type8Position].offset + section0Offset;
+            reader.BaseStream.Position = section0Info[materialsPosition].offset + section0Offset;
 
             for (int i = 0; i < section0Block8Entries.Length; i++)
             {
                 section0Block8Entries[i].nameId = reader.ReadUInt16();
-                section0Block8Entries[i].materialNameId = reader.ReadUInt16();
+                section0Block8Entries[i].typeId = reader.ReadUInt16();
             } //for
         } //if
 
@@ -939,7 +976,7 @@ public class Fmdl
          ****************************************************************/
         if (stringTablePosition != -1)
         {
-            for(int i = 0; i < section0BlockCEntries.Length; i++)
+            for (int i = 0; i < section0BlockCEntries.Length; i++)
             {
                 reader.BaseStream.Position = section1Offset + section1Info[stringsPosition].offset + section0BlockCEntries[i].offset;
                 strings[i] = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
@@ -947,6 +984,71 @@ public class Fmdl
         } //if
     } //Read
 
+    /****************************************************************
+     * 
+     * GETTERS
+     * 
+     ****************************************************************/
+    public string GetName()
+    {
+        return name;
+    } //GetName
+
+    public int GetBonesPosition()
+    {
+        return bonesPosition;
+    } //GetBonesPosition
+
+    public int GetStringTablePosition()
+    {
+        return stringTablePosition;
+    } //GetBonesPosition
+
+    public Object[] GetObjects()
+    {
+        return objects;
+    } //GetObjects
+
+    public string[] GetStrings()
+    {
+        return strings;
+    } //GetStrings
+
+    public Section0Block0Entry[] GetSection0Block0Entries()
+    {
+        return section0Block0Entries;
+    } //GetSection0Block0Entries
+
+    public Section0Block1Entry[] GetSection0Block1Entries()
+    {
+        return section0Block1Entries;
+    } //GetSection0Block1Entries
+
+    public Section0Block2Entry[] GetSection0Block2Entries()
+    {
+        return section0Block2Entries;
+    } //GetSection0Block2Entries
+
+    public Section0Block3Entry[] GetSection0Block3Entries()
+    {
+        return section0Block3Entries;
+    } //GetSection0Block3Entries
+
+    public Section0Block5Entry[] GetSection0Block5Entries()
+    {
+        return section0Block5Entries;
+    } //GetSection0Block5Entries
+
+    public ulong[] GetSection0Block16Entries()
+    {
+        return section0Block16Entries;
+    } //GetSection0Block16Entries
+
+    /****************************************************************
+     * 
+     * DEBUG/LOGGING FUNCTIONS
+     * 
+     ****************************************************************/
     [Conditional("DEBUG")]
     public void OutputSection0Block0Info()
     {
@@ -985,7 +1087,7 @@ public class Fmdl
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
             Console.WriteLine("Unknown 0: " + section0Block3Entries[i].unknown0);
-            Console.WriteLine("Material Id: " + section0Block3Entries[i].materialId);
+            Console.WriteLine("Material Id: " + section0Block3Entries[i].block4Id);
             Console.WriteLine("Bone Group Id: " + section0Block3Entries[i].boneGroupId);
             Console.WriteLine("Id: " + section0Block3Entries[i].id);
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
@@ -1032,7 +1134,7 @@ public class Fmdl
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
             Console.WriteLine("Unknown Hash: " + (section0Block16Entries[section0Block8Entries[i].nameId]).ToString("x"));
-            Console.WriteLine("Material Hash: " + (section0Block16Entries[section0Block8Entries[i].materialNameId]).ToString("x"));
+            Console.WriteLine("Material Hash: " + (section0Block16Entries[section0Block8Entries[i].typeId]).ToString("x"));
         } //for
     } //OutputSection2Info
 
@@ -1090,162 +1192,11 @@ public class Fmdl
 
     public void OutputStringInfo()
     {
-        for(int i = 0; i < strings.Length; i++)
+        for (int i = 0; i < strings.Length; i++)
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
             Console.WriteLine("String: " + strings[i]);
         } //for
     } //OutputStringInfo
-
-    public void MeshReader(string filepath)
-    {
-        //Testing. Need a more permanent solution.
-        if(File.Exists(@"D:\Games\MGSV Research\Mods\FmdlTool\FmdlTool\FmdlTool\bin\Debug\dictionary.txt"))
-            Hashing.ReadDictionary(Path.GetDirectoryName(Assembly.GetExecutingAssembly().ToString()) + "fmdl_dictionary.txt");
-
-        GameObject fmdlGameObject = new GameObject();
-        string fmdlName = Path.GetFileNameWithoutExtension(filepath);
-        fmdlGameObject.name = fmdlName;
-        GameObject[] subFmdlGameObjects = new GameObject[objects.Length];
-        Transform[] bones;
-        Matrix4x4[] bindPoses;
-
-        if (bonesPosition != -1)
-        {
-            bones = new Transform[section0Block0Entries.Length];
-            bindPoses = new Matrix4x4[section0Block0Entries.Length];
-        } //if
-        else
-        {
-            bones = new Transform[0];
-            bindPoses = new Matrix4x4[0];
-        } //else
-
-        //UnityEngine.Debug.Log("This is the bone definition section's end.");
-
-        AssetDatabase.CreateFolder("Assets", fmdlName + "Materials");
-
-        for (int i = 0; i < section0Block8Entries.Length; i++)
-        {
-            Material material = new Material(Shader.Find("Standard"));
-            AssetDatabase.CreateAsset(material, "Assets/" + fmdlName + "Materials/" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].nameId]) + " (" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].materialNameId]) + ")"+ ".mat");
-        }
-
-        for (int i = 0; i < bones.Length; i++)
-        {
-            bones[i] = new GameObject(Hashing.TryGetName(section0Block16Entries[section0Block0Entries[i].nameId])).transform;
-            bones[i].position = new Vector3(section0Block0Entries[i].worldPositionZ, section0Block0Entries[i].worldPositionY, section0Block0Entries[i].worldPositionX);
-
-            if (section0Block0Entries[i].parentId == 0xFFFF)
-                bones[i].parent = fmdlGameObject.transform;
-            else
-            {
-                bones[i].parent = bones[section0Block0Entries[i].parentId];
-
-                /*Matrix4x4 matrix0 = bones[i].localToWorldMatrix;
-                Matrix4x4 matrix1 = bones[i].parent.localToWorldMatrix;
-
-                matrix0 *= matrix1;
-
-                bones[i].position = new Vector3(matrix0.m03, matrix0.m13, matrix0.m23);*/
-            } //else ends
-        } //for
-
-        //UnityEngine.Debug.Log("This is the bone section's end.");
-
-        for (int i = 0; i < objects.Length; i++)
-        {
-            unityMesh[i].vertices = new Vector3[objects[i].vertices.Length];
-            unityMesh[i].normals = new Vector3[objects[i].additionalVertexData.Length];
-            unityMesh[i].UVs = new Vector2[objects[i].additionalVertexData.Length];
-            unityMesh[i].faces = new int[objects[i].faces.Length * 3];
-            unityMesh[i].boneWeights = new BoneWeight[objects[i].additionalVertexData.Length];
-
-            //Position
-            for (int j = 0; j < objects[i].vertices.Length; j++)
-                unityMesh[i].vertices[j] = new Vector3(objects[i].vertices[j].z, objects[i].vertices[j].y, objects[i].vertices[j].x);
-            //UnityEngine.Debug.Log("This is the position section's end.");
-
-            //Normals, Bone Weights, Bone Group Ids and UVs
-            for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
-            {
-                unityMesh[i].normals[j] = new Vector3(objects[i].additionalVertexData[j].normalZ, objects[i].additionalVertexData[j].normalY, objects[i].additionalVertexData[j].normalX);
-
-                if (bonesPosition != -1)
-                {
-                    unityMesh[i].boneWeights[j].weight0 = objects[i].additionalVertexData[j].boneWeightX;
-                    unityMesh[i].boneWeights[j].weight1 = objects[i].additionalVertexData[j].boneWeightY;
-                    unityMesh[i].boneWeights[j].weight2 = objects[i].additionalVertexData[j].boneWeightZ;
-                    unityMesh[i].boneWeights[j].weight3 = objects[i].additionalVertexData[j].boneWeightW;
-
-                    /*UnityEngine.Debug.Log("i: " + i + " j: " + j);
-                    UnityEngine.Debug.Log("Block 5 Entries: " + section0Block5Entries.Length);
-                    UnityEngine.Debug.Log("Block 3 Bone Group Id: " + section0Block3Entries[i].boneGroupId);
-                    UnityEngine.Debug.Log("Block 5 subentries length: " + section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length);
-                    UnityEngine.Debug.Log("Bone Group 0 Id: " + objects[i].additionalVertexData[j].boneGroup0Id);*/
-                    unityMesh[i].boneWeights[j].boneIndex0 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup0Id];
-                    unityMesh[i].boneWeights[j].boneIndex1 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup1Id];
-                    unityMesh[i].boneWeights[j].boneIndex2 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup2Id];
-                    unityMesh[i].boneWeights[j].boneIndex3 = section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[objects[i].additionalVertexData[j].boneGroup3Id];
-                } //if
-
-                unityMesh[i].UVs[j] = new Vector2(objects[i].additionalVertexData[j].textureU, objects[i].additionalVertexData[j].textureV);
-            } //for
-
-            //UnityEngine.Debug.Log("This is the additional vertex data section's end.");
-
-            //Faces
-            for (int j = 0, h = 0; j < objects[i].faces.Length; j++, h += 3)
-            {
-                unityMesh[i].faces[h] = objects[i].faces[j].vertex1Id;
-                unityMesh[i].faces[h + 1] = objects[i].faces[j].vertex2Id;
-                unityMesh[i].faces[h + 2] = objects[i].faces[j].vertex3Id;
-            } //for
-            //UnityEngine.Debug.Log("This is the face section's end.");
-
-            //Render the mesh in Unity.
-            subFmdlGameObjects[i] = new GameObject();
-
-            //Get the mesh name.
-            for (int j = 0; j < section0Block2Entries.Length; j++)
-            {
-                if (i >= section0Block2Entries[j].numPrecedingObjects && i < section0Block2Entries[j].numPrecedingObjects + section0Block2Entries[j].numObjects)
-                {
-                    subFmdlGameObjects[i].name = i + " (" + Hashing.TryGetName(section0Block16Entries[section0Block1Entries[section0Block2Entries[j].meshGroupId].nameId]) + ")";
-                    break;
-                } //if
-            } //for
-
-            subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
-            //MeshFilter meshFilter = subFmdlGameObjects[i].AddComponent<MeshFilter>();
-            SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
-
-            //meshRenderer.rootBone = bones[0];
-            string fmdlMaterial = "Assets/" + fmdlName + "Materials/" + Hashing.TryGetName(section0Block16Entries[section0Block3Entries[i].materialId]) + ".mat";
-            Material material = (Material)AssetDatabase.LoadMainAssetAtPath(fmdlMaterial);
-            meshRenderer.material = material;
-            //UnityEngine.Debug.Log("This is the mesh creation section's end.");
-
-            Mesh mesh = new Mesh();
-            mesh.vertices = unityMesh[i].vertices;
-            mesh.uv = unityMesh[i].UVs;
-            mesh.normals = unityMesh[i].normals;
-            mesh.triangles = unityMesh[i].faces;
-            mesh.boneWeights = unityMesh[i].boneWeights;
-
-            for (int j = 0; j < bones.Length; j++)
-            {
-                bindPoses[j] = bones[j].worldToLocalMatrix * subFmdlGameObjects[i].transform.localToWorldMatrix;
-            } //for
-
-            mesh.bindposes = bindPoses;
-            //UnityEngine.Debug.Log("This is the mesh section's end.");
-
-            //meshFilter.mesh = mesh;
-            meshRenderer.bones = bones;
-            meshRenderer.sharedMesh = mesh;
-            subFmdlGameObjects[i].AddComponent<MeshCollider>();
-        } //for
-    } //MeshReader
 } //class
