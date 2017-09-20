@@ -154,9 +154,9 @@ public class UnityModel
                 if (i >= fmdl.GetSection0Block2Entries()[j].numPrecedingObjects && i < fmdl.GetSection0Block2Entries()[j].numPrecedingObjects + fmdl.GetSection0Block2Entries()[j].numObjects)
                 {
                     if(fmdl.GetStringTablePosition() != -1)
-                        subFmdlGameObjects[i].name = i + " - " + fmdl.GetStrings()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId];
+                        subFmdlGameObjects[i].name = i + " (" + fmdl.GetStrings()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId] + ")";
                     else
-                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]);
+                        subFmdlGameObjects[i].name = i + " (" + Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]) + ")";
                     break;
                 } //if
             } //for
