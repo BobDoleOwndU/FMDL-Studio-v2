@@ -836,7 +836,8 @@ public class Fmdl
 
             length = section0BlockAEntries[section0BlockACount + 1].length;
 
-            if (section0BlockAEntries[section0BlockACount + 1].length != 0x10 &&
+            if (section0BlockAEntries[section0BlockACount + 1].length != 0xC &&
+                section0BlockAEntries[section0BlockACount + 1].length != 0x10 &&
                 section0BlockAEntries[section0BlockACount + 1].length != 0x14 &&
                 section0BlockAEntries[section0BlockACount + 1].length != 0x18 &&
                 section0BlockAEntries[section0BlockACount + 1].length != 0x1C &&
@@ -876,7 +877,9 @@ public class Fmdl
                     position += 4;
                 } //if ends
 
-                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2) || section0BlockAEntries[section0BlockACount + 1].length > 0x18)
+                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2) ||
+                    (section0BlockAEntries[section0BlockACount + 1].length == 0x14 && section0BlockAEntries[section0BlockACount + 1].unknown1 == 1) ||
+                    section0BlockAEntries[section0BlockACount + 1].length > 0x18)
                 {
                     objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
                     objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
@@ -997,6 +1000,11 @@ public class Fmdl
     {
         return stringTablePosition;
     } //GetBonesPosition
+
+    public int GetTextureListPosition()
+    {
+        return textureListPosition;
+    } //GetTextureListPosition
 
     public Object[] GetObjects()
     {
