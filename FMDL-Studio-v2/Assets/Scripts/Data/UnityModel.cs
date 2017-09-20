@@ -1,6 +1,5 @@
-﻿using System.IO;
-using System.Reflection;
-using UnityEditor;
+﻿using System;
+using System.IO;
 using UnityEngine;
 
 public class UnityModel
@@ -21,15 +20,13 @@ public class UnityModel
     {
         meshes = new UnityMesh[fmdl.GetSection0Block3Entries().Length];
 
-        //Testing. Need a more permanent solution.
-        if (File.Exists(@"D:\Games\MGSV Research\Mods\FmdlTool\FmdlTool\FmdlTool\bin\Debug\dictionary.txt"))
-            Hashing.ReadDictionary(Path.GetDirectoryName(Assembly.GetExecutingAssembly().ToString()) + "fmdl_dictionary.txt");
-
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.GetName();
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.GetObjects().Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
+
+        Material[] materials = new Material[fmdl.GetSection0Block4Entries().Length];
 
         if (fmdl.GetBonesPosition() != -1)
         {
@@ -42,14 +39,49 @@ public class UnityModel
             bindPoses = new Matrix4x4[0];
         } //else
 
-        /*AssetDatabase.CreateFolder("Assets", name);
-        AssetDatabase.CreateFolder(@"Assets\" + name, "Materials");
-
-        for (int i = 0; i < section0Block8Entries.Length; i++)
+        for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
         {
-            Material material = new Material(Shader.Find("Standard"));
-            AssetDatabase.CreateAsset(material, @"Assets\" + fmdlName + @"\Materials\" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].nameId]) + " (" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[i].materialNameId]) + ")" + ".mat");
-        }*/
+            materials[i] = new Material(Shader.Find("Standard"));
+
+            if (fmdl.GetStringTablePosition() != -1)
+            {
+                materials[i].name = fmdl.GetStrings()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].nameId];
+
+                string textureName = "";
+                int extensionLocation;
+
+                textureName = fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId].pathId] + fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId].nameId];
+
+                extensionLocation = textureName.IndexOf('.');
+                textureName = textureName.Substring(0, extensionLocation);
+
+                if (File.Exists(fmdl.GetName() + "\\" + textureName + ".dds"))
+                {
+                    Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds", TextureFormat.DXT1);
+                    texture.name = textureName + ".dds";
+                    materials[i].mainTexture = texture;
+                } //if
+                else
+                {
+                    UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + textureName + ".dds");
+                } //else
+            } //if
+            else
+            {
+                materials[i].name = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].nameId]);
+
+                if (File.Exists(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds"))
+                {
+                    Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds", TextureFormat.DXT1);
+                    texture.name = Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds";
+                    materials[i].mainTexture = texture;
+                } //if
+                else
+                {
+                    UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds");
+                } //else
+            } //else
+        } //for
 
         for (int i = 0; i < bones.Length; i++)
         {
@@ -59,14 +91,12 @@ public class UnityModel
             if(fmdl.GetStringTablePosition() != -1)
                 bones[i].name = fmdl.GetStrings()[fmdl.GetSection0Block0Entries()[i].nameId];
             else
-                bones[i].name = Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].nameId]);
+                bones[i].name = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].nameId]);
 
             if (fmdl.GetSection0Block0Entries()[i].parentId == 0xFFFF)
                 bones[i].parent = fmdlGameObject.transform;
             else
-            {
                 bones[i].parent = bones[fmdl.GetSection0Block0Entries()[i].parentId];
-            } //else ends
         } //for
 
         //UnityEngine.Debug.Log("This is the bone section's end.");
@@ -123,7 +153,7 @@ public class UnityModel
                     if(fmdl.GetStringTablePosition() != -1)
                         subFmdlGameObjects[i].name = i + " - " + fmdl.GetStrings()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId];
                     else
-                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]);
+                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].nameId]);
                     break;
                 } //if
             } //for
@@ -131,10 +161,8 @@ public class UnityModel
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
-            //meshRenderer.rootBone = bones[0];
-            //string fmdlMaterial = "Assets\\" + fmdlName + @"\Materials\" + Hashing.TryGetName(section0Block16Entries[section0Block8Entries[section0Block3Entries[i].materialId].nameId]) + ".mat";
-            //Material material = (Material)AssetDatabase.LoadMainAssetAtPath(fmdlMaterial);
-            meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
+            meshRenderer.material = materials[fmdl.GetSection0Block3Entries()[i].block4Id];
+            //meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;
@@ -155,4 +183,29 @@ public class UnityModel
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
     } //GetDataFromFmdl
+
+    public static Texture2D LoadTextureDXT(string path, TextureFormat textureFormat)
+    {
+        byte[] ddsBytes = File.ReadAllBytes(path);
+
+        if (textureFormat != TextureFormat.DXT1 && textureFormat != TextureFormat.DXT5)
+            throw new Exception("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
+
+        byte ddsSizeCheck = ddsBytes[4];
+        if (ddsSizeCheck != 124)
+            throw new Exception("Invalid DDS DXTn texture. Unable to read");  //this header byte should be 124 for DDS image files
+
+        int height = ddsBytes[13] * 256 + ddsBytes[12];
+        int width = ddsBytes[17] * 256 + ddsBytes[16];
+
+        int DDS_HEADER_SIZE = 128;
+        byte[] dxtBytes = new byte[ddsBytes.Length - DDS_HEADER_SIZE];
+        Buffer.BlockCopy(ddsBytes, DDS_HEADER_SIZE, dxtBytes, 0, ddsBytes.Length - DDS_HEADER_SIZE);
+
+        Texture2D texture = new Texture2D(width, height, textureFormat, false);
+        texture.LoadRawTextureData(dxtBytes);
+        texture.Apply();
+
+        return (texture);
+    } //LoadTextureDXT
 } //class

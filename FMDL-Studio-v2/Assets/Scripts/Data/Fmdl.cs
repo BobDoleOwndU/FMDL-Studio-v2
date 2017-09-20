@@ -12,7 +12,7 @@ public class Fmdl
         MeshGroups = 1,
         ObjectAssignment = 2,
         MeshInfo = 3,
-        Type4 = 4,
+        MaterialInstances = 4,
         BoneGroups = 5,
         Type6 = 6,
         TextureTypes = 7,
@@ -101,11 +101,11 @@ public class Fmdl
     {
         public ushort nameId;
         public ushort unknown0; //might just be padding.
-        public ushort block8Id;
+        public ushort materialId;
         public byte unknown2;
         public byte unknown3;
-        public ushort unknown4; //possibly offset
-        public ushort unknown5; //possibly length
+        public ushort numPrecedingTextures;
+        public ushort numTextures;
     } //struct
 
     public struct Section0Block5Entry
@@ -118,7 +118,7 @@ public class Fmdl
     public struct Section0Block6Entry
     {
         public ushort nameId;
-        public ushort textureId;
+        public ushort pathId;
     } //struct
 
     public struct Section0Block7Entry
@@ -256,7 +256,7 @@ public class Fmdl
     private int meshGroupsPosition = -1;
     private int objectAssignmentPosition = -1;
     private int meshInfoPosition = -1;
-    private int type4Position = -1;
+    private int materialInstancesPosition = -1;
     private int boneGroupsPosition = -1;
     private int type6Position = -1;
     private int textureTypesPosition = -1;
@@ -316,6 +316,12 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
+        if (File.Exists("fmdl_dictionary.txt"))
+            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
+
+        if (File.Exists("qar_dictionary.txt"))
+            Hashing.ReadPathDictionary("qar_dictionary.txt");
+
         BinaryReader reader = new BinaryReader(stream, Encoding.Default);
 
         signature = reader.ReadUInt32();
@@ -358,9 +364,9 @@ public class Fmdl
                     meshInfoPosition = i;
                     section0Block3Entries = new Section0Block3Entry[section0Info[meshInfoPosition].numEntries];
                     break;
-                case (ushort)Section0BlockType.Type4:
-                    type4Position = i;
-                    section0Block4Entries = new Section0Block4Entry[section0Info[type4Position].numEntries];
+                case (ushort)Section0BlockType.MaterialInstances:
+                    materialInstancesPosition = i;
+                    section0Block4Entries = new Section0Block4Entry[section0Info[materialInstancesPosition].numEntries];
                     break;
                 case (ushort)Section0BlockType.BoneGroups:
                     boneGroupsPosition = i;
@@ -551,23 +557,23 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x4 - OBJECT DATA
+         * SECTION 0 BLOCK 0x4 - MATERIAL INSTANCES
          *
          ****************************************************************/
-        if (type4Position != -1)
+        if (materialInstancesPosition != -1)
         {
             //go to and get the section 0x3 entry info.
-            reader.BaseStream.Position = section0Info[type4Position].offset + section0Offset;
+            reader.BaseStream.Position = section0Info[materialInstancesPosition].offset + section0Offset;
 
             for (int i = 0; i < section0Block4Entries.Length; i++)
             {
                 section0Block4Entries[i].nameId = reader.ReadUInt16();
                 section0Block4Entries[i].unknown0 = reader.ReadUInt16();
-                section0Block4Entries[i].block8Id = reader.ReadUInt16();
+                section0Block4Entries[i].materialId = reader.ReadUInt16();
                 section0Block4Entries[i].unknown2 = reader.ReadByte();
                 section0Block4Entries[i].unknown3 = reader.ReadByte();
-                section0Block4Entries[i].unknown4 = reader.ReadUInt16();
-                section0Block4Entries[i].unknown5 = reader.ReadUInt16();
+                section0Block4Entries[i].numPrecedingTextures = reader.ReadUInt16();
+                section0Block4Entries[i].numTextures = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x4;
             } //for
         } //if
@@ -608,7 +614,7 @@ public class Fmdl
             for (int i = 0; i < section0Block6Entries.Length; i++)
             {
                 section0Block6Entries[i].nameId = reader.ReadUInt16();
-                section0Block6Entries[i].textureId = reader.ReadUInt16();
+                section0Block6Entries[i].pathId = reader.ReadUInt16();
             } //for
         } //if
 
@@ -681,25 +687,6 @@ public class Fmdl
                 section0BlockCEntries[i].unknown0 = reader.ReadUInt16();
                 section0BlockCEntries[i].length = reader.ReadUInt16();
                 section0BlockCEntries[i].offset = reader.ReadUInt32();
-            } //for
-        } //if
-
-        /****************************************************************
-         *
-         * SECTION 0 BLOCK 0xD - UNKNOWN - FLOATS
-         *
-         ****************************************************************/
-        if (typeDPosition != -1)
-        {
-            //go to and get the section 0xD entry info.
-            reader.BaseStream.Position = section0Info[typeDPosition].offset + section0Offset;
-
-            for (int i = 0; i < section0BlockDEntries.Length; i++)
-            {
-                section0BlockDEntries[i].entries = new float[8];
-
-                for (int j = 0; j < section0BlockDEntries[i].entries.Length; j++)
-                    section0BlockDEntries[i].entries[j] = reader.ReadSingle();
             } //for
         } //if
 
@@ -899,7 +886,7 @@ public class Fmdl
                 if (!(section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2))
                 {
                     objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].textureV = -ToHalf(reader.ReadUInt16()); //Value is negated.
+                    objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16()); //Value is negated.
                     position += 4;
                 } //if
 
@@ -1034,10 +1021,35 @@ public class Fmdl
         return section0Block3Entries;
     } //GetSection0Block3Entries
 
+    public Section0Block4Entry[] GetSection0Block4Entries()
+    {
+        return section0Block4Entries;
+    } //GetSection0Block4Entries
+
     public Section0Block5Entry[] GetSection0Block5Entries()
     {
         return section0Block5Entries;
     } //GetSection0Block5Entries
+
+    public Section0Block6Entry[] GetSection0Block6Entries()
+    {
+        return section0Block6Entries;
+    } //GetSection0Block6Entries
+
+    public Section0Block7Entry[] GetSection0Block7Entries()
+    {
+        return section0Block7Entries;
+    } //GetSection0Block7Entries
+
+    public Section0Block8Entry[] GetSection0Block8Entries()
+    {
+        return section0Block8Entries;
+    } //GetSection0Block8Entries
+
+    public ulong[] GetSection0Block15Entries()
+    {
+        return section0Block15Entries;
+    } //GetSection0Block16Entries
 
     public ulong[] GetSection0Block16Entries()
     {
@@ -1056,11 +1068,11 @@ public class Fmdl
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry ID: " + i);
-            Console.WriteLine("Bone Name: " + Hashing.TryGetName(section0Block16Entries[section0Block0Entries[i].nameId]));
+            Console.WriteLine("Bone Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[i].nameId]));
             Console.Write("Parent Bone: ");
 
             if (section0Block0Entries[i].parentId != 0xFFFF)
-                Console.WriteLine(Hashing.TryGetName(section0Block16Entries[section0Block0Entries[section0Block0Entries[i].parentId].nameId]));
+                Console.WriteLine(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block0Entries[i].parentId].nameId]));
             else
                 Console.WriteLine("Root");
         } //for
@@ -1072,7 +1084,7 @@ public class Fmdl
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry ID: " + section0Block2Entries[i].id);
-            Console.WriteLine("Mesh Group: " + Hashing.TryGetName(section0Block16Entries[section0Block1Entries[section0Block2Entries[i].meshGroupId].nameId]));
+            Console.WriteLine("Mesh Group: " + Hashing.TryGetStringName(section0Block16Entries[section0Block1Entries[section0Block2Entries[i].meshGroupId].nameId]));
             Console.WriteLine("Number of Objects: " + section0Block2Entries[i].numObjects);
             Console.WriteLine("Number of Preceding Objects: " + section0Block2Entries[i].numPrecedingObjects);
             Console.WriteLine("Material ID: " + section0Block2Entries[i].materialId);
@@ -1116,14 +1128,29 @@ public class Fmdl
         Console.WriteLine("The greatest entry is: " + greatestEntry.ToString("x"));
     } //OutputSection2Info
 
+    [Conditional("DEBUG")]
+    public void OutputSection0Block6Info()
+    {
+        for(int i = 0; i < section0Block6Entries.Length; i++)
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block6Entries[i].nameId]));
+            UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block6Entries[i].pathId]));
+        } //for
+    } //OutputSection0Block6Info
+
     public void OutputSection0Block7Info()
     {
         for (int i = 0; i < section0Block7Entries.Length; i++)
         {
-            Console.WriteLine("================================");
-            Console.WriteLine("Entry No: " + i);
-            Console.WriteLine("Texture Type/Material Parameter Hash: " + section0Block16Entries[section0Block7Entries[i].nameId].ToString("x"));
-            Console.WriteLine("Reference Id: " + section0Block7Entries[i].referenceId);
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].nameId]));
+            if (section0Block7Entries[i].referenceId < section0Block15Entries.Length)
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[i].referenceId]));
+            else
+                UnityEngine.Debug.Log("Material Reference: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].referenceId]));
         } //for
     } //OutputSection2Info
 
@@ -1131,10 +1158,10 @@ public class Fmdl
     {
         for (int i = 0; i < section0Block8Entries.Length; i++)
         {
-            Console.WriteLine("================================");
-            Console.WriteLine("Entry No: " + i);
-            Console.WriteLine("Unknown Hash: " + (section0Block16Entries[section0Block8Entries[i].nameId]).ToString("x"));
-            Console.WriteLine("Material Hash: " + (section0Block16Entries[section0Block8Entries[i].typeId]).ToString("x"));
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Material: " + (Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[i].nameId])));
+            UnityEngine.Debug.Log("Type: " + (Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[i].typeId])));
         } //for
     } //OutputSection2Info
 
