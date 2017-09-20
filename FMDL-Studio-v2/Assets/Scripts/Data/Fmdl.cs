@@ -316,8 +316,15 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
+        string[] stringDictionaryPaths = new string[2];
+
         if (File.Exists("fmdl_dictionary.txt"))
-            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
+            stringDictionaryPaths[0] = "fmdl_dictionary.txt";
+
+		if (File.Exists("material_dictionary.txt"))
+            stringDictionaryPaths[1] = "material_dictionary.txt";
+
+        Hashing.ReadStringDictionary(stringDictionaryPaths);
 
         if (File.Exists("qar_dictionary.txt"))
             Hashing.ReadPathDictionary("qar_dictionary.txt");
