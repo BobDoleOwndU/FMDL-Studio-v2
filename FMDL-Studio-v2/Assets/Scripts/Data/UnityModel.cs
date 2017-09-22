@@ -49,7 +49,7 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
         {
-            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Diffuse"));
+            materials[i].material = new Material(Shader.Find("Custom/Fox Shader (temp)"));
 
             if (fmdl.GetStringTablePosition() != -1)
             {
