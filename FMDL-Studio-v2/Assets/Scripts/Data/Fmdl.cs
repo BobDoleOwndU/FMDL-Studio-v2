@@ -316,9 +316,27 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
+        const string fmdlDictionaryName = "fmdl_dictionary.txt";
+        const string materialDictionaryName = "material_dictionary.txt";
+        if (File.Exists(fmdlDictionaryName) && File.Exists(materialDictionaryName))
+        {
+            string[] stringDictionaries = new string[2];
 
-        if (File.Exists("fmdl_dictionary.txt"))
-            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
+            stringDictionaries[0] = fmdlDictionaryName;
+            stringDictionaries[1] = materialDictionaryName;
+
+            Hashing.ReadStringDictionary(stringDictionaries);
+        }
+
+        else if(File.Exists(fmdlDictionaryName))
+        {
+            Hashing.ReadStringDictionary(fmdlDictionaryName);
+        }
+
+        else if (File.Exists(materialDictionaryName))
+        {
+            Hashing.ReadStringDictionary(materialDictionaryName);
+        }
 
         if (File.Exists("qar_dictionary.txt"))
             Hashing.ReadPathDictionary("qar_dictionary.txt");

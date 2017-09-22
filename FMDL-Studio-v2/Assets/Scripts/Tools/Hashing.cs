@@ -265,6 +265,21 @@ public static class Hashing
         } //foreach
     } //ReadStringDictionary
 
+    public static void ReadStringDictionary(string[] paths)
+    {
+        stringDictionary.Clear();
+        stringHashDictionary.Clear();
+
+        for (int i = 0; i < paths.Length; i++)
+        {
+            foreach (string line in File.ReadAllLines(paths[i]))
+            {
+                stringDictionary.Add(line);
+                stringHashDictionary.Add(HashFileNameLegacy(line));
+            } //foreach
+        } //for
+    } //ReadStringDictionary
+
 	public static void ReadPathDictionary(string path)
     {
         pathDictionary.Clear();
@@ -275,7 +290,22 @@ public static class Hashing
             pathDictionary.Add(line);
             pathHashDictionary.Add(HashFileNameWithExtension(line));
         } //foreach
-    } //ReadStringDictionary
+    } //ReadPathDictionary
+
+	public static void ReadPathDictionary(string[] paths)
+	{
+		pathDictionary.Clear();
+		pathHashDictionary.Clear();
+
+        for (int i = 0; i < paths.Length; i++)
+        {
+            foreach (string line in File.ReadAllLines(paths[i]))
+            {
+                pathDictionary.Add(line);
+                pathHashDictionary.Add(HashFileNameWithExtension(line));
+            } //foreach
+        } //for
+	} //ReadPathDictionary
 
 	public static string TryGetStringName(ulong hash)
     {
