@@ -316,15 +316,9 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
-        string[] stringDictionaryPaths = new string[2];
 
         if (File.Exists("fmdl_dictionary.txt"))
-            stringDictionaryPaths[0] = "fmdl_dictionary.txt";
-
-		if (File.Exists("material_dictionary.txt"))
-            stringDictionaryPaths[1] = "material_dictionary.txt";
-
-        Hashing.ReadStringDictionary(stringDictionaryPaths);
+            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
 
         if (File.Exists("qar_dictionary.txt"))
             Hashing.ReadPathDictionary("qar_dictionary.txt");
@@ -879,7 +873,8 @@ public class Fmdl
 
                 if ((section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2) ||
                     (section0BlockAEntries[section0BlockACount + 1].length == 0x14 && section0BlockAEntries[section0BlockACount + 1].unknown1 == 1) ||
-                    section0BlockAEntries[section0BlockACount + 1].length > 0x18)
+                    (section0BlockAEntries[section0BlockACount + 1].length == 0x1C && type3Position == 2) ||
+                    section0BlockAEntries[section0BlockACount + 1].length > 0x1C)
                 {
                     objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
                     objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
@@ -901,6 +896,7 @@ public class Fmdl
                 } //if
 
                 if ((section0BlockAEntries[section0BlockACount + 1].length == 0x18 && type3Position == 2) ||
+                    (section0BlockAEntries[section0BlockACount + 1].length == 0x1C && type3Position == 3) ||
                     (section0BlockAEntries[section0BlockACount + 1].length == 0x20 && type3Position == 2 && section0BlockAEntries[section0BlockACount + 1].unknown1 != 1) ||
                     section0BlockAEntries[section0BlockACount + 1].length == 0x24 ||
                     section0BlockAEntries[section0BlockACount + 1].length == 0x30)
@@ -1123,6 +1119,20 @@ public class Fmdl
             Console.WriteLine("Unknown 2: " + section0Block3Entries[i].unknown2);
         } //for
     } //OutputSection2Info
+
+    [Conditional("DEBUG")]
+    public void OutputSection0Block4Info()
+    {
+        for (int i = 0; i < section0Block4Entries.Length; i++)
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].nameId]));
+            UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].nameId]));
+            UnityEngine.Debug.Log("First Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].referenceId]));
+            UnityEngine.Debug.Log("First Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].nameId]));
+        } //for
+    } //OutputSection0Block4Info
 
     [Conditional("DEBUG")]
     public void OutputSection0Block5Info()
