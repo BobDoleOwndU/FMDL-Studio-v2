@@ -104,8 +104,8 @@ public class Fmdl
         public ushort materialId;
         public byte unknown2;
         public byte unknown3;
-        public ushort numPrecedingTextures;
-        public ushort numTextures;
+        public ushort firstTexture; //starts at this entry in 0x7 and grabs all textures between (inclusive) it and the lastTexture.
+        public ushort lastTexture;
     } //struct
 
     public struct Section0Block5Entry
@@ -316,27 +316,8 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
-        const string fmdlDictionaryName = "fmdl_dictionary.txt";
-        const string materialDictionaryName = "material_dictionary.txt";
-        if (File.Exists(fmdlDictionaryName) && File.Exists(materialDictionaryName))
-        {
-            string[] stringDictionaries = new string[2];
-
-            stringDictionaries[0] = fmdlDictionaryName;
-            stringDictionaries[1] = materialDictionaryName;
-
-            Hashing.ReadStringDictionary(stringDictionaries);
-        }
-
-        else if(File.Exists(fmdlDictionaryName))
-        {
-            Hashing.ReadStringDictionary(fmdlDictionaryName);
-        }
-
-        else if (File.Exists(materialDictionaryName))
-        {
-            Hashing.ReadStringDictionary(materialDictionaryName);
-        }
+        if(File.Exists("fmdl_dictionary.txt"))
+            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
 
         if (File.Exists("qar_dictionary.txt"))
             Hashing.ReadPathDictionary("qar_dictionary.txt");
@@ -591,8 +572,8 @@ public class Fmdl
                 section0Block4Entries[i].materialId = reader.ReadUInt16();
                 section0Block4Entries[i].unknown2 = reader.ReadByte();
                 section0Block4Entries[i].unknown3 = reader.ReadByte();
-                section0Block4Entries[i].numPrecedingTextures = reader.ReadUInt16();
-                section0Block4Entries[i].numTextures = reader.ReadUInt16();
+                section0Block4Entries[i].firstTexture = reader.ReadUInt16();
+                section0Block4Entries[i].lastTexture = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x4;
             } //for
         } //if
@@ -1107,6 +1088,7 @@ public class Fmdl
         } //for
     } //OutputSection0Block0Info
 
+    [Conditional("DEBUG")]
     public void OutputSection0Block2Info()
     {
         for (int i = 0; i < section0Block2Entries.Length; i++)
@@ -1147,8 +1129,8 @@ public class Fmdl
             UnityEngine.Debug.Log("Entry No: " + i);
             UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].nameId]));
             UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].nameId]));
-            UnityEngine.Debug.Log("First Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].referenceId]));
-            UnityEngine.Debug.Log("First Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].nameId]));
+            UnityEngine.Debug.Log("First Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[section0Block4Entries[i].firstTexture].referenceId]));
+            UnityEngine.Debug.Log("First Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[section0Block4Entries[i].firstTexture].nameId]));
         } //for
     } //OutputSection0Block4Info
 
@@ -1183,6 +1165,7 @@ public class Fmdl
         } //for
     } //OutputSection0Block6Info
 
+    [Conditional("DEBUG")]
     public void OutputSection0Block7Info()
     {
         for (int i = 0; i < section0Block7Entries.Length; i++)
@@ -1197,6 +1180,7 @@ public class Fmdl
         } //for
     } //OutputSection2Info
 
+    [Conditional("DEBUG")]
     public void OutputSection0Block8Info()
     {
         for (int i = 0; i < section0Block8Entries.Length; i++)
@@ -1208,6 +1192,7 @@ public class Fmdl
         } //for
     } //OutputSection2Info
 
+    [Conditional("DEBUG")]
     public void OutputSection0BlockDInfo()
     {
         for (int i = 0; i < section0BlockDEntries.Length; i++)
@@ -1228,6 +1213,7 @@ public class Fmdl
         } //for
     } //OutputSection2Info
 
+    [Conditional("DEBUG")]
     public void OutputSection0Block16Info()
     {
         for (int i = 0; i < section0Block16Entries.Length; i++)
@@ -1238,6 +1224,7 @@ public class Fmdl
         } //for
     } //OutputSection2Info
 
+    [Conditional("DEBUG")]
     public void OutputObjectInfo2()
     {
         int greatest = 0;
@@ -1260,6 +1247,7 @@ public class Fmdl
         UnityEngine.Debug.Log("Greatest Bone Group Id: " + greatest);
     } //OutputObjectInfo
 
+    [Conditional("DEBUG")]
     public void OutputStringInfo()
     {
         for (int i = 0; i < strings.Length; i++)
