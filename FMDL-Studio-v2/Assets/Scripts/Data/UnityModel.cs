@@ -49,7 +49,7 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
         {
-            materials[i].material = new Material(Shader.Find("Standard"));
+            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Diffuse"));
 
             if (fmdl.GetStringTablePosition() != -1)
             {
@@ -67,7 +67,7 @@ public class UnityModel
 
                 if (File.Exists(fmdl.GetName() + "\\" + textureName + ".dds"))
                 {
-                    Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds", TextureFormat.DXT1);
+                    Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds");
                     texture.name = textureName + ".dds";
                     materials[i].material.mainTexture = texture;
                 } //if
@@ -85,7 +85,7 @@ public class UnityModel
                 {
                     if (File.Exists(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds"))
                     {
-                        Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds", TextureFormat.DXT1);
+                        Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds");
                         texture.name = Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].referenceId]) + ".dds";
                         materials[i].textureType = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].numPrecedingTextures].nameId]);
                         materials[i].material.mainTexture = texture;
@@ -196,11 +196,16 @@ public class UnityModel
         } //for
     } //GetDataFromFmdl
 
-    public static Texture2D LoadTextureDXT(string path, TextureFormat textureFormat)
+    public static Texture2D LoadTextureDXT(string path)
     {
         byte[] ddsBytes = File.ReadAllBytes(path);
+        TextureFormat textureFormat;
 
-        if (textureFormat != TextureFormat.DXT1 && textureFormat != TextureFormat.DXT5)
+        if (ddsBytes[87] == 0x31)
+            textureFormat = TextureFormat.DXT1;
+        else if (ddsBytes[87] == 0x35)
+            textureFormat = TextureFormat.DXT5;
+        else
             throw new Exception("Invalid TextureFormat. Only DXT1 and DXT5 formats are supported by this method.");
 
         byte ddsSizeCheck = ddsBytes[4];

@@ -1121,6 +1121,20 @@ public class Fmdl
     } //OutputSection2Info
 
     [Conditional("DEBUG")]
+    public void OutputSection0Block4Info()
+    {
+        for (int i = 0; i < section0Block4Entries.Length; i++)
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].nameId]));
+            UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].nameId]));
+            UnityEngine.Debug.Log("First Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].referenceId]));
+            UnityEngine.Debug.Log("First Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[section0Block4Entries[i].numPrecedingTextures].nameId]));
+        } //for
+    } //OutputSection0Block4Info
+
+    [Conditional("DEBUG")]
     public void OutputSection0Block5Info()
     {
         ushort greatestUnknown0 = 0;
