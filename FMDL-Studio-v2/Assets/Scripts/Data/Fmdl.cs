@@ -88,13 +88,13 @@ public class Fmdl
     public struct Section0Block3Entry
     {
         public uint unknown0;
-        public ushort block4Id;
+        public ushort materialInstanceId;
         public ushort boneGroupId;
         public ushort id;
         public ushort numVertices;
         public uint numPrecedingFaceVertices;
         public uint numFaceVertices;
-        public ulong unknown2; //probably related to section 0xA or 0x11
+        public ulong unknown2;
     } //struct
 
     public struct Section0Block4Entry
@@ -133,6 +133,15 @@ public class Fmdl
         public ushort typeId;
     } //struct
 
+    public struct Section0Block9Entry
+    {
+        public byte unknown0;
+        public byte unknown1;
+        public ushort unknown2;
+        public ushort boundingBoxId;
+        public ushort unknown3;
+    } //Section0Block9Entry
+
     public struct Section0BlockAEntry
     {
         public byte unknown0; //always 0 for first entry and 1 for others?
@@ -151,7 +160,14 @@ public class Fmdl
 
     public struct Section0BlockDEntry
     {
-        public float[] entries;
+        public float maxX;
+        public float maxY;
+        public float maxZ;
+        public float maxW;
+        public float minX;
+        public float minY;
+        public float minZ;
+        public float minW; 
     } //struct
 
     public struct Section0BlockEEntry
@@ -293,6 +309,7 @@ public class Fmdl
     private Section0Block6Entry[] section0Block6Entries;
     private Section0Block7Entry[] section0Block7Entries;
     private Section0Block8Entry[] section0Block8Entries;
+    private Section0Block9Entry[] section0Block9Entries;
     private Section0BlockAEntry[] section0BlockAEntries;
     private Section0BlockCEntry[] section0BlockCEntries;
     private Section0BlockDEntry[] section0BlockDEntries;
@@ -386,6 +403,7 @@ public class Fmdl
                     break;
                 case (ushort)Section0BlockType.Type9:
                     type9Position = i;
+                    section0Block9Entries = new Section0Block9Entry[section0Info[type9Position].numEntries];
                     break;
                 case (ushort)Section0BlockType.MeshDataSectionInfo:
                     meshDataSectionInfoPosition = i;
@@ -543,7 +561,7 @@ public class Fmdl
             for (int i = 0; i < section0Block3Entries.Length; i++)
             {
                 section0Block3Entries[i].unknown0 = reader.ReadUInt32();
-                section0Block3Entries[i].block4Id = reader.ReadUInt16();
+                section0Block3Entries[i].materialInstanceId = reader.ReadUInt16();
                 section0Block3Entries[i].boneGroupId = reader.ReadUInt16();
                 section0Block3Entries[i].id = reader.ReadUInt16();
                 section0Block3Entries[i].numVertices = reader.ReadUInt16();
@@ -654,6 +672,26 @@ public class Fmdl
 
         /****************************************************************
          *
+         * SECTION 0 BLOCK 0x9 - UNKNOWN - MESH RELATED
+         *
+         ****************************************************************/
+        if (type9Position != -1)
+        {
+            //go to and get the section 0x8 entry info.
+            reader.BaseStream.Position = section0Info[type9Position].offset + section0Offset;
+
+            for (int i = 0; i < section0Block9Entries.Length; i++)
+            {
+                section0Block9Entries[i].unknown0 = reader.ReadByte();
+                section0Block9Entries[i].unknown1 = reader.ReadByte();
+                section0Block9Entries[i].unknown2 = reader.ReadUInt16();
+                section0Block9Entries[i].boundingBoxId = reader.ReadUInt16();
+                section0Block9Entries[i].unknown3 = reader.ReadUInt16();
+            } //for
+        } //if
+
+        /****************************************************************
+         *
          * SECTION 0 BLOCK 0xA - UNKNOWN - VERTEX DEFINITION RELATED
          *
          ****************************************************************/
@@ -692,7 +730,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0xD - UNKNOWN - FLOATS
+         * SECTION 0 BLOCK 0xD - BOUNDING BOXES/SHADOWS(?)
          *
          ****************************************************************/
         if (typeDPosition != -1)
@@ -702,10 +740,14 @@ public class Fmdl
 
             for (int i = 0; i < section0BlockDEntries.Length; i++)
             {
-                section0BlockDEntries[i].entries = new float[8];
-
-                for (int j = 0; j < section0BlockDEntries[i].entries.Length; j++)
-                    section0BlockDEntries[i].entries[j] = reader.ReadSingle();
+                section0BlockDEntries[i].maxX = reader.ReadSingle();
+                section0BlockDEntries[i].maxY = reader.ReadSingle();
+                section0BlockDEntries[i].maxZ = reader.ReadSingle();
+                section0BlockDEntries[i].maxW = reader.ReadSingle();
+                section0BlockDEntries[i].minX = reader.ReadSingle();
+                section0BlockDEntries[i].minY = reader.ReadSingle();
+                section0BlockDEntries[i].minZ = reader.ReadSingle();
+                section0BlockDEntries[i].minW = reader.ReadSingle();
             } //for
         } //if
 
@@ -1056,6 +1098,16 @@ public class Fmdl
         return section0Block8Entries;
     } //GetSection0Block8Entries
 
+    public Section0Block9Entry[] GetSection0Block9Entries()
+    {
+        return section0Block9Entries;
+    } //GetSection0Block9Entries
+
+    public Section0BlockDEntry[] GetSection0BlockDEntries()
+    {
+        return section0BlockDEntries;
+    } //GetSection0BlockDEntries
+
     public ulong[] GetSection0Block15Entries()
     {
         return section0Block15Entries;
@@ -1110,7 +1162,7 @@ public class Fmdl
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
             Console.WriteLine("Unknown 0: " + section0Block3Entries[i].unknown0);
-            Console.WriteLine("Material Id: " + section0Block3Entries[i].block4Id);
+            Console.WriteLine("Material Id: " + section0Block3Entries[i].materialInstanceId);
             Console.WriteLine("Bone Group Id: " + section0Block3Entries[i].boneGroupId);
             Console.WriteLine("Id: " + section0Block3Entries[i].id);
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
@@ -1197,19 +1249,10 @@ public class Fmdl
     {
         for (int i = 0; i < section0BlockDEntries.Length; i++)
         {
-            Console.WriteLine("================================");
-            Console.WriteLine("Entry No: " + i);
-            Console.Write("Floats: [");
-
-            for (int j = 0; j < section0BlockDEntries[i].entries.Length; j++)
-            {
-                Console.Write(section0BlockDEntries[i].entries[j]);
-
-                if (j != section0BlockDEntries[i].entries.Length - 1)
-                    Console.Write(", ");
-            } //for
-
-            Console.WriteLine("]");
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Max Value: " + "X: " + section0BlockDEntries[i].maxX + " Y: " + section0BlockDEntries[i].maxY + " Z: " + section0BlockDEntries[i].maxZ + " W: " + section0BlockDEntries[i].maxW);
+            UnityEngine.Debug.Log("Min Value: " + "X: " + section0BlockDEntries[i].minX + " Y: " + section0BlockDEntries[i].minY + " Z: " + section0BlockDEntries[i].minZ + " W: " + section0BlockDEntries[i].minW);
         } //for
     } //OutputSection2Info
 

@@ -33,6 +33,7 @@ public class UnityModel
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.GetObjects().Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
+        Bounds[] bounds = new Bounds[fmdl.GetSection0BlockDEntries().Length];
 
         UnityMaterial[] materials = new UnityMaterial[fmdl.GetSection0Block4Entries().Length];
 
@@ -49,8 +50,8 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
         {
-            materials[i].material = new Material(Shader.Find("Custom/Fox Shader (temp)"));
-            //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Diffuse"));
+            //materials[i].material = new Material(Shader.Find("Custom/Fox Shader (temp)"));
+            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Diffuse"));
 
             if (fmdl.GetStringTablePosition() != -1)
             {
@@ -97,6 +98,12 @@ public class UnityModel
                     } //else
                 } //if
             } //else
+        } //for
+
+        for(int i = 0; i < bounds.Length; i++)
+        {
+            bounds[i].SetMinMax(new Vector3(fmdl.GetSection0BlockDEntries()[i].minZ, fmdl.GetSection0BlockDEntries()[i].minY, fmdl.GetSection0BlockDEntries()[i].minX), new Vector3(fmdl.GetSection0BlockDEntries()[i].maxZ, fmdl.GetSection0BlockDEntries()[i].maxY, fmdl.GetSection0BlockDEntries()[i].maxX));
+            //bounds[i].SetMinMax(new Vector3(-100.0f, -100.0f, -100.0f), new Vector3(100.0f, 100.0f, 100.0f));
         } //for
 
         for (int i = 0; i < bones.Length; i++)
@@ -174,7 +181,7 @@ public class UnityModel
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
-            meshRenderer.material = materials[fmdl.GetSection0Block3Entries()[i].block4Id].material;
+            meshRenderer.material = materials[fmdl.GetSection0Block3Entries()[i].materialInstanceId].material;
             //meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
 
             Mesh mesh = new Mesh();
@@ -190,6 +197,7 @@ public class UnityModel
             } //for
 
             mesh.bindposes = bindPoses;
+            //mesh.bounds = bounds[fmdl.GetSection0Block9Entries()[i].boundingBoxId]; Not right. Boxes don't match up to meshes. Need to figure out what's actually done.
 
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;
