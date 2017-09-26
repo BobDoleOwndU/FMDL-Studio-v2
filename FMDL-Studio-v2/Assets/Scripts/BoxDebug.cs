@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class BoxDebug : MonoBehaviour {
 
@@ -8,9 +6,9 @@ public class BoxDebug : MonoBehaviour {
 	void DrawBox(Transform t) {
 		foreach(Transform child in t)
         {
-            if (child.GetComponent<SkinnedMeshRenderer>())
+            if (child.GetComponent<BoxCollider>())
             {
-                Gizmos.DrawWireCube(child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.center, child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.size);
+                Gizmos.DrawWireCube(child.GetComponent<BoxCollider>().bounds.center, child.GetComponent<BoxCollider>().bounds.size);
                 DrawBox(child);
             } //if
         } //foreach

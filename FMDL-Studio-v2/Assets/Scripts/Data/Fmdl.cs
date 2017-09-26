@@ -19,7 +19,7 @@ public class Fmdl
         Materials = 8,
         Type9 = 9,
         MeshDataSectionInfo = 10,
-        TypeB = 11,
+        VertexFormats = 11,
         StringTable = 12,
         TypeD = 13,
         BufferOffsets = 14,
@@ -56,7 +56,7 @@ public class Fmdl
     {
         public ushort nameId;
         public ushort parentId;
-        public ushort unknown0; //id of some sort
+        public ushort boundingBoxId;
         public ushort unknown1; //always 0x1?
         public float localPositionX;
         public float localPositionY;
@@ -135,20 +135,48 @@ public class Fmdl
 
     public struct Section0Block9Entry
     {
-        public byte unknown0;
-        public byte unknown1;
-        public ushort unknown2;
-        public ushort boundingBoxId;
-        public ushort unknown3;
+        public byte numBlockAEntries;
+        public byte numBlockBEntries;
+        public ushort unknown0;
+        public ushort firstBlockAEntry;
+        public ushort firstBlockBEntry;
     } //Section0Block9Entry
 
     public struct Section0BlockAEntry
     {
-        public byte unknown0; //always 0 for first entry and 1 for others?
-        public byte unknown1;
-        public byte length; //length for whatever data it's pointing to.
-        public byte type; //seems to identify the type of data it's associated with. 1 is for the "vertex buffer" I think.
-        public uint offset; //this offset is where the entry lands in its respective list.
+        public byte bufferOffsetId;
+        public byte numVertexFormatEntries;
+        public byte length;
+        public byte type;
+        public uint offset;
+    } //struct
+
+    public struct Section0BlockBEntry
+    {
+        public byte usage;
+        public byte format;
+        public ushort offset;
+
+        // format
+        // 1 - float
+        // 4 - uint16
+        // 6 - half float
+        // 7 - half float
+        // 8 - uint8 (normalized)
+        // 9 - uint8
+
+        // usage
+        // 0 - position
+        // 1 - joint weights 0
+        // 2 - normal
+        // 3 - diffuse
+        // 7 - joint indices 0
+        // 8 - tex coord 0...
+        // 9 - tex coord 2
+        // B - ...tex coord 3
+        // C - joint weights 1
+        // D - joint indices 1
+        // E - tangent
     } //struct
 
     public struct Section0BlockCEntry
@@ -167,7 +195,7 @@ public class Fmdl
         public float minX;
         public float minY;
         public float minZ;
-        public float minW; 
+        public float minW;
     } //struct
 
     public struct Section0BlockEEntry
@@ -200,12 +228,13 @@ public class Fmdl
         public Half normalZ;
         public Half normalW;
 
-        public Half unknown0;
-        public Half unknown1;
-        public Half unknown2;
-        public Half unknown3;
+        //unconfirmed
+        public Half tangentX;
+        public Half tangentY;
+        public Half tangentZ;
+        public Half tangentW;
 
-        public uint unknown4; //Dunno what this is. Always seems to be 00 00 00 FF though. So it might be colour.
+        public uint colour; //unconfirmed
 
         // These bytes are the bone weights, which are divided by 255
         public float boneWeightX;
@@ -222,21 +251,29 @@ public class Fmdl
         public Half textureU; //UV U coordinate.
         public Half textureV; //UV V coordinate.
 
-        //Dunno what these are for.
-        public Half unknown13;
-        public Half unknown14;
+        //unconfirmed
+        public Half unknownU0;
+        public Half unknownV0;
 
-        //These bytes add up to 0xFF. Seems like they're a second set of weights? Possibly LOD related?
-        public byte unknown5;
-        public byte unknown6;
-        public byte unknown7;
-        public byte unknown8;
+        //unconfirmed
+        public Half unknownU1;
+        public Half unknownV1;
 
-        //These look like ids of some sort. Possibly LOD related?
-        public ushort unknown9;
-        public ushort unknown10;
-        public ushort unknown11;
-        public ushort unknown12;
+        //unconfirmed
+        public Half unknownU2;
+        public Half unknownV2;
+
+        //unconfirmed
+        public byte unknownWeight0;
+        public byte unknownWeight1;
+        public byte unknownWeight2;
+        public byte unknownWeight3;
+
+        //unconfirmed
+        public ushort unknownId0;
+        public ushort unknownId1;
+        public ushort unknownId2;
+        public ushort unknownId3;
     } //struct
 
     public struct Face
@@ -279,7 +316,7 @@ public class Fmdl
     private int materialsPosition = -1;
     private int type9Position = -1;
     private int meshDataSectionInfoPosition = -1;
-    private int typeBPosition = -1;
+    private int vertexFormatsPosition = -1;
     private int stringTablePosition = -1;
     private int typeDPosition = -1;
     private int bufferOffsetsPosition = -1;
@@ -311,6 +348,7 @@ public class Fmdl
     private Section0Block8Entry[] section0Block8Entries;
     private Section0Block9Entry[] section0Block9Entries;
     private Section0BlockAEntry[] section0BlockAEntries;
+    private Section0BlockBEntry[] section0BlockBEntries;
     private Section0BlockCEntry[] section0BlockCEntries;
     private Section0BlockDEntry[] section0BlockDEntries;
     private Section0BlockEEntry[] section0BlockEEntries;
@@ -409,8 +447,9 @@ public class Fmdl
                     meshDataSectionInfoPosition = i;
                     section0BlockAEntries = new Section0BlockAEntry[section0Info[meshDataSectionInfoPosition].numEntries];
                     break;
-                case (ushort)Section0BlockType.TypeB:
-                    typeBPosition = i;
+                case (ushort)Section0BlockType.VertexFormats:
+                    vertexFormatsPosition = i;
+                    section0BlockBEntries = new Section0BlockBEntry[section0Info[vertexFormatsPosition].numEntries];
                     break;
                 case (ushort)Section0BlockType.StringTable:
                     stringTablePosition = i;
@@ -492,7 +531,7 @@ public class Fmdl
             {
                 section0Block0Entries[i].nameId = reader.ReadUInt16();
                 section0Block0Entries[i].parentId = reader.ReadUInt16();
-                section0Block0Entries[i].unknown0 = reader.ReadUInt16();
+                section0Block0Entries[i].boundingBoxId = reader.ReadUInt16();
                 section0Block0Entries[i].unknown1 = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x8;
                 section0Block0Entries[i].localPositionX = reader.ReadSingle();
@@ -655,7 +694,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x8 - MATERIAL/MATERIAL TYPE Assignment
+         * SECTION 0 BLOCK 0x8 - MATERIAL/MATERIAL TYPE ASSIGNMENT
          *
          ****************************************************************/
         if (materialsPosition != -1)
@@ -672,7 +711,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x9 - UNKNOWN - MESH RELATED
+         * SECTION 0 BLOCK 0x9 - MESH VERTEX FORMAT TABLE
          *
          ****************************************************************/
         if (type9Position != -1)
@@ -682,17 +721,17 @@ public class Fmdl
 
             for (int i = 0; i < section0Block9Entries.Length; i++)
             {
-                section0Block9Entries[i].unknown0 = reader.ReadByte();
-                section0Block9Entries[i].unknown1 = reader.ReadByte();
-                section0Block9Entries[i].unknown2 = reader.ReadUInt16();
-                section0Block9Entries[i].boundingBoxId = reader.ReadUInt16();
-                section0Block9Entries[i].unknown3 = reader.ReadUInt16();
+                section0Block9Entries[i].numBlockAEntries = reader.ReadByte();
+                section0Block9Entries[i].numBlockBEntries = reader.ReadByte();
+                section0Block9Entries[i].unknown0 = reader.ReadUInt16();
+                section0Block9Entries[i].firstBlockAEntry = reader.ReadUInt16();
+                section0Block9Entries[i].firstBlockBEntry = reader.ReadUInt16();
             } //for
         } //if
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0xA - UNKNOWN - VERTEX DEFINITION RELATED
+         * SECTION 0 BLOCK 0xA - MESH FORMAT TABLE
          *
          ****************************************************************/
         if (meshDataSectionInfoPosition != -1)
@@ -702,11 +741,29 @@ public class Fmdl
 
             for (int i = 0; i < section0BlockAEntries.Length; i++)
             {
-                section0BlockAEntries[i].unknown0 = reader.ReadByte();
-                section0BlockAEntries[i].unknown1 = reader.ReadByte();
+                section0BlockAEntries[i].bufferOffsetId = reader.ReadByte();
+                section0BlockAEntries[i].numVertexFormatEntries = reader.ReadByte();
                 section0BlockAEntries[i].length = reader.ReadByte();
                 section0BlockAEntries[i].type = reader.ReadByte();
                 section0BlockAEntries[i].offset = reader.ReadUInt32();
+            } //for
+        } //if ends
+
+        /****************************************************************
+         *
+         * SECTION 0 BLOCK 0xB - VERTEX FORMAT TABLE
+         *
+         ****************************************************************/
+        if (vertexFormatsPosition != -1)
+        {
+            //go to and get the section 0xB entry info.
+            reader.BaseStream.Position = section0Info[vertexFormatsPosition].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockBEntries.Length; i++)
+            {
+                section0BlockBEntries[i].usage = reader.ReadByte();
+                section0BlockBEntries[i].format = reader.ReadByte();
+                section0BlockBEntries[i].offset = reader.ReadUInt16();
             } //for
         } //if ends
 
@@ -717,7 +774,7 @@ public class Fmdl
          ****************************************************************/
         if (stringTablePosition != -1)
         {
-            //go to and get the section 0xD entry info.
+            //go to and get the section 0xC entry info.
             reader.BaseStream.Position = section0Info[stringTablePosition].offset + section0Offset;
 
             for (int i = 0; i < section0BlockCEntries.Length; i++)
@@ -843,7 +900,7 @@ public class Fmdl
             if (reader.BaseStream.Position % 0x10 != 0)
                 reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
         } //for
-
+        
         /****************************************************************
          *
          * ADDITIONAL VERTEX DATA
@@ -851,136 +908,88 @@ public class Fmdl
          ****************************************************************/
         reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[meshDataPosition].offset;
 
-        int section0BlockACount = 0;
-
-        for (int i = 0; i < objects.Length; i++)
+        for(int i = 0; i < objects.Length; i++)
         {
-            int type3Position = 0;
-            int length = 0;
-            int position = 0;
-
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
-
-            while (section0BlockAEntries[section0BlockACount].type != 0)
-                section0BlockACount++;
-
-            if (section0BlockAEntries[section0BlockACount + 2].type == 2)
-                type3Position = 3;
-            else
-                type3Position = 2;
-
-            length = section0BlockAEntries[section0BlockACount + 1].length;
-
-            if (section0BlockAEntries[section0BlockACount + 1].length != 0xC &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x10 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x14 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x18 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x1C &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x20 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x24 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x28 &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x2C &&
-                section0BlockAEntries[section0BlockACount + 1].length != 0x30)
-            {
-                UnityEngine.Debug.Log("You've found an unknown additional vertex data length! Please report which model you used to BobDoleOwndU so he can analyze it.");
-                UnityEngine.Debug.Log("Additional Info:\n" + "Id: " + section0BlockACount.ToString("x") + "\nLength: " + section0BlockAEntries[section0BlockACount + 1].length.ToString("x"));
-                return;
-            } //if
 
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
-                objects[i].additionalVertexData[j].normalX = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
-                objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
+                long position = reader.BaseStream.Position;
 
-                position += 8;
-
-                if (section0BlockAEntries[section0BlockACount + 1].unknown1 > 1)
+                for (int h = section0Block9Entries[i].firstBlockBEntry; h < section0Block9Entries[i].firstBlockBEntry + section0Block9Entries[i].numBlockBEntries; h++)
                 {
-                    objects[i].additionalVertexData[j].unknown0 = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].unknown1 = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].unknown2 = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].unknown3 = ToHalf(reader.ReadUInt16());
+                    reader.BaseStream.Position = position + section0BlockBEntries[h].offset;
 
-                    position += 8;
-                } //if ends
-
-                if (type3Position == 3)
-                {
-                    objects[i].additionalVertexData[j].unknown4 = reader.ReadUInt32();
-                    position += 4;
-                } //if ends
-
-                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2) ||
-                    (section0BlockAEntries[section0BlockACount + 1].length == 0x14 && section0BlockAEntries[section0BlockACount + 1].unknown1 == 1) ||
-                    (section0BlockAEntries[section0BlockACount + 1].length == 0x1C && type3Position == 2) ||
-                    section0BlockAEntries[section0BlockACount + 1].length > 0x1C)
-                {
-                    objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
-                    objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
-                    objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255.0f;
-                    objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255.0f;
-                    objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
-                    objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
-
-                    position += 8;
-                } //if
-
-                if (!(section0BlockAEntries[section0BlockACount + 1].length == 0x10 && type3Position == 2))
-                {
-                    objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16()); //Value is negated.
-                    position += 4;
-                } //if
-
-                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x18 && type3Position == 2) ||
-                    (section0BlockAEntries[section0BlockACount + 1].length == 0x1C && type3Position == 3) ||
-                    (section0BlockAEntries[section0BlockACount + 1].length == 0x20 && type3Position == 2 && section0BlockAEntries[section0BlockACount + 1].unknown1 != 1) ||
-                    section0BlockAEntries[section0BlockACount + 1].length == 0x24 ||
-                    section0BlockAEntries[section0BlockACount + 1].length == 0x30)
-                {
-                    objects[i].additionalVertexData[j].unknown13 = ToHalf(reader.ReadUInt16());
-                    objects[i].additionalVertexData[j].unknown14 = ToHalf(reader.ReadUInt16());
-
-                    position += 4;
-                } //if ends
-
-                if ((section0BlockAEntries[section0BlockACount + 1].length == 0x20 && type3Position == 2 && section0BlockAEntries[section0BlockACount + 1].unknown1 == 1) ||
-                    section0BlockAEntries[section0BlockACount + 1].length == 0x28 ||
-                    section0BlockAEntries[section0BlockACount + 1].length == 0x2C ||
-                    section0BlockAEntries[section0BlockACount + 1].length == 0x30)
-                {
-                    objects[i].additionalVertexData[j].unknown5 = reader.ReadByte();
-                    objects[i].additionalVertexData[j].unknown6 = reader.ReadByte();
-                    objects[i].additionalVertexData[j].unknown7 = reader.ReadByte();
-                    objects[i].additionalVertexData[j].unknown8 = reader.ReadByte();
-                    objects[i].additionalVertexData[j].unknown9 = reader.ReadUInt16();
-                    objects[i].additionalVertexData[j].unknown10 = reader.ReadUInt16();
-                    objects[i].additionalVertexData[j].unknown11 = reader.ReadUInt16();
-                    objects[i].additionalVertexData[j].unknown12 = reader.ReadUInt16();
-
-                    position += 12;
-                } //if
-
-                if (position != length)
-                {
-                    UnityEngine.Debug.Log("i: " + i);
-                    UnityEngine.Debug.Log("j: " + j);
-                    UnityEngine.Debug.Log("Section0BlockACount: " + section0BlockACount);
-                    UnityEngine.Debug.Log("Expected Length: " + length);
-                    UnityEngine.Debug.Log("Calculated Length: " + position);
-                } //if
-                position = 0;
+                    switch (section0BlockBEntries[h].usage)
+                    {
+                        case 0: //vertex positions.
+                            break;
+                        case 1: //bone weights.
+                            objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
+                            objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
+                            objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255.0f;
+                            objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255.0f;
+                            break;
+                        case 2: //normals.
+                            objects[i].additionalVertexData[j].normalX = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
+                            break;
+                        case 3: //diffuse.
+                            objects[i].additionalVertexData[j].colour = reader.ReadUInt32();
+                            break;
+                        case 7: //bone indices.
+                            objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
+                            objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
+                            objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
+                            objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
+                            break;
+                        case 8: //UV.
+                            objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16());
+                            break;
+                        case 9: //UV 2?
+                            objects[i].additionalVertexData[j].unknownU0 = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].unknownV0 = ToHalf(reader.ReadUInt16());
+                            break;
+                        case 10: //UV 3?
+                            objects[i].additionalVertexData[j].unknownU1 = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].unknownV1 = ToHalf(reader.ReadUInt16());
+                            break;
+                        case 11: //UV 4?
+                            objects[i].additionalVertexData[j].unknownU2 = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].unknownV2 = ToHalf(reader.ReadUInt16());
+                            break;
+                        case 12: //bone weights 2?
+                            objects[i].additionalVertexData[j].unknownWeight0 = reader.ReadByte();
+                            objects[i].additionalVertexData[j].unknownWeight1 = reader.ReadByte();
+                            objects[i].additionalVertexData[j].unknownWeight2 = reader.ReadByte();
+                            objects[i].additionalVertexData[j].unknownWeight3 = reader.ReadByte();
+                            break;
+                        case 13: //bone indices 2?
+                            objects[i].additionalVertexData[j].unknownId0 = reader.ReadUInt16();
+                            objects[i].additionalVertexData[j].unknownId1 = reader.ReadUInt16();
+                            objects[i].additionalVertexData[j].unknownId2 = reader.ReadUInt16();
+                            objects[i].additionalVertexData[j].unknownId3 = reader.ReadUInt16();
+                            break;
+                        case 14: //tangent.
+                            objects[i].additionalVertexData[j].tangentX = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].tangentY = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].tangentZ = ToHalf(reader.ReadUInt16());
+                            objects[i].additionalVertexData[j].tangentW = ToHalf(reader.ReadUInt16());
+                            break;
+                        default:
+                            UnityEngine.Debug.Log("Usage: " + section0BlockBEntries[h].usage);
+                            UnityEngine.Debug.Log("h: " + h);
+                            break;
+                    } //switch
+                } //for
             } //for
 
             //align the stream.
             if (reader.BaseStream.Position % 0x10 != 0)
                 reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
-
-            section0BlockACount++;
         } //for
 
         /****************************************************************
@@ -988,7 +997,6 @@ public class Fmdl
          * FACES
          *
          ****************************************************************/
-
         for (int i = 0; i < objects.Length; i++)
         {
             reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[meshDataPosition].offset + section0Block3Entries[i].numPrecedingFaceVertices * 2;
