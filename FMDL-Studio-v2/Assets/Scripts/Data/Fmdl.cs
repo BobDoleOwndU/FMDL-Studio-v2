@@ -102,10 +102,10 @@ public class Fmdl
         public ushort stringId;
         public ushort unknown0; //might just be padding.
         public ushort materialId;
-        public byte unknown2;
-        public byte unknown3;
+        public byte numTextures;
+        public byte numParameters;
         public ushort firstTextureId; //starts at this entry in 0x7 and grabs all textures between (inclusive) it and the lastTexture.
-        public ushort lastTextureId;
+        public ushort firstParameterId;
     } //struct
 
     public struct Section0Block5Entry
@@ -327,9 +327,9 @@ public class Fmdl
     private int texturePathsIndex = -1;
     private int stringHashesIndex = -1;
 
-    private int unknownPosition = -1;
-    private int meshDataPosition = -1;
-    private int stringsPosition = -1;
+    private int section1Type0Index = -1;
+    private int section1MeshDataIndex = -1;
+    private int section1StringsIndex = -1;
 
     private Object[] objects;
     private string[] strings;
@@ -502,13 +502,13 @@ public class Fmdl
             switch (section1Info[i].id)
             {
                 case (uint)Section1BlockType.Type0:
-                    unknownPosition = i;
+                    section1Type0Index = i;
                     break;
                 case (uint)Section1BlockType.MeshData:
-                    meshDataPosition = i;
+                    section1MeshDataIndex = i;
                     break;
                 case (uint)Section1BlockType.Strings:
-                    stringsPosition = i;
+                    section1StringsIndex = i;
                     break;
                 default:
                     break;
@@ -627,10 +627,10 @@ public class Fmdl
                 section0Block4Entries[i].stringId = reader.ReadUInt16();
                 section0Block4Entries[i].unknown0 = reader.ReadUInt16();
                 section0Block4Entries[i].materialId = reader.ReadUInt16();
-                section0Block4Entries[i].unknown2 = reader.ReadByte();
-                section0Block4Entries[i].unknown3 = reader.ReadByte();
+                section0Block4Entries[i].numTextures = reader.ReadByte();
+                section0Block4Entries[i].numParameters = reader.ReadByte();
                 section0Block4Entries[i].firstTextureId = reader.ReadUInt16();
-                section0Block4Entries[i].lastTextureId = reader.ReadUInt16();
+                section0Block4Entries[i].firstParameterId = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x4;
             } //for
         } //if
@@ -883,7 +883,7 @@ public class Fmdl
          * POSITION
          *
          ****************************************************************/
-        reader.BaseStream.Position = section1Info[meshDataPosition].offset + section1Offset;
+        reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset;
 
         for (int i = 0; i < objects.Length; i++)
         {
@@ -906,7 +906,7 @@ public class Fmdl
          * ADDITIONAL VERTEX DATA
          *
          ****************************************************************/
-        reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[meshDataPosition].offset;
+        reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset;
 
         for(int i = 0; i < objects.Length; i++)
         {
@@ -999,7 +999,7 @@ public class Fmdl
          ****************************************************************/
         for (int i = 0; i < objects.Length; i++)
         {
-            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[meshDataPosition].offset + section0Block3Entries[i].firstFaceVertexId * 2;
+            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2;
 
             objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
 
@@ -1020,7 +1020,7 @@ public class Fmdl
         {
             for (int i = 0; i < section0BlockCEntries.Length; i++)
             {
-                reader.BaseStream.Position = section1Offset + section1Info[stringsPosition].offset + section0BlockCEntries[i].offset;
+                reader.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section0BlockCEntries[i].offset;
                 strings[i] = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
             } //for
         } //if
