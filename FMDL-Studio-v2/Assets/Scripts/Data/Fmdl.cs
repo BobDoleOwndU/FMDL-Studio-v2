@@ -33,7 +33,7 @@ public class Fmdl
 
     private enum Section1BlockType
     {
-        Type0 = 0,
+        MaterialParameters = 0,
         MeshData = 2,
         Strings = 3
     }; //Section1BlockType
@@ -214,6 +214,11 @@ public class Fmdl
         public float lowDetailDistance;
     } //struct
 
+    public struct PackingParameter
+    {
+        public float[] values;
+    } //struct
+
     public struct Vertex
     {
         public float x;
@@ -327,10 +332,11 @@ public class Fmdl
     private int texturePathsIndex = -1;
     private int stringHashesIndex = -1;
 
-    private int section1Type0Index = -1;
+    private int section1MaterialParametersIndex = -1;
     private int section1MeshDataIndex = -1;
     private int section1StringsIndex = -1;
 
+    private PackingParameter[] packingParameters;
     private Object[] objects;
     private string[] strings;
 
@@ -501,8 +507,9 @@ public class Fmdl
 
             switch (section1Info[i].id)
             {
-                case (uint)Section1BlockType.Type0:
-                    section1Type0Index = i;
+                case (uint)Section1BlockType.MaterialParameters:
+                    section1MaterialParametersIndex = i;
+                    packingParameters = new PackingParameter[(section1Info[section1MaterialParametersIndex].length / 4) / 4];
                     break;
                 case (uint)Section1BlockType.MeshData:
                     section1MeshDataIndex = i;
@@ -877,6 +884,21 @@ public class Fmdl
                 section0Block16Entries[i] = reader.ReadUInt64();
             } //for
         } //if
+
+        /****************************************************************
+         *
+         * MATERIAL PACKING PARAMETERS
+         *
+         ****************************************************************/
+        reader.BaseStream.Position = section1Info[section1MaterialParametersIndex].offset + section1Offset;
+
+        for(int i = 0; i < packingParameters.Length; i++)
+        {
+            packingParameters[i].values = new float[4];
+
+            for (int j = 0; j < packingParameters[i].values.Length; j++)
+                packingParameters[i].values[j] = reader.ReadSingle();
+        } //for
 
         /****************************************************************
          *
@@ -1276,26 +1298,16 @@ public class Fmdl
     } //OutputSection2Info
 
     [Conditional("DEBUG")]
-    public void OutputObjectInfo2()
+    public void OutputParamIds()
     {
-        int greatest = 0;
-
-        for (int i = 0; i < objects.Length; i++)
+        for(int i = 0; i < section0Block4Entries.Length; i++)
         {
-            for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
+            for(int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
             {
-                if (objects[i].additionalVertexData[j].boneGroup0Id > greatest)
-                    greatest = objects[i].additionalVertexData[j].boneGroup0Id;
-                if (objects[i].additionalVertexData[j].boneGroup1Id > greatest)
-                    greatest = objects[i].additionalVertexData[j].boneGroup1Id;
-                if (objects[i].additionalVertexData[j].boneGroup2Id > greatest)
-                    greatest = objects[i].additionalVertexData[j].boneGroup2Id;
-                if (objects[i].additionalVertexData[j].boneGroup3Id > greatest)
-                    greatest = objects[i].additionalVertexData[j].boneGroup3Id;
+                UnityEngine.Debug.Log("Param Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+                UnityEngine.Debug.Log("Parameters: [" + packingParameters[section0Block7Entries[j].referenceId].values[0] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[1] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[2] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[3] + "]");
             } //for
-        } //for
-
-        UnityEngine.Debug.Log("Greatest Bone Group Id: " + greatest);
+        } //for ends
     } //OutputObjectInfo
 
     [Conditional("DEBUG")]

@@ -111,10 +111,14 @@ public class UnityModel
             bones[i] = new GameObject().transform;
             bones[i].position = new Vector3(fmdl.GetSection0Block0Entries()[i].worldPositionZ, fmdl.GetSection0Block0Entries()[i].worldPositionY, fmdl.GetSection0Block0Entries()[i].worldPositionX);
 
+            UnityEngine.Debug.Log("Bounds: " + bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId]);
+
             //Works, but the size is off for some reason?
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
             collider.center = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].center;
             collider.size = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].size;
+
+            UnityEngine.Debug.Log("Collider: " + collider.bounds);
 
             if (fmdl.GetStringTablePosition() != -1)
                 bones[i].name = fmdl.GetStrings()[fmdl.GetSection0Block0Entries()[i].stringId];
@@ -202,7 +206,7 @@ public class UnityModel
             } //for
 
             mesh.bindposes = bindPoses;
-            //mesh.bounds = bounds[fmdl.GetSection0Block9Entries()[i].boundingBoxId]; //Not right. Boxes don't match up to meshes. Need to figure out what's actually done.
+            //mesh.bounds = bounds[fmdl.GetSection0Block9Entries()[i].firstMeshFormatId]; //Not right. Boxes don't match up to meshes. Need to figure out what's actually done.
 
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;

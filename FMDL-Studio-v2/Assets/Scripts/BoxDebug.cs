@@ -6,9 +6,9 @@ public class BoxDebug : MonoBehaviour {
 	void DrawBox(Transform t) {
 		foreach(Transform child in t)
         {
-            if (child.GetComponent<BoxCollider>())
+            if (child.GetComponent<SkinnedMeshRenderer>())
             {
-                Gizmos.DrawWireCube(child.GetComponent<BoxCollider>().bounds.center, child.GetComponent<BoxCollider>().bounds.size);
+                Gizmos.DrawWireCube(child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.center, child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.size);
                 DrawBox(child);
             } //if
         } //foreach
