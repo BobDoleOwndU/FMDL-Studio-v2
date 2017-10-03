@@ -103,7 +103,6 @@ public class UnityModel
         for(int i = 0; i < bounds.Length; i++)
         {
             bounds[i].SetMinMax(new Vector3(fmdl.GetSection0BlockDEntries()[i].minZ, fmdl.GetSection0BlockDEntries()[i].minY, fmdl.GetSection0BlockDEntries()[i].minX), new Vector3(fmdl.GetSection0BlockDEntries()[i].maxZ, fmdl.GetSection0BlockDEntries()[i].maxY, fmdl.GetSection0BlockDEntries()[i].maxX));
-            //bounds[i].SetMinMax(new Vector3(-100.0f, -100.0f, -100.0f), new Vector3(100.0f, 100.0f, 100.0f));
         } //for
 
         for (int i = 0; i < bones.Length; i++)
@@ -111,25 +110,31 @@ public class UnityModel
             bones[i] = new GameObject().transform;
             bones[i].position = new Vector3(fmdl.GetSection0Block0Entries()[i].worldPositionZ, fmdl.GetSection0Block0Entries()[i].worldPositionY, fmdl.GetSection0Block0Entries()[i].worldPositionX);
 
-            UnityEngine.Debug.Log("Bounds: " + bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId]);
-
             //Works, but the size is off for some reason?
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
-            collider.center = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].center;
+            collider.center = bones[i].InverseTransformPoint(bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
             collider.size = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].size;
-
-            UnityEngine.Debug.Log("Collider: " + collider.bounds);
 
             if (fmdl.GetStringTablePosition() != -1)
                 bones[i].name = fmdl.GetStrings()[fmdl.GetSection0Block0Entries()[i].stringId];
             else
                 bones[i].name = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].stringId]);
 
-            if (fmdl.GetSection0Block0Entries()[i].parentId == 0xFFFF)
-                bones[i].parent = fmdlGameObject.transform;
-            else
+            if (fmdl.GetSection0Block0Entries()[i].parentId != 0xFFFF)
                 bones[i].parent = bones[fmdl.GetSection0Block0Entries()[i].parentId];
         } //for
+
+        Transform rootBone = new GameObject("[Root]").transform; //From what I can tell, the real name is "". But it looks kinda dumb having "" as its name; so using "[Root]" as a placeholder seems better.
+        rootBone.parent = fmdlGameObject.transform;
+
+        {
+            BoxCollider collider = rootBone.gameObject.AddComponent<BoxCollider>();
+            collider.center = rootBone.InverseTransformPoint(bounds[0].center); //Have to convert these to local positions. They're stored as world positions.
+            collider.size = bounds[0].size;
+
+            if (fmdl.GetBonesPosition() != -1)
+                bones[0].parent = rootBone;
+        } //code block
 
         for (int i = 0; i < fmdl.GetObjects().Length; i++)
         {
