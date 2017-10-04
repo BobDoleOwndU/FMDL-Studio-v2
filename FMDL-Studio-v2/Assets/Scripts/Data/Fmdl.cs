@@ -214,7 +214,6 @@ public class Fmdl
         public float lowDetailDistance;
     } //struct
 
-    public struct PackingParameter
     public struct Section0Block11Entry
     {
         public uint firstFaceVertexId;
