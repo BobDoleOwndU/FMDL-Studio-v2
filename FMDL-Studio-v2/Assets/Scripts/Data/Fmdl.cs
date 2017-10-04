@@ -293,6 +293,7 @@ public class Fmdl
         public Vertex[] vertices;
         public AdditionalVertexData[] additionalVertexData;
         public Face[] faces;
+        public Face[] lodFaces;
     } //struct
 
     //Instance Variables
@@ -336,7 +337,7 @@ public class Fmdl
     private int section1MeshDataIndex = -1;
     private int section1StringsIndex = -1;
 
-    private PackingParameter[] packingParameters;
+    private MaterialParameter[] materialParameters;
     private Object[] objects;
     private string[] strings;
 
@@ -359,6 +360,7 @@ public class Fmdl
     private Section0BlockDEntry[] section0BlockDEntries;
     private Section0BlockEEntry[] section0BlockEEntries;
     private Section0Block10Entry[] section0Block10Entries;
+    private Section0Block11Entry[] section0Block11Entries;
     private ulong[] section0Block15Entries;
     private ulong[] section0Block16Entries;
 
@@ -476,6 +478,7 @@ public class Fmdl
                     break;
                 case (ushort)Section0BlockType.FaceIndices:
                     faceIndicesIndex = i;
+                    section0Block11Entries = new Section0Block11Entry[section0Info[faceIndicesIndex].numEntries];
                     break;
                 case (ushort)Section0BlockType.Type12:
                     type12Position = i;
@@ -509,7 +512,7 @@ public class Fmdl
             {
                 case (uint)Section1BlockType.MaterialParameters:
                     section1MaterialParametersIndex = i;
-                    packingParameters = new PackingParameter[(section1Info[section1MaterialParametersIndex].length / 4) / 4];
+                    materialParameters = new MaterialParameter[(section1Info[section1MaterialParametersIndex].length / 4) / 4];
                     break;
                 case (uint)Section1BlockType.MeshData:
                     section1MeshDataIndex = i;
@@ -855,6 +858,23 @@ public class Fmdl
 
         /****************************************************************
          *
+         * SECTION 0 BLOCK 0x10 - LOD INFO
+         *
+         ****************************************************************/
+        if (faceIndicesIndex != -1)
+        {
+            //go to and get the section 0x11 entry info.
+            reader.BaseStream.Position = section0Info[faceIndicesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block11Entries.Length; i++)
+            {
+                section0Block11Entries[i].firstFaceVertexId = reader.ReadUInt32();
+                section0Block11Entries[i].numFaceVertices = reader.ReadUInt32();
+            }
+        }
+
+        /****************************************************************
+         *
          * SECTION 0 BLOCK Ox15 - TEXTURE PATH DEFINITIONS
          *
          ****************************************************************/
@@ -887,17 +907,17 @@ public class Fmdl
 
         /****************************************************************
          *
-         * MATERIAL PACKING PARAMETERS
+         * NUMERICAL PARAMETERS
          *
          ****************************************************************/
         reader.BaseStream.Position = section1Info[section1MaterialParametersIndex].offset + section1Offset;
 
-        for(int i = 0; i < packingParameters.Length; i++)
+        for(int i = 0; i < materialParameters.Length; i++)
         {
-            packingParameters[i].values = new float[4];
+            materialParameters[i].values = new float[4];
 
-            for (int j = 0; j < packingParameters[i].values.Length; j++)
-                packingParameters[i].values[j] = reader.ReadSingle();
+            for (int j = 0; j < materialParameters[i].values.Length; j++)
+                materialParameters[i].values[j] = reader.ReadSingle();
         } //for
 
         /****************************************************************
@@ -1035,6 +1055,26 @@ public class Fmdl
 
         /****************************************************************
          *
+         * LOD FACES
+         *
+         ****************************************************************/
+        for (int i = 0; i < section0Block11Entries.Length; i++)
+        {
+            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[faceIndicesIndex].offset + section0Block11Entries[i].firstFaceVertexId;
+
+            objects[i].lodFaces = new Face[section0Block11Entries[i].numFaceVertices / 3];
+
+            for (int j = 0; j < objects[i].lodFaces.Length; j++)
+            {
+                objects[i].lodFaces[j].vertex1Id = reader.ReadUInt16();
+                objects[i].lodFaces[j].vertex2Id = reader.ReadUInt16();
+                objects[i].lodFaces[j].vertex3Id = reader.ReadUInt16();
+            } //for
+        } //for
+
+
+        /****************************************************************
+         *
          * STRINGS
          *
          ****************************************************************/
@@ -1137,6 +1177,11 @@ public class Fmdl
     {
         return section0BlockDEntries;
     } //GetSection0BlockDEntries
+
+    public Section0Block11Entry[] GetSection0Block11Entries()
+    {
+        return section0Block11Entries;
+    } //GetSection0Block11Entries
 
     public ulong[] GetSection0Block15Entries()
     {
@@ -1305,7 +1350,7 @@ public class Fmdl
             for(int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
             {
                 UnityEngine.Debug.Log("Param Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
-                UnityEngine.Debug.Log("Parameters: [" + packingParameters[section0Block7Entries[j].referenceId].values[0] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[1] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[2] + ", " + packingParameters[section0Block7Entries[j].referenceId].values[3] + "]");
+                UnityEngine.Debug.Log("Parameters: [" + materialParameters[section0Block7Entries[j].referenceId].values[0] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[1] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[2] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[3] + "]");
             } //for
         } //for ends
     } //OutputObjectInfo
