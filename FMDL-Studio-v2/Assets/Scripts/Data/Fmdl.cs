@@ -215,6 +215,13 @@ public class Fmdl
     } //struct
 
     public struct PackingParameter
+    public struct Section0Block11Entry
+    {
+        public uint firstFaceVertexId;
+        public uint numFaceVertices;
+    }
+
+    public struct MaterialParameter
     {
         public float[] values;
     } //struct
