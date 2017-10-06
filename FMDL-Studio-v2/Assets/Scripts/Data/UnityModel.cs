@@ -138,10 +138,13 @@ public class UnityModel
 
         for (int i = 0; i < fmdl.GetObjects().Length; i++)
         {
+            int lod = 0; //Temporary solution. 0 loads the normal faces. 1 loads the first set of LOD faces. 2 loads the next set. Etc....
+
             meshes[i].vertices = new Vector3[fmdl.GetObjects()[i].vertices.Length];
             meshes[i].normals = new Vector3[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].UVs = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
+            //meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
+            meshes[i].faces = new int[fmdl.GetObjects()[i].lodFaces[lod].Length * 3];
             meshes[i].boneWeights = new BoneWeight[fmdl.GetObjects()[i].additionalVertexData.Length];
 
             //Position
@@ -169,11 +172,18 @@ public class UnityModel
             } //for
 
             //Faces
-            for (int j = 0, h = 0; j < fmdl.GetObjects()[i].faces.Length; j++, h += 3)
+            /*for (int j = 0, h = 0; j < fmdl.GetObjects()[i].faces.Length; j++, h += 3)
             {
                 meshes[i].faces[h] = fmdl.GetObjects()[i].faces[j].vertex1Id;
                 meshes[i].faces[h + 1] = fmdl.GetObjects()[i].faces[j].vertex2Id;
                 meshes[i].faces[h + 2] = fmdl.GetObjects()[i].faces[j].vertex3Id;
+            } //for*/
+
+            for (int j = 0, h = 0; j < fmdl.GetObjects()[i].lodFaces[lod].Length; j++, h += 3)
+            {
+                meshes[i].faces[h] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex1Id;
+                meshes[i].faces[h + 1] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex2Id;
+                meshes[i].faces[h + 2] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex3Id;
             } //for
 
             //Render the mesh in Unity.
