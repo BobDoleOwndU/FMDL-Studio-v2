@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using UnityEngine;
+using UnityEditor;
 
 public class UnityModel
 {
@@ -24,12 +25,18 @@ public class UnityModel
     //Instance Variables
     private UnityMesh[] meshes;
 
-    public void GetDataFromFmdl(Fmdl fmdl)
+    public void GetDataFromFmdl(Fmdl fmdl, bool shouldSave)
     {
         meshes = new UnityMesh[fmdl.GetSection0Block3Entries().Length];
 
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.GetName();
+        
+        if (shouldSave && !AssetDatabase.IsValidFolder("Assets/Saved_models/" + fmdlGameObject.name))
+        {
+            AssetDatabase.CreateFolder("Assets/Saved_models", fmdlGameObject.name);
+        }
+
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.GetObjects().Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
@@ -226,7 +233,22 @@ public class UnityModel
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
+            
+            if(shouldSave)
+            {
+                string savePath = "Assets/Saved_models/" + fmdlGameObject.name + "/" + subFmdlGameObjects[i].name;
+                AssetDatabase.CreateAsset(meshRenderer.material, savePath + ".mat");
+                AssetDatabase.CreateAsset(mesh, savePath + ".asset");
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
         } //for
+        
+        if(shouldSave)
+        {
+            var emptyPrefab = PrefabUtility.CreateEmptyPrefab("Assets/Saved_models/" + fmdlGameObject.name + "/" + fmdlGameObject.name + ".prefab");
+            PrefabUtility.ReplacePrefab(fmdlGameObject, emptyPrefab);
+        }
     } //GetDataFromFmdl
 
     public static Texture2D LoadTextureDXT(string path)
