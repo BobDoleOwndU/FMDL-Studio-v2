@@ -32,7 +32,7 @@ public class UnityModel
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.GetName();
         
-        if (shouldSave)
+        if (shouldSave && !AssetDatabase.IsValidFolder("Assets/Saved_models/" + fmdlGameObject.name))
         {
             AssetDatabase.CreateFolder("Assets/Saved_models", fmdlGameObject.name);
         }
