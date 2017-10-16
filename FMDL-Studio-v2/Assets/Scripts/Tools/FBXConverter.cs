@@ -6,15 +6,21 @@ using UnityEngine;
 
 public static class FBXConverter
 {
+    static int materialId = 800000000;
+    static int geometryId = 900000000;
+    static int modelId = 1000000000;
+    static List<Tuple<int, Mesh>> meshes = new List<Tuple<int, Mesh>>(0);
+    static List<Tuple<int, int>> geometryIds = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, Material>> materials = new List<Tuple<int, Material>>(0);
+
     public static void ConvertToFBX(GameObject gameObject)
     {
         int numModelObjects = 1;
+
         StringBuilder fbx = new StringBuilder();
-        List<Mesh> meshes = new List<Mesh>(0);
-        List<Material> materials = new List<Material>(0);
 
         GetNumObjects(gameObject.transform, ref numModelObjects);
-        GetMeshesAndMaterials(gameObject.transform, meshes, materials);
+        GetMeshesAndMaterials(gameObject.transform);
 
         //Header
         fbx.Append("; FBX 7.4.0 project file");
@@ -238,6 +244,150 @@ public static class FBXConverter
         fbx.Append("\n\t}");
         fbx.Append("\n}");
 
+        //Object Properties
+        fbx.Append("\n; Object properties");
+        fbx.Append("\n;------------------------------------------------------------------");
+        fbx.Append("\n\nObjects:  {");
+        for(int i = 0; i < meshes.Count; i++)
+        {
+            fbx.Append("\n\tGeometry: " + geometryIds[i].Item1 + ", \"Geometry::Scene\", \"Mesh\" {");
+            fbx.Append("\n\t\tVertices: *" + meshes[i].Item2.vertices.Length * 3 + " {");
+            fbx.Append("\n\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.vertices.Length; j++)
+            {
+                fbx.Append((-meshes[i].Item2.vertices[j].x) * 100 + "," + meshes[i].Item2.vertices[j].y * 100 + "," + meshes[i].Item2.vertices[j].z * 100 + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tPolygonVertexIndex: *" + meshes[i].Item2.triangles.Length + " {");
+            fbx.Append("\n\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(meshes[i].Item2.triangles[j * 3] + "," + meshes[i].Item2.triangles[j * 3 + 2] + "," + (-meshes[i].Item2.triangles[j * 3 + 1] - 1) + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tGeometryVersion: 124");
+            fbx.Append("\n\t\tLayerElementNormal: 0 {");
+            fbx.Append("\n\t\t\tVersion: 102");
+            fbx.Append("\n\t\t\tName: \"Normals\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+            fbx.Append("\n\t\t\tNormals: *" + meshes[i].Item2.triangles.Length * 3 + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(-meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3]].x + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3]].y + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3]].z + ",");
+                fbx.Append(-meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 2]].x + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 2]].y + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 2]].z + ",");
+                fbx.Append(-meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 1]].x + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 1]].y + "," + meshes[i].Item2.normals[meshes[i].Item2.triangles[j * 3 + 1]].z + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tNormalsW: *" + meshes[i].Item2.triangles.Length + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length; j++)
+            {
+                fbx.Append("1,");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            //Binormals are supposed to go here. Don't think they're needed though.
+            fbx.Append("\n\t\tLayerElementTangent: 0 {");
+            fbx.Append("\n\t\t\tVersion: 102");
+            fbx.Append("\n\t\t\tName: \"Tangents\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+            fbx.Append("\n\t\t\tTangents: *" + meshes[i].Item2.triangles.Length * 3 + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(-meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3]].x + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3]].y + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3]].z + ",");
+                fbx.Append(-meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 2]].x + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 2]].y + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 2]].z + ",");
+                fbx.Append(-meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 1]].x + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 1]].y + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 1]].z + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tTangentsW: *" + meshes[i].Item2.triangles.Length + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3]].w + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 2]].w + "," + meshes[i].Item2.tangents[meshes[i].Item2.triangles[j * 3 + 1]].w + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayerElementColor: 0 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"VertexColors\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.Append("\n\t\t\tColorIndex: *" + meshes[i].Item2.triangles.Length + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(meshes[i].Item2.triangles[j * 3] + "," + meshes[i].Item2.triangles[j * 3 + 2] + "," + meshes[i].Item2.triangles[j * 3 + 1] + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayerElementUV: 0 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"UVSet0\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.Append("\n\t\t\tUV: *" + meshes[i].Item2.uv.Length * 2 + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.uv.Length; j++)
+            {
+                fbx.Append(meshes[i].Item2.uv[j].x + "," + meshes[i].Item2.uv[j].y + ",");
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tUVIndex: *" + meshes[i].Item2.triangles.Length + " {");
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.triangles.Length / 3; j++)
+            {
+                fbx.Append(meshes[i].Item2.triangles[j * 3] + "," + meshes[i].Item2.triangles[j * 3 + 2] + "," + meshes[i].Item2.triangles[j * 3 + 1] + ",");
+            } //for
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayerElementMaterial: 0 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"Material\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"AllSame\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.Append("\n\t\t\tMaterials: *1 {");
+            fbx.Append("\n\t\t\t\ta: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayer: 0 {");
+            fbx.Append("\n\t\t\tVersion: 100");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementNormal\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            //Binormals are supposed to go here. Don't think they're necessary though.
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementTangent\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementMaterial\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementColor\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t}");
+        } //for
+
 
         using (FileStream stream = new FileStream("debug.fbx", FileMode.Create))
         {
@@ -260,22 +410,28 @@ public static class FBXConverter
         } //foreach ends
     } //GetNumObjects
 
-    private static void GetMeshesAndMaterials(Transform transform, List<Mesh> meshes, List<Material> materials)
+    private static void GetMeshesAndMaterials(Transform transform)
     {
         foreach (Transform t in transform)
         {
             if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
             {
-                meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMesh);
+                meshes.Add(new Tuple<int, Mesh>(modelId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMesh));
+                geometryIds.Add(new Tuple<int, int>(geometryId, modelId));
+                modelId++;
+                geometryId++;
 
                 bool addMaterial = true;
 
                 for (int i = 0; i < materials.Count; i++)
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().material.name == materials[i].name)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().material.name == materials[i].Item2.name)
                         addMaterial = false;
 
-                if(addMaterial)
-                    materials.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().material);
+                if (addMaterial)
+                {
+                    materials.Add(new Tuple<int, Material>(materialId++, t.gameObject.GetComponent<SkinnedMeshRenderer>().material));
+                    materialId++;
+                } //if
             } //if
         } //foreach ends
     } //GetMeshesAndMaterials
