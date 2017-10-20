@@ -8,7 +8,7 @@ public static class FBXConverter
 {
     static int materialId = 800000000;
     static int geometryId = 900000000;
-    static int modelId = 1000000000;
+    static int modelId = 1000000001;
     static List<Tuple<int, SkinnedMeshRenderer>> meshes = new List<Tuple<int, SkinnedMeshRenderer>>(0);
     static List<Tuple<int, GameObject>> objects = new List<Tuple<int, GameObject>>(0);
     static List<Tuple<int, int>> geometryIds = new List<Tuple<int, int>>(0);
@@ -21,8 +21,7 @@ public static class FBXConverter
 
         GetNumObjects(gameObject.transform, ref numModelObjects);
 
-        objects.Add(new Tuple<int, GameObject>(modelId, gameObject));
-        modelId++;
+        objects.Add(new Tuple<int, GameObject>(1000000000, gameObject));
 
         GetObjects(gameObject.transform);
 
@@ -258,13 +257,13 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\tVertices: *{0} {{", meshes[i].Item2.sharedMesh.vertices.Length * 3);
             fbx.Append("\n\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.vertices.Length; j++)
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.vertices[j].x * 100, meshes[i].Item2.sharedMesh.vertices[j].y * 100, meshes[i].Item2.sharedMesh.vertices[j].z * 100);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.vertices[j].x * 100, (double)meshes[i].Item2.sharedMesh.vertices[j].y * 100, (double)meshes[i].Item2.sharedMesh.vertices[j].z * 100);
             fbx.Length--;
             fbx.Append("\n\t\t}");
             fbx.AppendFormat("\n\t\tPolygonVertexIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
             fbx.Append("\n\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
-                fbx.Append(meshes[i].Item2.sharedMesh.triangles[j * 3] + "," + meshes[i].Item2.sharedMesh.triangles[j * 3 + 2] + "," + (-meshes[i].Item2.sharedMesh.triangles[j * 3 + 1] - 1) + ",");
+                fbx.AppendFormat("{0},{1},{2},", meshes[i].Item2.sharedMesh.triangles[j * 3], meshes[i].Item2.sharedMesh.triangles[j * 3 + 2], (-meshes[i].Item2.sharedMesh.triangles[j * 3 + 1] - 1));
             fbx.Length--;
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tGeometryVersion: 124");
@@ -277,9 +276,9 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
             {
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
             } //for
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
@@ -300,9 +299,9 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
             {
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, + meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
+                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
             } //for
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
@@ -333,7 +332,7 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv.Length * 2);
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.uv.Length; j++)
-                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, meshes[i].Item2.sharedMesh.uv[j].y);
+                fbx.AppendFormat("{0},{1},", (double)meshes[i].Item2.sharedMesh.uv[j].x, (double)meshes[i].Item2.sharedMesh.uv[j].y);
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
@@ -384,7 +383,7 @@ public static class FBXConverter
             fbx.Append("\n\t\tProperties70:  {");
             fbx.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
             if(objects[i].Item2.transform.localPosition.x != 0 || objects[i].Item2.transform.localPosition.y != 0 || objects[i].Item2.transform.localPosition.z != 0)
-                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -objects[i].Item2.transform.localPosition.x * 100, objects[i].Item2.transform.localPosition.y * 100, objects[i].Item2.transform.localPosition.z * 100);
+                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", (double)-objects[i].Item2.transform.localPosition.x * 100, (double)objects[i].Item2.transform.localPosition.y * 100, (double)objects[i].Item2.transform.localPosition.z * 100);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tShading: Y");
             fbx.Append("\n\t\tCulling: \"CullingOff\"");
@@ -426,6 +425,70 @@ public static class FBXConverter
         fbx.Append("\n;------------------------------------------------------------------");
         fbx.Append("\n\nConnections:  {");
 
+        fbx.AppendFormat("\n\n\t;Model::{0}, Model::RootNode", objects[0].Item2.name);
+        fbx.AppendFormat("\n\tC: \"OO\",{0},0", objects[0].Item1);
+
+        for (int i = 1; i < objects.Count; i++)
+        {
+            int parentId = 0;
+
+            for(int j = 0; j < objects.Count; j++)
+            {
+                if (objects[i].Item2.transform.parent.name == objects[j].Item2.name)
+                    parentId = objects[j].Item1;
+            } //for
+
+            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", objects[i].Item2.name, objects[i].Item2.transform.parent.name);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", objects[i].Item1, parentId);
+        } //for
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            int parentId = 0;
+
+            for (int j = 0; j < objects.Count; j++)
+            {
+                if (meshes[i].Item2.transform.parent.name == objects[j].Item2.name)
+                    parentId = objects[j].Item1;
+            } //for
+
+            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", meshes[i].Item2.name, meshes[i].Item2.transform.parent.name);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", meshes[i].Item1, parentId);
+        } //for
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            int materialId = 0;
+
+            for (int j = 0; j < materials.Count; j++)
+            {
+                if (meshes[i].Item2.material.name == materials[j].Item2)
+                    materialId = materials[j].Item1;
+            } //for
+
+            fbx.AppendFormat("\n\n\t;Material::{0}, Model::{1}", meshes[i].Item2.material.name, meshes[i].Item2.name);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", materialId, meshes[i].Item1);
+        } //for
+        for (int i = 0; i < geometryIds.Count; i++)
+        {
+            string meshName = "";
+
+            for (int j = 0; j < meshes.Count; j++)
+            {
+                if (geometryIds[i].Item2 == meshes[j].Item1)
+                    meshName = meshes[j].Item2.name;
+            } //for
+
+            fbx.AppendFormat("\n\n\t;Geometry::Scene, Model::{0}", meshName);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", geometryIds[i].Item1, geometryIds[i].Item2);
+        } //for
+
+        //Takes
+        fbx.Append("\n}");
+        fbx.Append("\n;Takes section");
+        fbx.Append("\n;----------------------------------------------------");
+        fbx.Append("\n\nTakes:  {");
+        fbx.Append("\n\tCurrent: \"\"");
+        fbx.Append("\n}");
+
         using (FileStream stream = new FileStream("debug.fbx", FileMode.Create))
         {
             StreamWriter writer = new StreamWriter(stream);
@@ -453,7 +516,6 @@ public static class FBXConverter
         {
             if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
             {
-                Debug.Log("Name: " + t.gameObject.GetComponent<SkinnedMeshRenderer>().name);
                 meshes.Add(new Tuple<int, SkinnedMeshRenderer>(modelId, t.gameObject.GetComponent<SkinnedMeshRenderer>()));
                 geometryIds.Add(new Tuple<int, int>(geometryId, modelId));
                 geometryId++;
