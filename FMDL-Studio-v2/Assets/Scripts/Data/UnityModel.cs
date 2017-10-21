@@ -8,6 +8,7 @@ public class UnityModel
     {
         public Vector3[] vertices;
         public Vector3[] normals;
+        public Vector4[] tangents;
         public BoneWeight[] boneWeights;
         public Vector2[] UVs;
         public int[] faces;
@@ -138,10 +139,14 @@ public class UnityModel
 
         for (int i = 0; i < fmdl.GetObjects().Length; i++)
         {
+            int lod = 0; //Temporary solution. 0 loads the normal faces. 1 loads the first set of LOD faces. 2 loads the next set. Etc....
+
             meshes[i].vertices = new Vector3[fmdl.GetObjects()[i].vertices.Length];
             meshes[i].normals = new Vector3[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].tangents = new Vector4[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].UVs = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
+            //meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
+            meshes[i].faces = new int[fmdl.GetObjects()[i].lodFaces[lod].Length * 3];
             meshes[i].boneWeights = new BoneWeight[fmdl.GetObjects()[i].additionalVertexData.Length];
 
             //Position
@@ -152,6 +157,7 @@ public class UnityModel
             for (int j = 0; j < fmdl.GetObjects()[i].additionalVertexData.Length; j++)
             {
                 meshes[i].normals[j] = new Vector3(fmdl.GetObjects()[i].additionalVertexData[j].normalZ, fmdl.GetObjects()[i].additionalVertexData[j].normalY, fmdl.GetObjects()[i].additionalVertexData[j].normalX);
+                meshes[i].tangents[j] = new Vector4(fmdl.GetObjects()[i].additionalVertexData[j].tangentZ, fmdl.GetObjects()[i].additionalVertexData[j].tangentY, fmdl.GetObjects()[i].additionalVertexData[j].tangentX, fmdl.GetObjects()[i].additionalVertexData[j].tangentW);
 
                 if (fmdl.GetBonesPosition() != -1)
                 {
@@ -169,11 +175,18 @@ public class UnityModel
             } //for
 
             //Faces
-            for (int j = 0, h = 0; j < fmdl.GetObjects()[i].faces.Length; j++, h += 3)
+            /*for (int j = 0, h = 0; j < fmdl.GetObjects()[i].faces.Length; j++, h += 3)
             {
                 meshes[i].faces[h] = fmdl.GetObjects()[i].faces[j].vertex1Id;
                 meshes[i].faces[h + 1] = fmdl.GetObjects()[i].faces[j].vertex2Id;
                 meshes[i].faces[h + 2] = fmdl.GetObjects()[i].faces[j].vertex3Id;
+            } //for*/
+
+            for (int j = 0, h = 0; j < fmdl.GetObjects()[i].lodFaces[lod].Length; j++, h += 3)
+            {
+                meshes[i].faces[h] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex1Id;
+                meshes[i].faces[h + 1] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex2Id;
+                meshes[i].faces[h + 2] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex3Id;
             } //for
 
             //Render the mesh in Unity.
@@ -202,6 +215,7 @@ public class UnityModel
             mesh.vertices = meshes[i].vertices;
             mesh.uv = meshes[i].UVs;
             mesh.normals = meshes[i].normals;
+            mesh.tangents = meshes[i].tangents;
             mesh.triangles = meshes[i].faces;
             mesh.boneWeights = meshes[i].boneWeights;
 

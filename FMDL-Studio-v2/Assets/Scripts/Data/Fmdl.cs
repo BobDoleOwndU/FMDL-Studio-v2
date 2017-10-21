@@ -57,7 +57,7 @@ public class Fmdl
         public ushort stringId;
         public ushort parentId;
         public ushort boundingBoxId;
-        public ushort unknown1; //always 0x1?
+        public ushort unknown0; //always 0x1?
         public float localPositionX;
         public float localPositionY;
         public float localPositionZ;
@@ -82,7 +82,7 @@ public class Fmdl
         public ushort numObjects;
         public ushort firstObjectId;
         public ushort id;
-        public ushort materialId;
+        public ushort unknown0;
     } //struct
 
     public struct Section0Block3Entry
@@ -94,7 +94,7 @@ public class Fmdl
         public ushort numVertices;
         public uint firstFaceVertexId;
         public uint numFaceVertices;
-        public ulong unknown2;
+        public ulong firstFaceIndexId;
     } //struct
 
     public struct Section0Block4Entry
@@ -181,7 +181,7 @@ public class Fmdl
 
     public struct Section0BlockCEntry
     {
-        public ushort unknown0;
+        public ushort section1BlockId;
         public ushort length;
         public uint offset;
     } //struct
@@ -200,7 +200,7 @@ public class Fmdl
 
     public struct Section0BlockEEntry
     {
-        public uint unknown0;
+        public uint unknown0; //Flag of some sort?
         public uint length;
         public uint offset;
     } //struct
@@ -299,7 +299,7 @@ public class Fmdl
         public Vertex[] vertices;
         public AdditionalVertexData[] additionalVertexData;
         public Face[] faces;
-        public Face[] lodFaces;
+        public Face[][] lodFaces;
     } //struct
 
     //Instance Variables
@@ -548,7 +548,7 @@ public class Fmdl
                 section0Block0Entries[i].stringId = reader.ReadUInt16();
                 section0Block0Entries[i].parentId = reader.ReadUInt16();
                 section0Block0Entries[i].boundingBoxId = reader.ReadUInt16();
-                section0Block0Entries[i].unknown1 = reader.ReadUInt16();
+                section0Block0Entries[i].unknown0 = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x8;
                 section0Block0Entries[i].localPositionX = reader.ReadSingle();
                 section0Block0Entries[i].localPositionY = reader.ReadSingle();
@@ -598,7 +598,7 @@ public class Fmdl
                 section0Block2Entries[i].firstObjectId = reader.ReadUInt16();
                 section0Block2Entries[i].id = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x4;
-                section0Block2Entries[i].materialId = reader.ReadUInt16();
+                section0Block2Entries[i].unknown0 = reader.ReadUInt16();
                 reader.BaseStream.Position += 0xE;
             } //for
         } //if
@@ -623,7 +623,7 @@ public class Fmdl
                 reader.BaseStream.Position += 0x4;
                 section0Block3Entries[i].firstFaceVertexId = reader.ReadUInt32();
                 section0Block3Entries[i].numFaceVertices = reader.ReadUInt32();
-                section0Block3Entries[i].unknown2 = reader.ReadUInt64();
+                section0Block3Entries[i].firstFaceIndexId = reader.ReadUInt64();
                 reader.BaseStream.Position += 0x10;
             } //for
         } //if
@@ -795,7 +795,7 @@ public class Fmdl
 
             for (int i = 0; i < section0BlockCEntries.Length; i++)
             {
-                section0BlockCEntries[i].unknown0 = reader.ReadUInt16();
+                section0BlockCEntries[i].section1BlockId = reader.ReadUInt16();
                 section0BlockCEntries[i].length = reader.ReadUInt16();
                 section0BlockCEntries[i].offset = reader.ReadUInt32();
             } //for
@@ -864,7 +864,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x10 - LOD INFO
+         * SECTION 0 BLOCK 0x11 - LOD INFO
          *
          ****************************************************************/
         if (faceIndicesIndex != -1)
@@ -876,8 +876,8 @@ public class Fmdl
             {
                 section0Block11Entries[i].firstFaceVertexId = reader.ReadUInt32();
                 section0Block11Entries[i].numFaceVertices = reader.ReadUInt32();
-            }
-        }
+            } //for
+        } //if
 
         /****************************************************************
          *
@@ -1064,19 +1064,30 @@ public class Fmdl
          * LOD FACES
          *
          ****************************************************************/
-        for (int i = 0; i < section0Block11Entries.Length; i++)
         {
-            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[faceIndicesIndex].offset + section0Block11Entries[i].firstFaceVertexId;
+            int section0Block11Counter = 0;
 
-            objects[i].lodFaces = new Face[section0Block11Entries[i].numFaceVertices / 3];
-
-            for (int j = 0; j < objects[i].lodFaces.Length; j++)
+            for (int i = 0; i < objects.Length; i++)
             {
-                objects[i].lodFaces[j].vertex1Id = reader.ReadUInt16();
-                objects[i].lodFaces[j].vertex2Id = reader.ReadUInt16();
-                objects[i].lodFaces[j].vertex3Id = reader.ReadUInt16();
+                objects[i].lodFaces = new Face[section0Block10Entries[0].unknown0][];
+
+                for (int j = 0; j < objects[i].lodFaces.Length; j++)
+                {
+                    reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2 + section0Block11Entries[section0Block11Counter].firstFaceVertexId * 2;
+
+                    objects[i].lodFaces[j] = new Face[section0Block11Entries[section0Block11Counter].numFaceVertices / 3];
+
+                    for (int h = 0; h < objects[i].lodFaces[j].Length; h++)
+                    {
+                        objects[i].lodFaces[j][h].vertex1Id = reader.ReadUInt16();
+                        objects[i].lodFaces[j][h].vertex2Id = reader.ReadUInt16();
+                        objects[i].lodFaces[j][h].vertex3Id = reader.ReadUInt16();
+                    } //for
+
+                    section0Block11Counter++;
+                } //for
             } //for
-        } //for
+        } //code block
 
 
         /****************************************************************
@@ -1231,7 +1242,7 @@ public class Fmdl
             Console.WriteLine("Mesh Group: " + Hashing.TryGetStringName(section0Block16Entries[section0Block1Entries[section0Block2Entries[i].meshGroupId].stringId]));
             Console.WriteLine("Number of Objects: " + section0Block2Entries[i].numObjects);
             Console.WriteLine("Number of Preceding Objects: " + section0Block2Entries[i].firstObjectId);
-            Console.WriteLine("Material ID: " + section0Block2Entries[i].materialId);
+            Console.WriteLine("Material ID: " + section0Block2Entries[i].unknown0);
         } //for
     } //OutputSection2Info
 
@@ -1249,7 +1260,7 @@ public class Fmdl
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
             Console.WriteLine("Face Offset: " + section0Block3Entries[i].firstFaceVertexId);
             Console.WriteLine("Num Face Vertices: " + section0Block3Entries[i].numFaceVertices);
-            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].unknown2);
+            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].firstFaceIndexId);
         } //for
     } //OutputSection2Info
 
