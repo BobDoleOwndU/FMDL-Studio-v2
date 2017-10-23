@@ -9,13 +9,26 @@ public static class FBXConverter
     static int materialId = 800000000;
     static int geometryId = 900000000;
     static int modelId = 1000000001;
-    static List<Tuple<int, SkinnedMeshRenderer>> meshes = new List<Tuple<int, SkinnedMeshRenderer>>(0);
+
     static List<Tuple<int, GameObject>> objects = new List<Tuple<int, GameObject>>(0);
-    static List<Tuple<int, int>> geometryIds = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, int>> objectConnections = new List<Tuple<int, int>>(0);
+
+    static List<int> nodes = new List<int>(0);
+    static List<Tuple<int, Transform>> bones = new List<Tuple<int, Transform>>(0);
+    static List<Tuple<int, int>> nodesToBones = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, int>> boneConnections = new List<Tuple<int, int>>(0);
+
+    static List<int> geometry = new List<int>(0);
+    static List<Tuple<int, SkinnedMeshRenderer>> meshes = new List<Tuple<int, SkinnedMeshRenderer>>(0);
+    static List<Tuple<int, int>> geometryToMeshes = new List<Tuple<int, int>>(0);
+
     static List<Tuple<int, string>> materials = new List<Tuple<int, string>>(0);
+    static List<Tuple<int, int>> materialsToMeshes = new List<Tuple<int, int>>(0);
 
     public static void ConvertToFBX(GameObject gameObject)
     {
+        Clear();
+
         int numModelObjects = 1;
         StringBuilder fbx = new StringBuilder();
 
@@ -126,7 +139,7 @@ public static class FBXConverter
         fbx.Append("\n;------------------------------------------------------------------");
         fbx.Append("\n\nDefinitions:  {");
         fbx.Append("\n\tVersion: 100");
-        fbx.AppendFormat("\n\tCount: {0}", numModelObjects + meshes.Count + materials.Count + 1);
+        fbx.AppendFormat("\n\tCount: {0}", numModelObjects + meshes.Count + bones.Count + materials.Count + 1);
         fbx.Append("\n\tObjectType: \"GlobalSettings\" {");
         fbx.Append("\n\t\tCount: 1");
         fbx.Append("\n\t}");
@@ -208,6 +221,18 @@ public static class FBXConverter
         fbx.Append("\n\t\t\t}");
         fbx.Append("\n\t\t}");
         fbx.Append("\n\t}");
+
+        fbx.Append("\n\tObjectType: \"NodeAttribute\" {");
+        fbx.AppendFormat("\n\t\tCount: {0}", bones.Count);
+        fbx.Append("\n\t\tPropertyTemplate: \"FbxSkeleton\" {");
+        fbx.Append("\n\t\t\tProperties70:  {");
+        fbx.Append("\n\t\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",0.8,0.8,0.8");
+        fbx.Append("\n\t\t\t\tP: \"Size\", \"double\", \"Number\", \"\",100");
+        fbx.Append("\n\t\t\t\tP: \"LimbLength\", \"double\", \"Number\", \"\",1");
+        fbx.Append("\n\t\t\t}");
+        fbx.Append("\n\t\t}");
+        fbx.Append("\n\t}");
+
         fbx.Append("\n\tObjectType: \"Geometry\" {");
         fbx.AppendFormat("\n\t\tCount: {0}", meshes.Count);
         fbx.Append("\n\t\tPropertyTemplate: \"FbxMesh\" {");
@@ -251,13 +276,19 @@ public static class FBXConverter
         fbx.Append("\n; Object properties");
         fbx.Append("\n;------------------------------------------------------------------");
         fbx.Append("\n\nObjects:  {");
-        for(int i = 0; i < meshes.Count; i++)
+        for(int i = 0; i < bones.Count; i++)
         {
-            fbx.AppendFormat("\n\tGeometry: {0}, \"Geometry::Scene\", \"Mesh\" {{", geometryIds[i].Item1);
+            fbx.AppendFormat("\n\tNodeAttribute: {0}, \"NodeAttribute::\", \"LimbNode\" {{", nodesToBones[i].Item1);
+            fbx.Append("\n\t\tTypeFlags: \"Skeleton\"");
+            fbx.Append("\n\t}");
+        } //for
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            fbx.AppendFormat("\n\tGeometry: {0}, \"Geometry::Scene\", \"Mesh\" {{", geometryToMeshes[i].Item1);
             fbx.AppendFormat("\n\t\tVertices: *{0} {{", meshes[i].Item2.sharedMesh.vertices.Length * 3);
             fbx.Append("\n\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.vertices.Length; j++)
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.vertices[j].x * 100, (double)meshes[i].Item2.sharedMesh.vertices[j].y * 100, (double)meshes[i].Item2.sharedMesh.vertices[j].z * 100);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.vertices[j].x * 100, meshes[i].Item2.sharedMesh.vertices[j].y * 100, meshes[i].Item2.sharedMesh.vertices[j].z * 100);
             fbx.Length--;
             fbx.Append("\n\t\t}");
             fbx.AppendFormat("\n\t\tPolygonVertexIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
@@ -276,9 +307,9 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
             {
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, (double)meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
             } //for
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
@@ -299,9 +330,9 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
             {
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
-                fbx.AppendFormat("{0},{1},{2},", (double)-meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, (double)meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z);
             } //for
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
@@ -332,7 +363,7 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv.Length * 2);
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.uv.Length; j++)
-                fbx.AppendFormat("{0},{1},", (double)meshes[i].Item2.sharedMesh.uv[j].x, (double)meshes[i].Item2.sharedMesh.uv[j].y);
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, meshes[i].Item2.sharedMesh.uv[j].y);
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
@@ -382,10 +413,26 @@ public static class FBXConverter
             fbx.Append("\n\t\tVersion: 232");
             fbx.Append("\n\t\tProperties70:  {");
             fbx.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-            if(objects[i].Item2.transform.localPosition.x != 0 || objects[i].Item2.transform.localPosition.y != 0 || objects[i].Item2.transform.localPosition.z != 0)
-                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", (double)-objects[i].Item2.transform.localPosition.x * 100, (double)objects[i].Item2.transform.localPosition.y * 100, (double)objects[i].Item2.transform.localPosition.z * 100);
+            if (objects[i].Item2.transform.localPosition.x != 0 || objects[i].Item2.transform.localPosition.y != 0 || objects[i].Item2.transform.localPosition.z != 0)
+                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -objects[i].Item2.transform.localPosition.x * 100, objects[i].Item2.transform.localPosition.y * 100, objects[i].Item2.transform.localPosition.z * 100);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tShading: Y");
+            fbx.Append("\n\t\tCulling: \"CullingOff\"");
+            fbx.Append("\n\t}");
+        } //for
+        for (int i = 0; i < bones.Count; i++)
+        {
+            fbx.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"LimbNode\" {{", bones[i].Item1, bones[i].Item2.gameObject.name);
+            fbx.Append("\n\t\tVersion: 232");
+            fbx.Append("\n\t\tProperties70:  {");
+            fbx.Append("\n\t\t\tP: \"InheritType\", \"enum\", \"\", \"\",1");
+            fbx.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+            fbx.Append("\n\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",0");
+            if (bones[i].Item2.transform.localPosition.x != 0 || bones[i].Item2.transform.localPosition.y != 0 || bones[i].Item2.transform.localPosition.z != 0)
+                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -bones[i].Item2.transform.localPosition.x * 100, bones[i].Item2.transform.localPosition.y * 100, bones[i].Item2.transform.localPosition.z * 100);
+            fbx.AppendFormat("\n\t\t\tP: \"MaxHandle\", \"int\", \"Integer\", \"UH\",{0}", i + 1);
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tShading: T");
             fbx.Append("\n\t\tCulling: \"CullingOff\"");
             fbx.Append("\n\t}");
         } //for
@@ -401,7 +448,7 @@ public static class FBXConverter
             fbx.Append("\n\t\tCulling: \"CullingOff\"");
             fbx.Append("\n\t}");
         } //for
-        for(int i = 0; i < materials.Count; i++)
+        for (int i = 0; i < materials.Count; i++)
         {
             fbx.AppendFormat("\n\tMaterial: {0}, \"Material::{1}\", \"\" {{", materials[i].Item1, materials[i].Item2);
             fbx.Append("\n\t\tVersion: 102");
@@ -428,57 +475,56 @@ public static class FBXConverter
         fbx.AppendFormat("\n\n\t;Model::{0}, Model::RootNode", objects[0].Item2.name);
         fbx.AppendFormat("\n\tC: \"OO\",{0},0", objects[0].Item1);
 
-        for (int i = 1; i < objects.Count; i++)
+        for (int i = 0; i < objectConnections.Count; i++)
         {
-            int parentId = 0;
+            string name1 = "";
+            string name2 = objects.Find(x => x.Item1 == objectConnections[i].Item2).Item2.name;
 
-            for(int j = 0; j < objects.Count; j++)
+            if (objects.Find(x => x.Item1 == objectConnections[i].Item1) != null)
             {
-                if (objects[i].Item2.transform.parent.name == objects[j].Item2.name)
-                    parentId = objects[j].Item1;
-            } //for
+                name1 = objects.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
+            } //if ends
+            else if (meshes.Find(x => x.Item1 == objectConnections[i].Item1) != null)
+            {
+                name1 = meshes.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
+            } //if ends
+            else if (meshes.Find(x => x.Item1 == bones[i].Item1) != null)
+            {
+                name1 = bones.Find(x => x.Item1 == objectConnections[i].Item1).Item2.gameObject.name;
+            } //if ends
 
-            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", objects[i].Item2.name, objects[i].Item2.transform.parent.name);
-            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", objects[i].Item1, parentId);
+            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", name1, name2);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", objectConnections[i].Item1, objectConnections[i].Item2);
         } //for
-        for (int i = 0; i < meshes.Count; i++)
+        for(int i = 0; i < nodesToBones.Count; i++)
         {
-            int parentId = 0;
+            string name1 = bones.Find(x => x.Item1 == nodesToBones[i].Item2).Item2.gameObject.name;
 
-            for (int j = 0; j < objects.Count; j++)
-            {
-                if (meshes[i].Item2.transform.parent.name == objects[j].Item2.name)
-                    parentId = objects[j].Item1;
-            } //for
-
-            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", meshes[i].Item2.name, meshes[i].Item2.transform.parent.name);
-            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", meshes[i].Item1, parentId);
+            fbx.AppendFormat("\n\n\t;NodeAttribute::, Model::{0}", name1);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", nodesToBones[i].Item1, nodesToBones[i].Item2);
         } //for
-        for (int i = 0; i < meshes.Count; i++)
+        for (int i = 0; i < boneConnections.Count; i++)
         {
-            int materialId = 0;
+            string name1 = bones.Find(x => x.Item1 == boneConnections[i].Item1).Item2.gameObject.name;
+            string name2 = bones.Find(x => x.Item1 == boneConnections[i].Item2).Item2.gameObject.name;
 
-            for (int j = 0; j < materials.Count; j++)
-            {
-                if (meshes[i].Item2.material.name == materials[j].Item2)
-                    materialId = materials[j].Item1;
-            } //for
-
-            fbx.AppendFormat("\n\n\t;Material::{0}, Model::{1}", meshes[i].Item2.material.name, meshes[i].Item2.name);
-            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", materialId, meshes[i].Item1);
+            fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", name1, name2);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", boneConnections[i].Item1, boneConnections[i].Item2);
         } //for
-        for (int i = 0; i < geometryIds.Count; i++)
+        for (int i = 0; i < materialsToMeshes.Count; i++)
         {
-            string meshName = "";
+            string name1 = materials.Find(x => x.Item1 == materialsToMeshes[i].Item1).Item2;
+            string name2 = meshes.Find(x => x.Item1 == materialsToMeshes[i].Item2).Item2.name;
 
-            for (int j = 0; j < meshes.Count; j++)
-            {
-                if (geometryIds[i].Item2 == meshes[j].Item1)
-                    meshName = meshes[j].Item2.name;
-            } //for
+            fbx.AppendFormat("\n\n\t;Material::{0}, Model::{1}", name1, name2);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", materialsToMeshes[i].Item1, materialsToMeshes[i].Item2);
+        } //for
+        for (int i = 0; i < geometryToMeshes.Count; i++)
+        {
+            string name1 = meshes.Find(x => x.Item1 == geometryToMeshes[i].Item2).Item2.name;
 
-            fbx.AppendFormat("\n\n\t;Geometry::Scene, Model::{0}", meshName);
-            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", geometryIds[i].Item1, geometryIds[i].Item2);
+            fbx.AppendFormat("\n\n\t;Geometry::Scene, Model::{0}", name1);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", geometryToMeshes[i].Item1, geometryToMeshes[i].Item2);
         } //for
 
         //Takes
@@ -497,8 +543,7 @@ public static class FBXConverter
             writer.Write(fbx.ToString());
         } //using
 
-        Debug.Log("Num Meshes: " + meshes.Count);
-        Debug.Log("Num Materials: " + materials.Count);
+        Debug.Log("Done!");
     } //ConvertToFbx
 
     private static void GetNumObjects(Transform transform, ref int count)
@@ -512,34 +557,133 @@ public static class FBXConverter
 
     private static void GetObjects(Transform transform)
     {
+        GetMeshes(transform);
+
+        foreach(Transform t in meshes[0].Item2.bones)
+        {
+            bones.Add(new Tuple<int, Transform>(modelId, t));
+            modelId++;
+            nodes.Add(modelId);
+            nodesToBones.Add(new Tuple<int, int>(modelId, modelId - 1));
+            modelId++;
+        } //foreach
+
+        GetBoneConnections();
+        GetGameObjects(transform);
+        Debug.Log(objects.Count);
+        GetGameObjectConnections();
+    } //GetObjects
+
+    private static void GetMeshes(Transform transform)
+    {
         foreach (Transform t in transform)
         {
             if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
             {
                 meshes.Add(new Tuple<int, SkinnedMeshRenderer>(modelId, t.gameObject.GetComponent<SkinnedMeshRenderer>()));
-                geometryIds.Add(new Tuple<int, int>(geometryId, modelId));
+                geometry.Add(geometryId);
+                geometryToMeshes.Add(new Tuple<int, int>(geometryId, modelId));
+
                 geometryId++;
 
                 bool addMaterial = true;
+                int foundId = 0;
 
                 for (int i = 0; i < materials.Count; i++)
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().material.name == materials[i].Item2)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.name == materials[i].Item2)
+                    {
                         addMaterial = false;
+                        foundId = materials[i].Item1;
+                    } //if
 
                 if (addMaterial)
                 {
-                    materials.Add(new Tuple<int, string>(materialId++, t.gameObject.GetComponent<SkinnedMeshRenderer>().material.name));
+                    materials.Add(new Tuple<int, string>(materialId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.name));
+                    materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId));
                     materialId++;
                 } //if
+                else
+                {
+                    materialsToMeshes.Add(new Tuple<int, int>(foundId, modelId));
+                } //else
+
+                modelId++;
+                GetMeshes(t);
             } //if
-            else
+        } //foreach
+    } //GetMeshes ends
+
+    private static void GetGameObjects(Transform transform)
+    {
+        foreach(Transform t in transform)
+        {
+            bool add = true;
+
+            for(int i = 0; i < meshes.Count; i++)
+            {
+                if (t.name == meshes[i].Item2.name)
+                    add = false;
+            } //for
+
+            for (int i = 0; i < bones.Count; i++)
+            {
+                if (t.name == bones[i].Item2.name)
+                    add = false;
+            } //for
+
+            if (add)
             {
                 objects.Add(new Tuple<int, GameObject>(modelId, t.gameObject));
-            } //else
+                modelId++;
+            } //if
 
-            modelId++;
+            GetGameObjects(t);
+        } //foreach ends
+    } //GetGameObjects
 
-            GetObjects(t);
-        } //foreach
-    } //GetMeshesAndMaterials
+    private static void GetBoneConnections()
+    {
+        for(int i = 0; i < bones.Count; i++)
+        {
+            for (int j = 1; j < bones.Count; j++)
+                if (bones[j].Item2.parent.gameObject.name == bones[i].Item2.gameObject.name)
+                    boneConnections.Add(new Tuple<int, int>(bones[j].Item1, bones[i].Item1));
+        } //for
+    } //GetGameObjectConnections
+
+    private static void GetGameObjectConnections()
+    {
+        for(int i = 0; i < objects.Count; i++)
+        {
+            for (int j = 0; j < objects.Count; j++)
+                if (objects[j].Item2.transform.parent != null)
+                    if (objects[j].Item2.transform.parent.name == objects[i].Item2.name)
+                        objectConnections.Add(new Tuple<int, int>(objects[j].Item1, objects[i].Item1));
+
+            for (int j = 0; j < meshes.Count; j++)
+                if (meshes[j].Item2.gameObject.transform.parent.name == objects[i].Item2.name)
+                    objectConnections.Add(new Tuple<int, int>(meshes[j].Item1, objects[i].Item1));
+
+            for (int j = 0; j < bones.Count; j++)
+                if (bones[j].Item2.parent.name == objects[i].Item2.name)
+                    objectConnections.Add(new Tuple<int, int>(bones[j].Item1, objects[i].Item1));
+        } //for ends
+    } //GetGameObjectConnections
+
+    private static void Clear()
+    {
+        materialId = 800000000;
+        geometryId = 900000000;
+        modelId = 1000000001;
+        objects.Clear();
+        objectConnections.Clear();
+        nodes.Clear();
+        bones.Clear();
+        nodesToBones.Clear();
+        geometry.Clear();
+        meshes.Clear();
+        geometryToMeshes.Clear();
+        materials.Clear();
+        materialsToMeshes.Clear();
+    } //Clear
 } //class
