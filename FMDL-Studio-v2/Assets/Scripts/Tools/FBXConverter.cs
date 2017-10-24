@@ -21,256 +21,27 @@ public static class FBXConverter
     static List<int> geometry = new List<int>(0);
     static List<Tuple<int, SkinnedMeshRenderer>> meshes = new List<Tuple<int, SkinnedMeshRenderer>>(0);
     static List<Tuple<int, int>> geometryToMeshes = new List<Tuple<int, int>>(0);
+    static List<int> deformers = new List<int>(0);
+    static List<Tuple<int, int>> deformersToGeometry = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, int>> subDeformersToDeformers = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, int>> bonesToSubDeformers = new List<Tuple<int, int>>(0);
 
     static List<Tuple<int, string>> materials = new List<Tuple<int, string>>(0);
     static List<Tuple<int, int>> materialsToMeshes = new List<Tuple<int, int>>(0);
 
-    public static void ConvertToFBX(GameObject gameObject)
+    public static void ConvertToFBX(GameObject gameObject, string filePath)
     {
         Clear();
 
         int numModelObjects = 1;
         StringBuilder fbx = new StringBuilder();
+        StringBuilder header = new StringBuilder();
 
         GetNumObjects(gameObject.transform, ref numModelObjects);
 
         objects.Add(new Tuple<int, GameObject>(1000000000, gameObject));
 
         GetObjects(gameObject.transform);
-
-        //Header
-        fbx.Append("; FBX 7.4.0 project file");
-        fbx.Append("\n; Copyright (C) 1997-2015 Autodesk Inc. and/or its licensors.");
-        fbx.Append("\n; All rights reserved.");
-        fbx.Append("\n; ----------------------------------------------------");
-        fbx.Append("\n\nFBXHeaderExtension:  {");
-        fbx.Append("\n\tFBXHeaderVersion: 1003");
-        fbx.Append("\n\tFBXVersion: 7400");
-        fbx.Append("\n\tCreationTimeStamp:  {");
-        fbx.Append("\n\t\tVersion: 1000");
-        fbx.AppendFormat("\n\t\tYear: {0}", DateTime.Now.Year);
-        fbx.AppendFormat("\n\t\tMonth: {0}", DateTime.Now.Month);
-        fbx.AppendFormat("\n\t\tDay: {0}", DateTime.Now.Day);
-        fbx.AppendFormat("\n\t\tHour: {0}", DateTime.Now.Hour);
-        fbx.AppendFormat("\n\t\tMinute: {0}", DateTime.Now.Minute);
-        fbx.AppendFormat("\n\t\tSecond: {0}", DateTime.Now.Second);
-        fbx.AppendFormat("\n\t\tMillisecond: {0}", DateTime.Now.Millisecond);
-        fbx.Append("\n\t}");
-        fbx.Append("\n\tCreator: \"Fmdl Studio v2\"");
-        fbx.Append("\n\tSceneInfo: \"SceneInfo::GlobalInfo\", \"UserData\" {");
-        fbx.Append("\n\t\tType: \"UserData\"");
-        fbx.Append("\n\t\tVersion: 100");
-        fbx.Append("\n\t\tMetaData:  {");
-        fbx.Append("\n\t\t\tVersion: 100");
-        fbx.Append("\n\t\t\tTitle: \"Unity to FBX converter\"");
-        fbx.Append("\n\t\t\tSubject: \"\"");
-        fbx.Append("\n\t\t\tAuthor: \"BobDoleOwndU and Joey35233\"");
-        fbx.Append("\n\t\t\tKeywords: \"export fmdl fbx unity\"");
-        fbx.Append("\n\t\t\tRevision: \"0.1\"");
-        fbx.Append("\n\t\t\tComment: \"Development version. Do not expect working results.\"");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t\tProperties70:  {");
-        fbx.Append("\n\t\t\tP: \"DocumentUrl\", \"KString\", \"Url\", \"\", \"<AppLocation>\"");
-        fbx.Append("\n\t\t\tP: \"SrcDocumentUrl\", \"KString\", \"Url\", \"\", \"<AppLocation>\"");
-        fbx.Append("\n\t\t\tP: \"Original\", \"Compound\", \"\", \"\"");
-        fbx.Append("\n\t\t\tP: \"Original|ApplicationVendor\", \"KString\", \"\", \"\", \"BobDoleOwndU and Joey35233\"");
-        fbx.Append("\n\t\t\tP: \"Original|ApplicationName\", \"KString\", \"\", \"\", \"Fmdl Studio v2\"");
-        fbx.Append("\n\t\t\tP: \"Original|ApplicationVersion\", \"KString\", \"\", \"\", \"0.1\"");
-        fbx.Append("\n\t\t\tP: \"Original|DateTime_GMT\", \"DateTime\", \"\", \"\", \"\"");
-        fbx.Append("\n\t\t\tP: \"Original|FileName\", \"KString\", \"\", \"\", \"\"");
-        fbx.Append("\n\t\t\tP: \"LastSaved\", \"Compound\", \"\", \"\"");
-        fbx.Append("\n\t\t\tP: \"LastSaved|ApplicationVendor\", \"KString\", \"\", \"\", \"BobDoleOwndU and Joey35233\"");
-        fbx.Append("\n\t\t\tP: \"LastSaved|ApplicationName\", \"KString\", \"\", \"\", \"Fmdl Studio v2\"");
-        fbx.Append("\n\t\t\tP: \"LastSaved|ApplicationVersion\", \"KString\", \"\", \"\", \"0.1\"");
-        fbx.Append("\n\t\t\tP: \"LastSaved|DateTime_GMT\", \"DateTime\", \"\", \"\", \"\"");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t}");
-        fbx.Append("\n}");
-
-        //Global Settings
-        fbx.Append("\nGlobalSettings:  {");
-        fbx.Append("\n\tVersion: 1000");
-        fbx.Append("\n\tProperties70:  {");
-        fbx.Append("\n\t\tP: \"UpAxis\", \"int\", \"Integer\", \"\",1");
-        fbx.Append("\n\t\tP: \"UpAxisSign\", \"int\", \"Integer\", \"\",1");
-        fbx.Append("\n\t\tP: \"FrontAxis\", \"int\", \"Integer\", \"\",2");
-        fbx.Append("\n\t\tP: \"FrontAxisSign\", \"int\", \"Integer\", \"\",1");
-        fbx.Append("\n\t\tP: \"CoordAxis\", \"int\", \"Integer\", \"\",0");
-        fbx.Append("\n\t\tP: \"CoordAxisSign\", \"int\", \"Integer\", \"\",1");
-        fbx.Append("\n\t\tP: \"OriginalUpAxis\", \"int\", \"Integer\", \"\",-1");
-        fbx.Append("\n\t\tP: \"OriginalUpAxisSign\", \"int\", \"Integer\", \"\",1");
-        fbx.Append("\n\t\tP: \"UnitScaleFactor\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\tP: \"OriginalUnitScaleFactor\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\tP: \"AmbientColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
-        fbx.Append("\n\t\tP: \"DefaultCamera\", \"KString\", \"\", \"\", \"Producer Perspective\"");
-        fbx.Append("\n\t\tP: \"TimeMode\", \"enum\", \"\", \"\",0");
-        fbx.Append("\n\t\tP: \"TimeProtocol\", \"enum\", \"\", \"\",2");
-        fbx.Append("\n\t\tP: \"SnapOnFrameMode\", \"enum\", \"\", \"\",0");
-        fbx.Append("\n\t\tP: \"TimeSpanStart\", \"KTime\", \"Time\", \"\",0");
-        fbx.Append("\n\t\tP: \"TimeSpanStop\", \"KTime\", \"Time\", \"\",46186158000");
-        fbx.Append("\n\t\tP: \"CustomFrameRate\", \"double\", \"Number\", \"\",-1");
-        fbx.Append("\n\t\tP: \"TimeMarker\", \"Compound\", \"\", \"\"");
-        fbx.Append("\n\t\tP: \"CurrentTimeMarker\", \"int\", \"Integer\", \"\",-1");
-        fbx.Append("\n\t}");
-        fbx.Append("\n}");
-
-        //Documents Description
-        fbx.Append("\n\n; Documents Description");
-        fbx.Append("\n;------------------------------------------------------------------");
-        fbx.Append("\n\nDocuments:  {");
-        fbx.Append("\n\tCount: 1");
-        fbx.Append("\n\tDocument: 9999999999, \"Scene\", \"Scene\" {");
-        fbx.Append("\n\t\tProperties70:  {");
-        fbx.Append("\n\t\t\tP: \"SourceObject\", \"object\", \"\", \"\"");
-        fbx.Append("\n\t\t\tP: \"ActiveAnimStackName\", \"KString\", \"\", \"\", \"\"");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t\tRootNode: 0");
-        fbx.Append("\n\t}");
-        fbx.Append("\n}");
-
-        //Document References
-        fbx.Append("\n\n; Document References");
-        fbx.Append("\n;------------------------------------------------------------------");
-        fbx.Append("\n\nReferences:  {");
-        fbx.Append("\n}");
-
-        //Object Definitions
-        fbx.Append("\n\n; Object definitions");
-        fbx.Append("\n;------------------------------------------------------------------");
-        fbx.Append("\n\nDefinitions:  {");
-        fbx.Append("\n\tVersion: 100");
-        fbx.AppendFormat("\n\tCount: {0}", numModelObjects + meshes.Count + bones.Count + materials.Count + 1);
-        fbx.Append("\n\tObjectType: \"GlobalSettings\" {");
-        fbx.Append("\n\t\tCount: 1");
-        fbx.Append("\n\t}");
-        fbx.Append("\n\tObjectType: \"Model\" {");
-        fbx.AppendFormat("\n\t\tCount: {0}", numModelObjects);
-        fbx.Append("\n\t\tPropertyTemplate: \"FbxNode\" {");
-        fbx.Append("\n\t\t\tProperties70:  {");
-        fbx.Append("\n\t\t\t\tP: \"QuaternionInterpolate\", \"enum\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationOffset\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"RotationPivot\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingOffset\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingPivot\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationActive\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMinX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMinY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMinZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMaxX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMaxY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"TranslationMaxZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationOrder\", \"enum\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationSpaceForLimitOnly\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationStiffnessX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationStiffnessY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationStiffnessZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"AxisLen\", \"double\", \"Number\", \"\",10");
-        fbx.Append("\n\t\t\t\tP: \"PreRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"PostRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"RotationActive\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMinX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMinY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMinZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMaxX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMaxY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"RotationMaxZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"InheritType\", \"enum\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingActive\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",1,1,1");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMinX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMinY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMinZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMaxX\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMaxY\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"ScalingMaxZ\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"GeometricTranslation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"GeometricRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"GeometricScaling\", \"Vector3D\", \"Vector\", \"\",1,1,1");
-        fbx.Append("\n\t\t\t\tP: \"MinDampRangeX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MinDampRangeY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MinDampRangeZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampRangeX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampRangeY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampRangeZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MinDampStrengthX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MinDampStrengthY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MinDampStrengthZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampStrengthX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampStrengthY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"MaxDampStrengthZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"PreferedAngleX\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"PreferedAngleY\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"PreferedAngleZ\", \"double\", \"Number\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"LookAtProperty\", \"object\", \"\", \"\"");
-        fbx.Append("\n\t\t\t\tP: \"UpVectorProperty\", \"object\", \"\", \"\"");
-        fbx.Append("\n\t\t\t\tP: \"Show\", \"bool\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"NegativePercentShapeSupport\", \"bool\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",-1");
-        fbx.Append("\n\t\t\t\tP: \"Freeze\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"LODBox\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"Lcl Rotation\", \"Lcl Rotation\", \"\", \"A\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"Lcl Scaling\", \"Lcl Scaling\", \"\", \"A\",1,1,1");
-        fbx.Append("\n\t\t\t\tP: \"Visibility\", \"Visibility\", \"\", \"A\",1");
-        fbx.Append("\n\t\t\t\tP: \"Visibility Inheritance\", \"Visibility Inheritance\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t}");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t}");
-
-        fbx.Append("\n\tObjectType: \"NodeAttribute\" {");
-        fbx.AppendFormat("\n\t\tCount: {0}", bones.Count);
-        fbx.Append("\n\t\tPropertyTemplate: \"FbxSkeleton\" {");
-        fbx.Append("\n\t\t\tProperties70:  {");
-        fbx.Append("\n\t\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",0.8,0.8,0.8");
-        fbx.Append("\n\t\t\t\tP: \"Size\", \"double\", \"Number\", \"\",100");
-        fbx.Append("\n\t\t\t\tP: \"LimbLength\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\t\t}");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t}");
-
-        fbx.Append("\n\tObjectType: \"Geometry\" {");
-        fbx.AppendFormat("\n\t\tCount: {0}", meshes.Count);
-        fbx.Append("\n\t\tPropertyTemplate: \"FbxMesh\" {");
-        fbx.Append("\n\t\t\tProperties70:  {");
-        fbx.Append("\n\t\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",0.8,0.8,0.8");
-        fbx.Append("\n\t\t\t\tP: \"BBoxMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"BBoxMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"Primary Visibility\", \"bool\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"Casts Shadows\", \"bool\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"Receive Shadows\", \"bool\", \"\", \"\",1");
-        fbx.Append("\n\t\t\t}");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t}");
-        fbx.Append("\n\tObjectType: \"Material\" {");
-        fbx.AppendFormat("\n\t\tCount: {0}", materials.Count);
-        fbx.Append("\n\t\tPropertyTemplate: \"FbxSurfaceLambert\" {");
-        fbx.Append("\n\t\t\tProperties70:  {");
-        fbx.Append("\n\t\t\t\tP: \"ShadingModel\", \"KString\", \"\", \"\", \"Lambert\"");
-        fbx.Append("\n\t\t\t\tP: \"MultiLayer\", \"bool\", \"\", \"\",0");
-        fbx.Append("\n\t\t\t\tP: \"EmissiveColor\", \"Color\", \"\", \"A\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"EmissiveFactor\", \"Number\", \"\", \"A\",1");
-        fbx.Append("\n\t\t\t\tP: \"AmbientColor\", \"Color\", \"\", \"A\",0.2,0.2,0.2");
-        fbx.Append("\n\t\t\t\tP: \"AmbientFactor\", \"Number\", \"\", \"A\",1");
-        fbx.Append("\n\t\t\t\tP: \"DiffuseColor\", \"Color\", \"\", \"A\",0.8,0.8,0.8");
-        fbx.Append("\n\t\t\t\tP: \"DiffuseFactor\", \"Number\", \"\", \"A\",1");
-        fbx.Append("\n\t\t\t\tP: \"Bump\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"NormalMap\", \"Vector3D\", \"Vector\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"BumpFactor\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"TransparentColor\", \"Color\", \"\", \"A\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"TransparencyFactor\", \"Number\", \"\", \"A\",0");
-        fbx.Append("\n\t\t\t\tP: \"DisplacementColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"DisplacementFactor\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\t\t\tP: \"VectorDisplacementColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
-        fbx.Append("\n\t\t\t\tP: \"VectorDisplacementFactor\", \"double\", \"Number\", \"\",1");
-        fbx.Append("\n\t\t\t}");
-        fbx.Append("\n\t\t}");
-        fbx.Append("\n\t}");
-        fbx.Append("\n}");
 
         //Object Properties
         fbx.Append("\n; Object properties");
@@ -288,7 +59,7 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\tVertices: *{0} {{", meshes[i].Item2.sharedMesh.vertices.Length * 3);
             fbx.Append("\n\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.vertices.Length; j++)
-                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.vertices[j].x * 100, meshes[i].Item2.sharedMesh.vertices[j].y * 100, meshes[i].Item2.sharedMesh.vertices[j].z * 100);
+                fbx.AppendFormat("{0},{1},{2},", -meshes[i].Item2.sharedMesh.vertices[j].x, meshes[i].Item2.sharedMesh.vertices[j].y, meshes[i].Item2.sharedMesh.vertices[j].z);
             fbx.Length--;
             fbx.Append("\n\t\t}");
             fbx.AppendFormat("\n\t\tPolygonVertexIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
@@ -414,7 +185,7 @@ public static class FBXConverter
             fbx.Append("\n\t\tProperties70:  {");
             fbx.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
             if (objects[i].Item2.transform.localPosition.x != 0 || objects[i].Item2.transform.localPosition.y != 0 || objects[i].Item2.transform.localPosition.z != 0)
-                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -objects[i].Item2.transform.localPosition.x * 100, objects[i].Item2.transform.localPosition.y * 100, objects[i].Item2.transform.localPosition.z * 100);
+                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -objects[i].Item2.transform.localPosition.x, objects[i].Item2.transform.localPosition.y, objects[i].Item2.transform.localPosition.z);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tShading: Y");
             fbx.Append("\n\t\tCulling: \"CullingOff\"");
@@ -429,7 +200,7 @@ public static class FBXConverter
             fbx.Append("\n\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
             fbx.Append("\n\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",0");
             if (bones[i].Item2.transform.localPosition.x != 0 || bones[i].Item2.transform.localPosition.y != 0 || bones[i].Item2.transform.localPosition.z != 0)
-                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -bones[i].Item2.transform.localPosition.x * 100, bones[i].Item2.transform.localPosition.y * 100, bones[i].Item2.transform.localPosition.z * 100);
+                fbx.AppendFormat("\n\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",{0},{1},{2}", -bones[i].Item2.transform.localPosition.x, bones[i].Item2.transform.localPosition.y, bones[i].Item2.transform.localPosition.z);
             fbx.AppendFormat("\n\t\t\tP: \"MaxHandle\", \"int\", \"Integer\", \"UH\",{0}", i + 1);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tShading: T");
@@ -448,6 +219,18 @@ public static class FBXConverter
             fbx.Append("\n\t\tCulling: \"CullingOff\"");
             fbx.Append("\n\t}");
         } //for
+
+        fbx.Append("\n\tPose: 2222222222, \"Pose::BIND_POSES\", \"BindPose\" {");
+        fbx.Append("\n\t\tType: \"BindPose\"");
+        fbx.Append("\n\t\tVersion: 100");
+        fbx.AppendFormat("\n\t\tNbPoseNodes: {0}", geometry.Count);
+        for(int i = 0; i < geometry.Count; i++)
+        {
+            fbx.Append("\n\t\tPoseNode:  {");
+            fbx.AppendFormat("\n\t\t\tNode: {0}", geometry[i]);
+            fbx.Append("\n\t\t}");
+        } //for
+        fbx.Append("\n\t}");
         for (int i = 0; i < materials.Count; i++)
         {
             fbx.AppendFormat("\n\tMaterial: {0}, \"Material::{1}\", \"\" {{", materials[i].Item1, materials[i].Item2);
@@ -465,8 +248,74 @@ public static class FBXConverter
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t}");
         } //for
-        fbx.Append("\n}");
+        for(int i = 0; i < deformers.Count; i++)
+        {
+            HashSet<int> usedBones = GetUsedBones(meshes[i].Item2);
 
+            fbx.AppendFormat("\n\tDeformer: {0}, \"Deformer::\", \"Skin\" {{", deformers[i]);
+            fbx.Append("\n\t\tVersion: 100");
+            fbx.Append("\n\t\tLink_DeformAcuracy: 50");
+            fbx.Append("\n\t}");
+
+            foreach (int j in usedBones)
+            {
+                List<int> indices = new List<int>(0);
+                List<float> weights = new List<float>(0);
+
+                subDeformersToDeformers.Add(new Tuple<int, int>(modelId, deformers[i]));
+                bonesToSubDeformers.Add(new Tuple<int, int>(bones[j].Item1, modelId));
+
+                for(int h = 0; h < meshes[i].Item2.sharedMesh.boneWeights.Length; h++)
+                {
+                    if (meshes[i].Item2.sharedMesh.boneWeights[h].boneIndex0 == j)
+                    {
+                        indices.Add(h);
+                        weights.Add(meshes[i].Item2.sharedMesh.boneWeights[h].weight0);
+                    } //if
+                    else if (meshes[i].Item2.sharedMesh.boneWeights[h].boneIndex1 == j)
+                    {
+                        indices.Add(h);
+                        weights.Add(meshes[i].Item2.sharedMesh.boneWeights[h].weight1);
+                    } //if
+                    else if (meshes[i].Item2.sharedMesh.boneWeights[h].boneIndex2 == j)
+                    {
+                        indices.Add(h);
+                        weights.Add(meshes[i].Item2.sharedMesh.boneWeights[h].weight2);
+                    } //if
+                    else if (meshes[i].Item2.sharedMesh.boneWeights[h].boneIndex3 == j)
+                    {
+                        indices.Add(h);
+                        weights.Add(meshes[i].Item2.sharedMesh.boneWeights[h].weight3);
+                    } //if
+                } //for ends
+                
+                fbx.AppendFormat("\n\tDeformer: {0}, \"SubDeformer::\", \"Cluster\" {{", modelId);
+                fbx.Append("\n\t\tVersion: 100");
+                fbx.Append("\n\t\tUserData: \"\", \"\"");
+                fbx.AppendFormat("\n\t\tIndexes: *{0} {{", indices.Count);
+                fbx.Append("\n\t\t\ta: ");
+                for(int h = 0; h < indices.Count; h++)
+                    fbx.AppendFormat("{0},", indices[h]);
+                fbx.Length--;
+                fbx.Append("\n\t\t}");
+                fbx.AppendFormat("\n\t\tWeights: *{0} {{", weights.Count);
+                fbx.Append("\n\t\t\ta: ");
+                for (int h = 0; h < weights.Count; h++)
+                    fbx.AppendFormat("{0},", weights[h]);
+                fbx.Length--;
+                fbx.Append("\n\t\t}");
+                fbx.Append("\n\t\tTransform: *16 {");
+                fbx.Append("\n\t\t\ta: ");
+                fbx.AppendFormat("{0},{1},{2},{3},", meshes[i].Item2.sharedMesh.bindposes[j][0, 0], -meshes[i].Item2.sharedMesh.bindposes[j][1, 0], -meshes[i].Item2.sharedMesh.bindposes[j][2, 0], meshes[i].Item2.sharedMesh.bindposes[j][3, 0]);
+                fbx.AppendFormat("{0},{1},{2},{3},", -meshes[i].Item2.sharedMesh.bindposes[j][0, 1], meshes[i].Item2.sharedMesh.bindposes[j][1, 1], meshes[i].Item2.sharedMesh.bindposes[j][2, 1], meshes[i].Item2.sharedMesh.bindposes[j][3, 1]);
+                fbx.AppendFormat("{0},{1},{2},{3},", -meshes[i].Item2.sharedMesh.bindposes[j][0, 2], meshes[i].Item2.sharedMesh.bindposes[j][1, 2], meshes[i].Item2.sharedMesh.bindposes[j][2, 2], meshes[i].Item2.sharedMesh.bindposes[j][3, 2]);
+                fbx.AppendFormat("{0},{1},{2},{3}", -meshes[i].Item2.sharedMesh.bindposes[j][0, 3], meshes[i].Item2.sharedMesh.bindposes[j][1, 3], meshes[i].Item2.sharedMesh.bindposes[j][2, 3], meshes[i].Item2.sharedMesh.bindposes[j][3, 3]);
+                fbx.Append("\n\t\t}");
+                fbx.Append("\n\t}");
+                modelId++;
+            } //foreach
+        } //for
+        fbx.Append("\n}");
         //Object Connections
         fbx.Append("\n\n; Object connections");
         fbx.Append("\n;------------------------------------------------------------------");
@@ -526,6 +375,22 @@ public static class FBXConverter
             fbx.AppendFormat("\n\n\t;Geometry::Scene, Model::{0}", name1);
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", geometryToMeshes[i].Item1, geometryToMeshes[i].Item2);
         } //for
+        for (int i = 0; i < deformersToGeometry.Count; i++)
+        {
+            fbx.Append("\n\n\t;Deformer::, Geometry::Scene");
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", deformersToGeometry[i].Item1, deformersToGeometry[i].Item2);
+        } //for
+        for (int i = 0; i < subDeformersToDeformers.Count; i++)
+        {
+            fbx.Append("\n\n\t;SubDeformer::, Deformer::");
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", subDeformersToDeformers[i].Item1, subDeformersToDeformers[i].Item2);
+        } //for
+        for (int i = 0; i < bonesToSubDeformers.Count; i++)
+        {
+            string name1 = bones.Find(x => x.Item1 == bonesToSubDeformers[i].Item1).Item2.gameObject.name;
+            fbx.AppendFormat("\n\n\t;Model::{0}, SubDeformer::", name1);
+            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", bonesToSubDeformers[i].Item1, bonesToSubDeformers[i].Item2);
+        } //for
 
         //Takes
         fbx.Append("\n}");
@@ -535,12 +400,254 @@ public static class FBXConverter
         fbx.Append("\n\tCurrent: \"\"");
         fbx.Append("\n}");
 
-        using (FileStream stream = new FileStream("debug.fbx", FileMode.Create))
+        //Header
+        header.Append("; FBX 7.4.0 project file");
+        header.Append("\n; Copyright (C) 1997-2015 Autodesk Inc. and/or its licensors.");
+        header.Append("\n; All rights reserved.");
+        header.Append("\n; ----------------------------------------------------");
+        header.Append("\n\nFBXHeaderExtension:  {");
+        header.Append("\n\tFBXHeaderVersion: 1003");
+        header.Append("\n\tFBXVersion: 7400");
+        header.Append("\n\tCreationTimeStamp:  {");
+        header.Append("\n\t\tVersion: 1000");
+        header.AppendFormat("\n\t\tYear: {0}", DateTime.Now.Year);
+        header.AppendFormat("\n\t\tMonth: {0}", DateTime.Now.Month);
+        header.AppendFormat("\n\t\tDay: {0}", DateTime.Now.Day);
+        header.AppendFormat("\n\t\tHour: {0}", DateTime.Now.Hour);
+        header.AppendFormat("\n\t\tMinute: {0}", DateTime.Now.Minute);
+        header.AppendFormat("\n\t\tSecond: {0}", DateTime.Now.Second);
+        header.AppendFormat("\n\t\tMillisecond: {0}", DateTime.Now.Millisecond);
+        header.Append("\n\t}");
+        header.Append("\n\tCreator: \"Fmdl Studio v2\"");
+        header.Append("\n\tSceneInfo: \"SceneInfo::GlobalInfo\", \"UserData\" {");
+        header.Append("\n\t\tType: \"UserData\"");
+        header.Append("\n\t\tVersion: 100");
+        header.Append("\n\t\tMetaData:  {");
+        header.Append("\n\t\t\tVersion: 100");
+        header.Append("\n\t\t\tTitle: \"Unity to FBX converter\"");
+        header.Append("\n\t\t\tSubject: \"\"");
+        header.Append("\n\t\t\tAuthor: \"BobDoleOwndU and Joey35233\"");
+        header.Append("\n\t\t\tKeywords: \"export fmdl fbx unity\"");
+        header.Append("\n\t\t\tRevision: \"0.1\"");
+        header.Append("\n\t\t\tComment: \"This is an unofficial exporter. Results may vary.\"");
+        header.Append("\n\t\t}");
+        header.Append("\n\t\tProperties70:  {");
+        header.AppendFormat("\n\t\t\tP: \"DocumentUrl\", \"KString\", \"Url\", \"\", \"{0}\"", filePath);
+        header.AppendFormat("\n\t\t\tP: \"SrcDocumentUrl\", \"KString\", \"Url\", \"\", \"{0}\"", filePath);
+        header.Append("\n\t\t\tP: \"Original\", \"Compound\", \"\", \"\"");
+        header.Append("\n\t\t\tP: \"Original|ApplicationVendor\", \"KString\", \"\", \"\", \"BobDoleOwndU and Joey35233\"");
+        header.Append("\n\t\t\tP: \"Original|ApplicationName\", \"KString\", \"\", \"\", \"Fmdl Studio v2\"");
+        header.Append("\n\t\t\tP: \"Original|ApplicationVersion\", \"KString\", \"\", \"\", \"0.1\"");
+        header.Append("\n\t\t\tP: \"Original|DateTime_GMT\", \"DateTime\", \"\", \"\", \"\"");
+        header.Append("\n\t\t\tP: \"Original|FileName\", \"KString\", \"\", \"\", \"\"");
+        header.Append("\n\t\t\tP: \"LastSaved\", \"Compound\", \"\", \"\"");
+        header.Append("\n\t\t\tP: \"LastSaved|ApplicationVendor\", \"KString\", \"\", \"\", \"BobDoleOwndU and Joey35233\"");
+        header.Append("\n\t\t\tP: \"LastSaved|ApplicationName\", \"KString\", \"\", \"\", \"Fmdl Studio v2\"");
+        header.Append("\n\t\t\tP: \"LastSaved|ApplicationVersion\", \"KString\", \"\", \"\", \"0.1\"");
+        header.Append("\n\t\t\tP: \"LastSaved|DateTime_GMT\", \"DateTime\", \"\", \"\", \"\"");
+        header.Append("\n\t\t}");
+        header.Append("\n\t}");
+        header.Append("\n}");
+
+        //Global Settings
+        header.Append("\nGlobalSettings:  {");
+        header.Append("\n\tVersion: 1000");
+        header.Append("\n\tProperties70:  {");
+        header.Append("\n\t\tP: \"UpAxis\", \"int\", \"Integer\", \"\",1");
+        header.Append("\n\t\tP: \"UpAxisSign\", \"int\", \"Integer\", \"\",1");
+        header.Append("\n\t\tP: \"FrontAxis\", \"int\", \"Integer\", \"\",2");
+        header.Append("\n\t\tP: \"FrontAxisSign\", \"int\", \"Integer\", \"\",1");
+        header.Append("\n\t\tP: \"CoordAxis\", \"int\", \"Integer\", \"\",0");
+        header.Append("\n\t\tP: \"CoordAxisSign\", \"int\", \"Integer\", \"\",1");
+        header.Append("\n\t\tP: \"OriginalUpAxis\", \"int\", \"Integer\", \"\",-1");
+        header.Append("\n\t\tP: \"OriginalUpAxisSign\", \"int\", \"Integer\", \"\",1");
+        header.Append("\n\t\tP: \"UnitScaleFactor\", \"double\", \"Number\", \"\",100");
+        header.Append("\n\t\tP: \"OriginalUnitScaleFactor\", \"double\", \"Number\", \"\",100");
+        header.Append("\n\t\tP: \"AmbientColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
+        header.Append("\n\t\tP: \"DefaultCamera\", \"KString\", \"\", \"\", \"Producer Perspective\"");
+        header.Append("\n\t\tP: \"TimeMode\", \"enum\", \"\", \"\",0");
+        header.Append("\n\t\tP: \"TimeProtocol\", \"enum\", \"\", \"\",2");
+        header.Append("\n\t\tP: \"SnapOnFrameMode\", \"enum\", \"\", \"\",0");
+        header.Append("\n\t\tP: \"TimeSpanStart\", \"KTime\", \"Time\", \"\",0");
+        header.Append("\n\t\tP: \"TimeSpanStop\", \"KTime\", \"Time\", \"\",46186158000");
+        header.Append("\n\t\tP: \"CustomFrameRate\", \"double\", \"Number\", \"\",-1");
+        header.Append("\n\t\tP: \"TimeMarker\", \"Compound\", \"\", \"\"");
+        header.Append("\n\t\tP: \"CurrentTimeMarker\", \"int\", \"Integer\", \"\",-1");
+        header.Append("\n\t}");
+        header.Append("\n}");
+
+        //Documents Description
+        header.Append("\n\n; Documents Description");
+        header.Append("\n;------------------------------------------------------------------");
+        header.Append("\n\nDocuments:  {");
+        header.Append("\n\tCount: 1");
+        header.Append("\n\tDocument: 9999999999, \"Scene\", \"Scene\" {");
+        header.Append("\n\t\tProperties70:  {");
+        header.Append("\n\t\t\tP: \"SourceObject\", \"object\", \"\", \"\"");
+        header.Append("\n\t\t\tP: \"ActiveAnimStackName\", \"KString\", \"\", \"\", \"\"");
+        header.Append("\n\t\t}");
+        header.Append("\n\t\tRootNode: 0");
+        header.Append("\n\t}");
+        header.Append("\n}");
+
+        //Document References
+        header.Append("\n\n; Document References");
+        header.Append("\n;------------------------------------------------------------------");
+        header.Append("\n\nReferences:  {");
+        header.Append("\n}");
+
+        //Object Definitions
+        header.Append("\n\n; Object definitions");
+        header.Append("\n;------------------------------------------------------------------");
+        header.Append("\n\nDefinitions:  {");
+        header.Append("\n\tVersion: 100");
+        header.AppendFormat("\n\tCount: {0}", numModelObjects + meshes.Count + bones.Count + materials.Count + nodes.Count + deformers.Count + subDeformersToDeformers.Count + 2); //+ 2 is for global settings and pose.
+        header.Append("\n\tObjectType: \"GlobalSettings\" {");
+        header.Append("\n\t\tCount: 1");
+        header.Append("\n\t}");
+        header.Append("\n\tObjectType: \"Model\" {");
+        header.AppendFormat("\n\t\tCount: {0}", numModelObjects);
+        header.Append("\n\t\tPropertyTemplate: \"FbxNode\" {");
+        header.Append("\n\t\t\tProperties70:  {");
+        header.Append("\n\t\t\t\tP: \"QuaternionInterpolate\", \"enum\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationOffset\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"RotationPivot\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"ScalingOffset\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"ScalingPivot\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"TranslationActive\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"TranslationMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"TranslationMinX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMinY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMinZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMaxX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMaxY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"TranslationMaxZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationOrder\", \"enum\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationSpaceForLimitOnly\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationStiffnessX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationStiffnessY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationStiffnessZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"AxisLen\", \"double\", \"Number\", \"\",10");
+        header.Append("\n\t\t\t\tP: \"PreRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"PostRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"RotationActive\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"RotationMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"RotationMinX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMinY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMinZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMaxX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMaxY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"RotationMaxZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"InheritType\", \"enum\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingActive\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"ScalingMax\", \"Vector3D\", \"Vector\", \"\",1,1,1");
+        header.Append("\n\t\t\t\tP: \"ScalingMinX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMinY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMinZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMaxX\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMaxY\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"ScalingMaxZ\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"GeometricTranslation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"GeometricRotation\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"GeometricScaling\", \"Vector3D\", \"Vector\", \"\",1,1,1");
+        header.Append("\n\t\t\t\tP: \"MinDampRangeX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MinDampRangeY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MinDampRangeZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampRangeX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampRangeY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampRangeZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MinDampStrengthX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MinDampStrengthY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MinDampStrengthZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampStrengthX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampStrengthY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"MaxDampStrengthZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"PreferedAngleX\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"PreferedAngleY\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"PreferedAngleZ\", \"double\", \"Number\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"LookAtProperty\", \"object\", \"\", \"\"");
+        header.Append("\n\t\t\t\tP: \"UpVectorProperty\", \"object\", \"\", \"\"");
+        header.Append("\n\t\t\t\tP: \"Show\", \"bool\", \"\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"NegativePercentShapeSupport\", \"bool\", \"\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"DefaultAttributeIndex\", \"int\", \"Integer\", \"\",-1");
+        header.Append("\n\t\t\t\tP: \"Freeze\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"LODBox\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"Lcl Translation\", \"Lcl Translation\", \"\", \"A\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"Lcl Rotation\", \"Lcl Rotation\", \"\", \"A\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"Lcl Scaling\", \"Lcl Scaling\", \"\", \"A\",1,1,1");
+        header.Append("\n\t\t\t\tP: \"Visibility\", \"Visibility\", \"\", \"A\",1");
+        header.Append("\n\t\t\t\tP: \"Visibility Inheritance\", \"Visibility Inheritance\", \"\", \"\",1");
+        header.Append("\n\t\t\t}");
+        header.Append("\n\t\t}");
+        header.Append("\n\t}");
+
+        header.Append("\n\tObjectType: \"NodeAttribute\" {");
+        header.AppendFormat("\n\t\tCount: {0}", bones.Count);
+        header.Append("\n\t\tPropertyTemplate: \"FbxSkeleton\" {");
+        header.Append("\n\t\t\tProperties70:  {");
+        header.Append("\n\t\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",0.8,0.8,0.8");
+        header.Append("\n\t\t\t\tP: \"Size\", \"double\", \"Number\", \"\",100");
+        header.Append("\n\t\t\t\tP: \"LimbLength\", \"double\", \"Number\", \"\",1");
+        header.Append("\n\t\t\t}");
+        header.Append("\n\t\t}");
+        header.Append("\n\t}");
+
+        header.Append("\n\tObjectType: \"Geometry\" {");
+        header.AppendFormat("\n\t\tCount: {0}", meshes.Count);
+        header.Append("\n\t\tPropertyTemplate: \"FbxMesh\" {");
+        header.Append("\n\t\t\tProperties70:  {");
+        header.Append("\n\t\t\t\tP: \"Color\", \"ColorRGB\", \"Color\", \"\",0.8,0.8,0.8");
+        header.Append("\n\t\t\t\tP: \"BBoxMin\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"BBoxMax\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"Primary Visibility\", \"bool\", \"\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"Casts Shadows\", \"bool\", \"\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"Receive Shadows\", \"bool\", \"\", \"\",1");
+        header.Append("\n\t\t\t}");
+        header.Append("\n\t\t}");
+        header.Append("\n\t}");
+        header.Append("\n\tObjectType: \"Material\" {");
+        header.AppendFormat("\n\t\tCount: {0}", materials.Count);
+        header.Append("\n\t\tPropertyTemplate: \"FbxSurfaceLambert\" {");
+        header.Append("\n\t\t\tProperties70:  {");
+        header.Append("\n\t\t\t\tP: \"ShadingModel\", \"KString\", \"\", \"\", \"Lambert\"");
+        header.Append("\n\t\t\t\tP: \"MultiLayer\", \"bool\", \"\", \"\",0");
+        header.Append("\n\t\t\t\tP: \"EmissiveColor\", \"Color\", \"\", \"A\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"EmissiveFactor\", \"Number\", \"\", \"A\",1");
+        header.Append("\n\t\t\t\tP: \"AmbientColor\", \"Color\", \"\", \"A\",0.2,0.2,0.2");
+        header.Append("\n\t\t\t\tP: \"AmbientFactor\", \"Number\", \"\", \"A\",1");
+        header.Append("\n\t\t\t\tP: \"DiffuseColor\", \"Color\", \"\", \"A\",0.8,0.8,0.8");
+        header.Append("\n\t\t\t\tP: \"DiffuseFactor\", \"Number\", \"\", \"A\",1");
+        header.Append("\n\t\t\t\tP: \"Bump\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"NormalMap\", \"Vector3D\", \"Vector\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"BumpFactor\", \"double\", \"Number\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"TransparentColor\", \"Color\", \"\", \"A\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"TransparencyFactor\", \"Number\", \"\", \"A\",0");
+        header.Append("\n\t\t\t\tP: \"DisplacementColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"DisplacementFactor\", \"double\", \"Number\", \"\",1");
+        header.Append("\n\t\t\t\tP: \"VectorDisplacementColor\", \"ColorRGB\", \"Color\", \"\",0,0,0");
+        header.Append("\n\t\t\t\tP: \"VectorDisplacementFactor\", \"double\", \"Number\", \"\",1");
+        header.Append("\n\t\t\t}");
+        header.Append("\n\t\t}");
+        header.Append("\n\t}");
+        header.Append("\n\tObjectType: \"Deformer\" {");
+        header.AppendFormat("\n\t\tCount: {0}", deformers.Count + subDeformersToDeformers.Count);
+        header.Append("\n\t}");
+        header.Append("\n\tObjectType: \"Pose\" {");
+        header.Append("\n\t\tCount: 1");
+        header.Append("\n\t}");
+        header.Append("\n}");
+
+        using (FileStream stream = new FileStream(filePath, FileMode.Create))
         {
             StreamWriter writer = new StreamWriter(stream);
             writer.AutoFlush = true;
 
+            writer.Write(header.ToString());
             writer.Write(fbx.ToString());
+            stream.Close();
         } //using
 
         Debug.Log("Done!");
@@ -570,7 +677,6 @@ public static class FBXConverter
 
         GetBoneConnections();
         GetGameObjects(transform);
-        Debug.Log(objects.Count);
         GetGameObjectConnections();
     } //GetObjects
 
@@ -583,6 +689,11 @@ public static class FBXConverter
                 meshes.Add(new Tuple<int, SkinnedMeshRenderer>(modelId, t.gameObject.GetComponent<SkinnedMeshRenderer>()));
                 geometry.Add(geometryId);
                 geometryToMeshes.Add(new Tuple<int, int>(geometryId, modelId));
+
+                modelId++;
+
+                deformers.Add(modelId);
+                deformersToGeometry.Add(new Tuple<int, int>(modelId, geometryId));
 
                 geometryId++;
 
@@ -599,12 +710,12 @@ public static class FBXConverter
                 if (addMaterial)
                 {
                     materials.Add(new Tuple<int, string>(materialId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.name));
-                    materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId));
+                    materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId - 1));
                     materialId++;
                 } //if
                 else
                 {
-                    materialsToMeshes.Add(new Tuple<int, int>(foundId, modelId));
+                    materialsToMeshes.Add(new Tuple<int, int>(foundId, modelId - 1));
                 } //else
 
                 modelId++;
@@ -670,6 +781,25 @@ public static class FBXConverter
         } //for ends
     } //GetGameObjectConnections
 
+    private static HashSet<int> GetUsedBones(SkinnedMeshRenderer skinnedMeshRenderer)
+    {
+        HashSet<int> usedBones = new HashSet<int>();
+
+        for(int i = 0; i < skinnedMeshRenderer.sharedMesh.boneWeights.Length; i++)
+        {
+            if (skinnedMeshRenderer.sharedMesh.boneWeights[i].weight0 > 0)
+                usedBones.Add(skinnedMeshRenderer.sharedMesh.boneWeights[i].boneIndex0);
+            if (skinnedMeshRenderer.sharedMesh.boneWeights[i].weight1 > 0)
+                usedBones.Add(skinnedMeshRenderer.sharedMesh.boneWeights[i].boneIndex1);
+            if (skinnedMeshRenderer.sharedMesh.boneWeights[i].weight2 > 0)
+                usedBones.Add(skinnedMeshRenderer.sharedMesh.boneWeights[i].boneIndex2);
+            if (skinnedMeshRenderer.sharedMesh.boneWeights[i].weight3 > 0)
+                usedBones.Add(skinnedMeshRenderer.sharedMesh.boneWeights[i].boneIndex3);
+        } //for
+
+        return usedBones;
+    } //GetUsedBones
+
     private static void Clear()
     {
         materialId = 800000000;
@@ -680,9 +810,13 @@ public static class FBXConverter
         nodes.Clear();
         bones.Clear();
         nodesToBones.Clear();
+        boneConnections.Clear();
         geometry.Clear();
         meshes.Clear();
         geometryToMeshes.Clear();
+        deformers.Clear();
+        subDeformersToDeformers.Clear();
+        bonesToSubDeformers.Clear();
         materials.Clear();
         materialsToMeshes.Clear();
     } //Clear
