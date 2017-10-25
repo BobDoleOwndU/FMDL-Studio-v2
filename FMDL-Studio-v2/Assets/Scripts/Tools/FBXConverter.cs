@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using UnityEngine;
@@ -31,6 +32,8 @@ public static class FBXConverter
 
     public static void ConvertToFBX(GameObject gameObject, string filePath)
     {
+        CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+
         Clear();
 
         int numModelObjects = 1;
