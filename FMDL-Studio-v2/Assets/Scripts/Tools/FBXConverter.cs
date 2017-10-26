@@ -332,18 +332,15 @@ public static class FBXConverter
             string name1 = "";
             string name2 = objects.Find(x => x.Item1 == objectConnections[i].Item2).Item2.name;
 
+            Debug.Log(name2);
+            
             if (objects.Find(x => x.Item1 == objectConnections[i].Item1) != null)
-            {
                 name1 = objects.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
-            } //if ends
             else if (meshes.Find(x => x.Item1 == objectConnections[i].Item1) != null)
-            {
                 name1 = meshes.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
-            } //if ends
-            else if (meshes.Find(x => x.Item1 == bones[i].Item1) != null)
-            {
+            else if(i < bones.Count)
+                if (meshes.Find(x => x.Item1 == bones[i].Item1) != null)
                 name1 = bones.Find(x => x.Item1 == objectConnections[i].Item1).Item2.gameObject.name;
-            } //if ends
 
             fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", name1, name2);
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", objectConnections[i].Item1, objectConnections[i].Item2);
