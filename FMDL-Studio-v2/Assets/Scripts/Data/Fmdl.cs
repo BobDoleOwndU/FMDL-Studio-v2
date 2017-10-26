@@ -959,6 +959,7 @@ public class Fmdl
         for(int i = 0; i < objects.Length; i++)
         {
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
+            //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
 
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
@@ -1033,6 +1034,8 @@ public class Fmdl
                             break;
                     } //switch
                 } //for
+
+                reader.BaseStream.Position = position + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].length;
             } //for
 
             //align the stream.
