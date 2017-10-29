@@ -2,7 +2,7 @@
 
 public class FmdlWindow : EditorWindow
 {
-    [MenuItem("FMDL Studio/Import FMDL")]
+    [MenuItem("FMDL Studio/Import FMDL", false, 0)]
     public static void ShowWindow()
     {
         string windowPath = EditorUtility.OpenFilePanel("Select FMDL", "", "fmdl");
