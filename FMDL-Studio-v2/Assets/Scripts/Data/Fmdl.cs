@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static System.Half;
+using UnityEngine;
 
 public class Fmdl
 {
@@ -1107,6 +1108,31 @@ public class Fmdl
             } //for
         } //if
     } //Read
+
+    public void Write(GameObject fmdlObject, FileStream stream)
+    {
+        BinaryWriter writer = new BinaryWriter(stream);
+
+        int numModelObjects = 1;
+        Utils.GetNumObjects(fmdlObject.transform, ref numModelObjects);
+
+        const uint signature = 1279544646;
+        const uint hello0 = 1073909596;
+        const uint hello1 = 64;
+        const ulong hello2 = 7827455;
+        const ulong hello3 = 5;
+
+        writer.Write(signature);
+        writer.Write(unknown0);
+        writer.Write(unknown1);
+        writer.Write(unknown2);
+        writer.Write(unknown3);
+
+        for (int i = 0; i < numModelObjects; i++)
+        {
+
+        }
+    }
 
     /****************************************************************
      * 
