@@ -40,7 +40,7 @@ public static class FBXConverter
         StringBuilder fbx = new StringBuilder();
         StringBuilder header = new StringBuilder();
 
-        GetNumObjects(gameObject.transform, ref numModelObjects);
+        Utils.GetNumObjects(gameObject.transform, ref numModelObjects);
 
         objects.Add(new Tuple<int, GameObject>(1000000000, gameObject));
 
@@ -650,15 +650,6 @@ public static class FBXConverter
 
         Debug.Log("Done!");
     } //ConvertToFbx
-
-    private static void GetNumObjects(Transform transform, ref int count)
-    {
-        foreach (Transform t in transform)
-        {
-            count++;
-            GetNumObjects(t, ref count);
-        } //foreach
-    } //GetNumObjects
 
     private static void GetObjects(Transform transform)
     {

@@ -2,7 +2,7 @@
 
 public static class FmdlImporter
 {
-    public static void FMDLStream(string path)
+    public static void FMDLRead(string path)
     {
         FileStream stream = new FileStream(path, FileMode.Open);
 
