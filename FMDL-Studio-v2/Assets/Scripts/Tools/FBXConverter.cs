@@ -332,8 +332,6 @@ public static class FBXConverter
             string name1 = "";
             string name2 = objects.Find(x => x.Item1 == objectConnections[i].Item2).Item2.name;
 
-            Debug.Log(name2);
-            
             if (objects.Find(x => x.Item1 == objectConnections[i].Item1) != null)
                 name1 = objects.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
             else if (meshes.Find(x => x.Item1 == objectConnections[i].Item1) != null)

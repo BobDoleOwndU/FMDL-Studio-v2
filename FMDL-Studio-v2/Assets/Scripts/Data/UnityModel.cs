@@ -106,6 +106,15 @@ public class UnityModel
             bounds[i].SetMinMax(new Vector3(fmdl.GetSection0BlockDEntries()[i].minZ, fmdl.GetSection0BlockDEntries()[i].minY, fmdl.GetSection0BlockDEntries()[i].minX), new Vector3(fmdl.GetSection0BlockDEntries()[i].maxZ, fmdl.GetSection0BlockDEntries()[i].maxY, fmdl.GetSection0BlockDEntries()[i].maxX));
         } //for
 
+        Transform rootBone = new GameObject("[Root]").transform; //From what I can tell, the real name is "". But it looks kinda dumb having "" as its name; so using "[Root]" as a placeholder seems better.
+        rootBone.parent = fmdlGameObject.transform;
+
+        {
+            BoxCollider collider = rootBone.gameObject.AddComponent<BoxCollider>();
+            collider.center = rootBone.InverseTransformPoint(bounds[0].center); //Have to convert these to local positions. They're stored as world positions.
+            collider.size = bounds[0].size;
+        } //code block
+
         for (int i = 0; i < bones.Length; i++)
         {
             bones[i] = new GameObject().transform;
@@ -123,19 +132,9 @@ public class UnityModel
 
             if (fmdl.GetSection0Block0Entries()[i].parentId != 0xFFFF)
                 bones[i].parent = bones[fmdl.GetSection0Block0Entries()[i].parentId];
+            else
+                bones[i].parent = rootBone;
         } //for
-
-        Transform rootBone = new GameObject("[Root]").transform; //From what I can tell, the real name is "". But it looks kinda dumb having "" as its name; so using "[Root]" as a placeholder seems better.
-        rootBone.parent = fmdlGameObject.transform;
-
-        {
-            BoxCollider collider = rootBone.gameObject.AddComponent<BoxCollider>();
-            collider.center = rootBone.InverseTransformPoint(bounds[0].center); //Have to convert these to local positions. They're stored as world positions.
-            collider.size = bounds[0].size;
-
-            if (fmdl.GetBonesPosition() != -1)
-                bones[0].parent = rootBone;
-        } //code block
 
         for (int i = 0; i < fmdl.GetObjects().Length; i++)
         {
