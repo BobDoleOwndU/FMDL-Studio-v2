@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using static System.Half;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Fmdl
@@ -245,7 +246,10 @@ public class Fmdl
         public Half tangentZ;
         public Half tangentW;
 
-        public uint colour; //unconfirmed
+        public byte colourR;
+        public byte colourG;
+        public byte colourB;
+        public byte colourA;
 
         // These bytes are the bone weights, which are divided by 255
         public float boneWeightX;
@@ -989,7 +993,10 @@ public class Fmdl
                             objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
                             break;
                         case 3: //diffuse.
-                            objects[i].additionalVertexData[j].colour = reader.ReadUInt32();
+                            objects[i].additionalVertexData[j].colourR = reader.ReadByte();
+                            objects[i].additionalVertexData[j].colourG = reader.ReadByte();
+                            objects[i].additionalVertexData[j].colourB = reader.ReadByte();
+                            objects[i].additionalVertexData[j].colourA = reader.ReadByte();
                             break;
                         case 7: //bone indices.
                             objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
@@ -1118,22 +1125,112 @@ public class Fmdl
         int numModelObjects = 1;
         Utils.GetNumObjects(fmdlObject.transform, ref numModelObjects);
 
+        List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+        Utils.GetMeshes(fmdlObject.transform, meshes);
+
+        UnityEngine.Debug.Log(meshes.Count);
+
         const uint signature = 1279544646;
-        const uint hello0 = 1073909596;
-        const uint hello1 = 64;
-        const ulong hello2 = 7827455;
-        const ulong hello3 = 5;
+        const uint unknown0 = 1073909596;
+        const uint unknown1 = 64;
+        const uint unknown2 = 0;
+        const uint unknown3 = 7827455;
+        const uint unknown4 = 0;
+        const uint unknown5 = 5;
 
         writer.Write(signature);
         writer.Write(unknown0);
         writer.Write(unknown1);
         writer.Write(unknown2);
         writer.Write(unknown3);
+        writer.Write(unknown4);
+        writer.Write(unknown5);
 
-        for (int i = 0; i < numModelObjects; i++)
+        int[] faceCount = new int[meshes.Count];
+
+        //Writes VBuffer Data
+        for (int i = 0; i < meshes.Count; i++)
         {
+            //Vertices
+            for (int j = 0; j < meshes[i].sharedMesh.vertices.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.vertices[j].x);
+                writer.Write(meshes[i].sharedMesh.vertices[j].y);
+                writer.Write(meshes[i].sharedMesh.vertices[j].z);
+            }
 
+            //Normals
+            for (int j = 0; j < meshes[i].sharedMesh.normals.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.normals[j].x);
+                writer.Write(meshes[i].sharedMesh.normals[j].y);
+                writer.Write(meshes[i].sharedMesh.normals[j].z);
+            }
+
+            //Tangents
+            for (int j = 0; j < meshes[i].sharedMesh.tangents.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.tangents[j].x);
+                writer.Write(meshes[i].sharedMesh.tangents[j].y);
+                writer.Write(meshes[i].sharedMesh.tangents[j].z);
+            }
+
+            //Vertex Colour
+            for (int j = 0; j < meshes[i].sharedMesh.colors.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.colors[j].r);
+                writer.Write(meshes[i].sharedMesh.colors[j].g);
+                writer.Write(meshes[i].sharedMesh.colors[j].b);
+                writer.Write(meshes[i].sharedMesh.colors[j].a);
+            }
+
+            //Bone Weights
+            for (int j = 0; j < meshes[i].sharedMesh.boneWeights.Length; j++)
+            {
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].weight0);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].weight1);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].weight2);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].weight3);
+            }
+
+            //Bone Indices
+            for (int j = 0; j < meshes[i].sharedMesh.boneWeights.Length; j++)
+            {
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].boneIndex0);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].boneIndex1);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].boneIndex2);
+                writer.Write(0xFF * meshes[i].sharedMesh.boneWeights[j].boneIndex3);
+            }
+
+            //UV1
+            for (int j = 0; j < meshes[i].sharedMesh.uv.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.uv[j].x);
+                writer.Write(meshes[i].sharedMesh.uv[j].y);
+            }
+
+            //UV2
+            for (int j = 0; j < meshes[i].sharedMesh.uv2.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.uv2[j].x);
+                writer.Write(meshes[i].sharedMesh.uv2[j].y);
+            }
+
+            //UV3
+            for (int j = 0; j < meshes[i].sharedMesh.uv3.Length; j++)
+            {
+                writer.Write(meshes[i].sharedMesh.uv3[j].x);
+                writer.Write(meshes[i].sharedMesh.uv3[j].y);
+            }
+
+            //Faces
+            for (int j = 0; j < meshes[i].sharedMesh.triangles.Length; j++)
+            {
+                writer.Write((ushort)meshes[i].sharedMesh.triangles[j]);
+            }
         }
+
+        writer.Close();
     }
 
     /****************************************************************
