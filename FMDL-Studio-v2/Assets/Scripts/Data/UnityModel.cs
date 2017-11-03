@@ -9,6 +9,7 @@ public class UnityModel
         public Vector3[] vertices;
         public Vector3[] normals;
         public Vector4[] tangents;
+        public Color[] color;
         public BoneWeight[] boneWeights;
         public Vector2[] UVs;
         public int[] faces;

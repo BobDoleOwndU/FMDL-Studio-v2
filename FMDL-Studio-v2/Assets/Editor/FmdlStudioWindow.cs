@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public class FmdlWindow : EditorWindow
+public class FmdlStudioWindow : EditorWindow
 {
     [MenuItem("FMDL Studio/Import FMDL", false, 0)]
     public static void ImportFMDLOption()
@@ -17,7 +17,7 @@ public class FmdlWindow : EditorWindow
     {
         if (Selection.activeGameObject != null)
         {
-            string filePath = EditorUtility.SaveFilePanel("Save FBX", "", Selection.activeGameObject.name + ".fbx", "fbx");
+            string filePath = EditorUtility.SaveFilePanel("Export To FBX", "", Selection.activeGameObject.name, "fbx");
 
             if (!string.IsNullOrWhiteSpace(filePath))
                 FBXConverter.ConvertToFBX(Selection.activeGameObject, filePath);
@@ -27,4 +27,17 @@ public class FmdlWindow : EditorWindow
         else
             Debug.Log("No objects selected.");
     } //ExportFBXOption
+
+    [MenuItem("FMDL Studio/Export FMDL", false, 2)]
+    public static void ExportFMDLOption()
+    {
+        if (Selection.activeGameObject != null)
+        {
+            string windowPath = EditorUtility.SaveFilePanel("Export To FMDL", "", Selection.activeGameObject.name, "fmdl");
+            FmdlExporter.FMDLWrite(windowPath);
+        }
+        else
+            Debug.Log("No path selected.");
+        UnityEngine.Debug.Log("Selected FMDL Name: ");
+    } //ImportFMDLOption
 }
