@@ -239,8 +239,7 @@ public class Fmdl
         public Half normalY;
         public Half normalZ;
         public Half normalW;
-
-        //unconfirmed
+        
         public Half tangentX;
         public Half tangentY;
         public Half tangentZ;
@@ -917,15 +916,18 @@ public class Fmdl
          * NUMERICAL PARAMETERS
          *
          ****************************************************************/
-        reader.BaseStream.Position = section1Info[section1MaterialParametersIndex].offset + section1Offset;
-
-        for(int i = 0; i < materialParameters.Length; i++)
+        if (section1MaterialParametersIndex != -1)
         {
-            materialParameters[i].values = new float[4];
+            reader.BaseStream.Position = section1Info[section1MaterialParametersIndex].offset + section1Offset;
 
-            for (int j = 0; j < materialParameters[i].values.Length; j++)
-                materialParameters[i].values[j] = reader.ReadSingle();
-        } //for
+            for (int i = 0; i < materialParameters.Length; i++)
+            {
+                materialParameters[i].values = new float[4];
+
+                for (int j = 0; j < materialParameters[i].values.Length; j++)
+                    materialParameters[i].values[j] = reader.ReadSingle();
+            } //for
+        } //if
 
         /****************************************************************
          *
