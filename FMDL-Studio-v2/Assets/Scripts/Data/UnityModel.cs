@@ -74,6 +74,7 @@ public class UnityModel
                     Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds");
                     texture.name = textureName + ".dds";
                     materials[i].material.mainTexture = texture;
+                    //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
                 } //if
                 else
                 {
