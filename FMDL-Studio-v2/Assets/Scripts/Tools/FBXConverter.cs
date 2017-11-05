@@ -802,24 +802,27 @@ public static class FBXConverter
                 {
                     materials.Add(new Tuple<int, Material>(materialId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial));
                     materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId - 1));
-                    
-                    int foundTextureId = -1;
 
-                    for(int i = 0; i < textures.Count; i++)
-                        if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture == textures[i].Item2)
-                            foundTextureId = textures[i].Item1;
-
-                    if(foundTextureId == -1)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture != null)
                     {
-                        videos.Add(videoId);
-                        textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture));
-                        videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
-                        texturesToMaterials.Add(new Tuple<int, int>(textureId, materialId));
-                        videoId++;
-                        textureId++;
+                        int foundTextureId = -1;
+
+                        for (int i = 0; i < textures.Count; i++)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture == textures[i].Item2)
+                                foundTextureId = textures[i].Item1;
+
+                        if (foundTextureId == -1)
+                        {
+                            videos.Add(videoId);
+                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture));
+                            videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
+                            texturesToMaterials.Add(new Tuple<int, int>(textureId, materialId));
+                            videoId++;
+                            textureId++;
+                        } //if
+                        else
+                            texturesToMaterials.Add(new Tuple<int, int>(foundTextureId, materialId));
                     } //if
-                    else
-                        texturesToMaterials.Add(new Tuple<int, int>(foundTextureId, materialId));
 
                     materialId++;
                 } //if
