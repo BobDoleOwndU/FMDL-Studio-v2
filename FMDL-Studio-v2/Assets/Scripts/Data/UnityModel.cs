@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 public class UnityModel
@@ -121,8 +122,7 @@ public class UnityModel
         {
             bones[i] = new GameObject().transform;
             bones[i].position = new Vector3(fmdl.GetSection0Block0Entries()[i].worldPositionZ, fmdl.GetSection0Block0Entries()[i].worldPositionY, fmdl.GetSection0Block0Entries()[i].worldPositionX);
-
-            //Works, but the size is off for some reason?
+            
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
             collider.center = bones[i].InverseTransformPoint(bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
             collider.size = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].size;

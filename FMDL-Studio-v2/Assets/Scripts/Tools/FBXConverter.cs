@@ -329,10 +329,10 @@ public static class FBXConverter
             fbx.AppendFormat("\n\tVideo: {0}, \"Video::{1}\", \"Clip\" {{", videos[i], textures[i].Item2.name);
             fbx.Append("\n\t\tType: \"Clip\"");
             fbx.Append("\n\t\tProperties70:  {");
-            fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", @"D:\Unity Projects\FMDL-Studio-v2\FMDL-Studio-v2\" + gameObject.name + "\\" + textures[i].Item2.name);
+            fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tUseMipMap: 0");
-            fbx.AppendFormat("\n\t\tFilename: \"{0}\"", @"D:\Unity Projects\FMDL-Studio-v2\FMDL-Studio-v2\" + gameObject.name + "\\" + textures[i].Item2.name);
+            fbx.AppendFormat("\n\t\tFilename: \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name);
             fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name);
             fbx.Append("\n\t}");
         } //for
@@ -347,7 +347,7 @@ public static class FBXConverter
             fbx.Append("\n\t\t\tP: \"UseMaterial\", \"bool\", \"\", \"\",1");
             fbx.Append("\n\t\t}");
             fbx.AppendFormat("\n\t\tMedia: \"Video::{0}\"", textures[i].Item2.name);
-            fbx.AppendFormat("\n\t\tFileName: \"{0}\"", @"D:\Unity Projects\FMDL-Studio-v2\FMDL-Studio-v2\" + gameObject.name + "\\" + textures[i].Item2.name); //This won't work. But it's good enough for demo purposes.
+            fbx.AppendFormat("\n\t\tFileName: \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name); //This won't work. But it's good enough for demo purposes.
             fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name); //Same as above.
             fbx.Append("\n\t\tModelUVTranslation: 0,0");
             fbx.Append("\n\t\tModelUVScaling: 1,1");
@@ -434,7 +434,7 @@ public static class FBXConverter
             string name2 = materials.Find(x => x.Item1 == texturesToMaterials[i].Item2).Item2.name;
 
             fbx.AppendFormat("\n\n\t;Texture::{0}, Material::{1}", name1, name2);
-            fbx.AppendFormat("\n\tC: \"OO\",{0},{1}, \"DiffuseColor\"", texturesToMaterials[i].Item1, texturesToMaterials[i].Item2);
+            fbx.AppendFormat("\n\tC: \"OP\",{0},{1}, \"DiffuseColor\"", texturesToMaterials[i].Item1, texturesToMaterials[i].Item2);
         } //for
         for (int i = 0; i < videosToTextures.Count; i++)
         {
