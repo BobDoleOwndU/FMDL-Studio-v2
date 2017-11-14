@@ -10,7 +10,7 @@ public class UnityModel
         public Vector3[] vertices;
         public Vector3[] normals;
         public Vector4[] tangents;
-        public Color[] color;
+        public Color[] colour;
         public BoneWeight[] boneWeights;
         public Vector2[] UVs;
         public int[] faces;
@@ -160,7 +160,7 @@ public class UnityModel
             meshes[i].vertices = new Vector3[fmdl.GetObjects()[i].vertices.Length];
             meshes[i].normals = new Vector3[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].tangents = new Vector4[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].color = new Color[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].colour = new Color[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].UVs = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
             //meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
             meshes[i].faces = new int[fmdl.GetObjects()[i].lodFaces[lod].Length * 3];
@@ -175,7 +175,7 @@ public class UnityModel
             {
                 meshes[i].normals[j] = new Vector3(fmdl.GetObjects()[i].additionalVertexData[j].normalZ, fmdl.GetObjects()[i].additionalVertexData[j].normalY, fmdl.GetObjects()[i].additionalVertexData[j].normalX);
                 meshes[i].tangents[j] = new Vector4(fmdl.GetObjects()[i].additionalVertexData[j].tangentZ, fmdl.GetObjects()[i].additionalVertexData[j].tangentY, fmdl.GetObjects()[i].additionalVertexData[j].tangentX, fmdl.GetObjects()[i].additionalVertexData[j].tangentW);
-                meshes[i].color[j] = new Color(fmdl.GetObjects()[i].additionalVertexData[j].colourR, fmdl.GetObjects()[i].additionalVertexData[j].colourG, fmdl.GetObjects()[i].additionalVertexData[j].colorB, fmdl.GetObjects()[i].additionalVertexData[j].colourA)
+                meshes[i].colour[j] = new Color(fmdl.GetObjects()[i].additionalVertexData[j].colourR, fmdl.GetObjects()[i].additionalVertexData[j].colourG, fmdl.GetObjects()[i].additionalVertexData[j].colourB, fmdl.GetObjects()[i].additionalVertexData[j].colourA);
 
                 if (fmdl.GetBonesPosition() != -1)
                 {
