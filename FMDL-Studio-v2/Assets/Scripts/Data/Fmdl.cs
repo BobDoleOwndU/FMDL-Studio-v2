@@ -1401,8 +1401,11 @@ public class Fmdl
             UnityEngine.Debug.Log("Entry No: " + i);
             UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].stringId]));
             UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].stringId]));
-            UnityEngine.Debug.Log("First Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[section0Block4Entries[i].firstTextureId].referenceId]));
-            UnityEngine.Debug.Log("First Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[section0Block4Entries[i].firstTextureId].stringId]));
+            for (int j = section0Block4Entries[i].firstTextureId; j < section0Block4Entries[i].firstTextureId + section0Block4Entries[i].numTextures; j++)
+            {
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[j].referenceId]));
+                UnityEngine.Debug.Log("Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+            } //for
         } //for
     } //OutputSection0Block4Info
 

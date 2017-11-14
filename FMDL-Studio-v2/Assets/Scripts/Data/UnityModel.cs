@@ -54,33 +54,41 @@ public class UnityModel
         for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
         {
             //materials[i].material = new Material(Shader.Find("Custom/Fox Shader (temp)"));
-            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Diffuse"));
+            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
+            //materials[i].material = new Material(Shader.Find("Standard"));
 
             if (fmdl.GetStringTablePosition() != -1)
             {
                 materials[i].material.name = fmdl.GetStrings()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].stringId];
                 materials[i].materialType = fmdl.GetStrings()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].typeId];
 
-                string textureName = "";
-                int extensionLocation;
-
-                textureName = fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId].pathId] + fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId].stringId];
-                materials[i].textureType = fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId];
-
-                extensionLocation = textureName.IndexOf('.');
-                textureName = textureName.Substring(0, extensionLocation);
-
-                if (File.Exists(fmdl.GetName() + "\\" + textureName + ".dds"))
+                for (int j = fmdl.GetSection0Block4Entries()[i].firstTextureId; j < fmdl.GetSection0Block4Entries()[i].firstTextureId + fmdl.GetSection0Block4Entries()[i].numTextures; j++)
                 {
-                    Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds");
-                    texture.name = textureName + ".dds";
-                    materials[i].material.mainTexture = texture;
-                    //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
-                } //if
-                else
-                {
-                    UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + textureName + ".dds");
-                } //else
+                    string textureName = "";
+                    int extensionLocation;
+
+                    textureName = fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[j].referenceId].pathId] + fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[j].referenceId].stringId];
+                    //materials[i].textureType = fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId];
+
+                    extensionLocation = textureName.IndexOf('.');
+                    textureName = textureName.Substring(0, extensionLocation);
+
+                    if (File.Exists(fmdl.GetName() + "\\" + textureName + ".dds"))
+                    {
+                        Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + textureName + ".dds");
+                        texture.name = textureName + ".dds";
+
+                        if (fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[j].stringId] == "Base_Tex_SRGB")
+                            materials[i].material.mainTexture = texture;
+                        else if (fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[j].stringId] == "NormalMap_Tex_NRM")
+                            materials[i].material.SetTexture("_BumpMap", texture);
+                        //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
+                    } //if
+                    else
+                    {
+                        UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + textureName + ".dds");
+                    } //else
+                } //for
             } //if
             else
             {
@@ -89,17 +97,24 @@ public class UnityModel
 
                 if (fmdl.GetTextureListPosition() != -1)
                 {
-                    if (File.Exists(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId]) + ".dds"))
+                    for (int j = fmdl.GetSection0Block4Entries()[i].firstTextureId; j < fmdl.GetSection0Block4Entries()[i].firstTextureId + fmdl.GetSection0Block4Entries()[i].numTextures; j++)
                     {
-                        Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId]) + ".dds");
-                        texture.name = Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId]) + ".dds";
-                        materials[i].textureType = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId]);
-                        materials[i].material.mainTexture = texture;
-                    } //if
-                    else
-                    {
-                        UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].referenceId]) + ".dds");
-                    } //else
+                        if (File.Exists(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds"))
+                        {
+                            Texture2D texture = LoadTextureDXT(fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds");
+                            texture.name = Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds";
+                            //materials[i].textureType = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId]);
+
+                            if (Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[j].stringId]) == "Base_Tex_SRGB")
+                                materials[i].material.mainTexture = texture;
+                            else if (Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[j].stringId]) == "NormalMap_Tex_NRM")
+                                materials[i].material.SetTexture("_BumpMap", texture);
+                        } //if
+                        else
+                        {
+                            UnityEngine.Debug.Log("Could not find: " + fmdl.GetName() + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds");
+                        } //else
+                    } //for
                 } //if
             } //else
         } //for

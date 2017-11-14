@@ -34,7 +34,7 @@ public static class FBXConverter
     static List<int> videos = new List<int>(0);
     static List<Tuple<int, Texture>> textures = new List<Tuple<int, Texture>>(0);
     static List<Tuple<int, int>> videosToTextures = new List<Tuple<int, int>>(0);
-    static List<Tuple<int, int>> texturesToMaterials = new List<Tuple<int, int>>(0);
+    static List<Tuple<int, int, string>> texturesToMaterials = new List<Tuple<int, int, string>>(0);
 
     public static void ConvertToFBX(GameObject gameObject, string filePath)
     {
@@ -434,7 +434,7 @@ public static class FBXConverter
             string name2 = materials.Find(x => x.Item1 == texturesToMaterials[i].Item2).Item2.name;
 
             fbx.AppendFormat("\n\n\t;Texture::{0}, Material::{1}", name1, name2);
-            fbx.AppendFormat("\n\tC: \"OP\",{0},{1}, \"DiffuseColor\"", texturesToMaterials[i].Item1, texturesToMaterials[i].Item2);
+            fbx.AppendFormat("\n\tC: \"OP\",{0},{1}, \"{2}\"", texturesToMaterials[i].Item1, texturesToMaterials[i].Item2, texturesToMaterials[i].Item3);
         } //for
         for (int i = 0; i < videosToTextures.Count; i++)
         {
@@ -803,6 +803,7 @@ public static class FBXConverter
                     materials.Add(new Tuple<int, Material>(materialId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial));
                     materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId - 1));
 
+                    //Diffuse
                     if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture != null)
                     {
                         int foundTextureId = -1;
@@ -816,12 +817,34 @@ public static class FBXConverter
                             videos.Add(videoId);
                             textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture));
                             videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
-                            texturesToMaterials.Add(new Tuple<int, int>(textureId, materialId));
+                            texturesToMaterials.Add(new Tuple<int, int, string>(textureId, materialId, "DiffuseColor"));
                             videoId++;
                             textureId++;
                         } //if
                         else
-                            texturesToMaterials.Add(new Tuple<int, int>(foundTextureId, materialId));
+                            texturesToMaterials.Add(new Tuple<int, int, string>(foundTextureId, materialId, "DiffuseColor"));
+                    } //if
+
+                    //Normal
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") != null)
+                    {
+                        int foundTextureId = -1;
+
+                        for (int i = 0; i < textures.Count; i++)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") == textures[i].Item2)
+                                foundTextureId = textures[i].Item1;
+
+                        if (foundTextureId == -1)
+                        {
+                            videos.Add(videoId);
+                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap")));
+                            videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
+                            texturesToMaterials.Add(new Tuple<int, int, string>(textureId, materialId, "Bump"));
+                            videoId++;
+                            textureId++;
+                        } //if
+                        else
+                            texturesToMaterials.Add(new Tuple<int, int, string>(foundTextureId, materialId, "Bump"));
                     } //if
 
                     materialId++;
