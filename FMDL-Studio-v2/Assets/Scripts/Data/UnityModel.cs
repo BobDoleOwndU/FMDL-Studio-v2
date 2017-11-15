@@ -12,7 +12,10 @@ public class UnityModel
         public Vector4[] tangents;
         public Color[] colour;
         public BoneWeight[] boneWeights;
-        public Vector2[] UVs;
+        public Vector2[] uv;
+        public Vector2[] uv2;
+        public Vector2[] uv3;
+        public Vector2[] uv4;
         public int[] faces;
     } //struct
 
@@ -161,7 +164,10 @@ public class UnityModel
             meshes[i].normals = new Vector3[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].tangents = new Vector4[fmdl.GetObjects()[i].additionalVertexData.Length];
             meshes[i].colour = new Color[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].UVs = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].uv = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].uv2 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].uv3 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].uv4 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
             //meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
             meshes[i].faces = new int[fmdl.GetObjects()[i].lodFaces[lod].Length * 3];
             meshes[i].boneWeights = new BoneWeight[fmdl.GetObjects()[i].additionalVertexData.Length];
@@ -189,7 +195,10 @@ public class UnityModel
                     meshes[i].boneWeights[j].boneIndex3 = fmdl.GetSection0Block5Entries()[fmdl.GetSection0Block3Entries()[i].boneGroupId].entries[fmdl.GetObjects()[i].additionalVertexData[j].boneGroup3Id];
                 } //if
 
-                meshes[i].UVs[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].textureU, fmdl.GetObjects()[i].additionalVertexData[j].textureV);
+                meshes[i].uv[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].textureU, fmdl.GetObjects()[i].additionalVertexData[j].textureV);
+                meshes[i].uv2[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU0, fmdl.GetObjects()[i].additionalVertexData[j].unknownV0);
+                meshes[i].uv3[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU1, fmdl.GetObjects()[i].additionalVertexData[j].unknownV1);
+                meshes[i].uv4[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU2, fmdl.GetObjects()[i].additionalVertexData[j].unknownV2);
             } //for
 
             //Faces
@@ -231,7 +240,10 @@ public class UnityModel
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;
-            mesh.uv = meshes[i].UVs;
+            mesh.uv = meshes[i].uv;
+            mesh.uv2 = meshes[i].uv2;
+            mesh.uv3 = meshes[i].uv3;
+            mesh.uv4 = meshes[i].uv4;
             mesh.normals = meshes[i].normals;
             mesh.tangents = meshes[i].tangents;
             mesh.triangles = meshes[i].faces;

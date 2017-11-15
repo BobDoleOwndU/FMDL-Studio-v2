@@ -150,8 +150,67 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
                 fbx.AppendFormat("{0},{1},{2},", meshes[i].Item2.sharedMesh.triangles[j * 3], meshes[i].Item2.sharedMesh.triangles[j * 3 + 2], meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]);
+            fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.Append("\n\t\t}");
+
+            fbx.Append("\n\t\tLayerElementUV: 1 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"UVSet1\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv2.Length * 2);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.uv2.Length; j++)
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv2[j].x, -meshes[i].Item2.sharedMesh.uv2[j].y);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
+                fbx.AppendFormat("{0},{1},{2},", meshes[i].Item2.sharedMesh.triangles[j * 3], meshes[i].Item2.sharedMesh.triangles[j * 3 + 2], meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+
+            fbx.Append("\n\t\tLayerElementUV: 2 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"UVSet2\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv3.Length * 2);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.uv3.Length; j++)
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv3[j].x, -meshes[i].Item2.sharedMesh.uv3[j].y);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
+                fbx.AppendFormat("{0},{1},{2},", meshes[i].Item2.sharedMesh.triangles[j * 3], meshes[i].Item2.sharedMesh.triangles[j * 3 + 2], meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+
+            fbx.Append("\n\t\tLayerElementUV: 3 {");
+            fbx.Append("\n\t\t\tVersion: 101");
+            fbx.Append("\n\t\t\tName: \"UVSet3\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+            fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv4.Length * 2);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.uv4.Length; j++)
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv4[j].x, -meshes[i].Item2.sharedMesh.uv4[j].y);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
+                fbx.AppendFormat("{0},{1},{2},", meshes[i].Item2.sharedMesh.triangles[j * 3], meshes[i].Item2.sharedMesh.triangles[j * 3 + 2], meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]);
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+
             fbx.Append("\n\t\tLayerElementMaterial: 0 {");
             fbx.Append("\n\t\t\tVersion: 101");
             fbx.Append("\n\t\t\tName: \"Material\"");
@@ -161,6 +220,7 @@ public static class FBXConverter
             fbx.Append("\n\t\t\t\ta: 0");
             fbx.Append("\n\t\t\t}");
             fbx.Append("\n\t\t}");
+
             fbx.Append("\n\t\tLayer: 0 {");
             fbx.Append("\n\t\t\tVersion: 100");
             fbx.Append("\n\t\t\tLayerElement:  {");
@@ -183,6 +243,27 @@ public static class FBXConverter
             fbx.Append("\n\t\t\tLayerElement:  {");
             fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
             fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayer: 1 {");
+            fbx.Append("\n\t\t\tVersion: 100");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 1");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayer: 2 {");
+            fbx.Append("\n\t\t\tVersion: 100");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 2");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+            fbx.Append("\n\t\tLayer: 3 {");
+            fbx.Append("\n\t\t\tVersion: 100");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 3");
             fbx.Append("\n\t\t\t}");
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t}");
