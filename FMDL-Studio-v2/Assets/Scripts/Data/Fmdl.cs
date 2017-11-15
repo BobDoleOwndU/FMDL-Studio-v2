@@ -1118,10 +1118,125 @@ public class Fmdl
         } //if
     } //Read
 
-    public void Write(GameObject fmdlObject, FileStream stream)
+    /*
+     * Write
+     * Writes data from a Unity model to an fmdl file.
+     */
+    public void Write(GameObject gameObject, FileStream stream)
     {
-        BinaryWriter writer = new BinaryWriter(stream);
+        BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
+        List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+        List<Transform> bones = new List<Transform>(0);
+        List<string> strings = new List<string>(0);
+        List<string> meshGroupStrings = new List<string>(0);
 
+        GetObjects(gameObject.transform, meshes, bones);
+
+        signature = 0x4c444d46;
+        unknown0 = 0x40028f5c;
+        unknown1 = 0x40;
+        unknown2 = 0x776fff;
+        unknown3 = 0x5;
+        numSection0Blocks = 0x14; //Temporary. Number can vary.
+        numSection1Blocks = 0x2; //Temporary. Should utilize GZ format.
+
+        section0Info = new Section0Info[numSection0Blocks];
+
+        strings.Add(""); //Every model has this empty string.
+
+        //Block 0
+        section0Info[0].id = 0;
+        section0Info[0].numEntries = (ushort)bones.Count;
+        section0Info[0].offset = 0x0;
+        section0Block0Entries = new Section0Block0Entry[section0Info[0].numEntries];
+
+        for(int i = 0; i < section0Block0Entries.Length; i++)
+        {
+            section0Block0Entries[i].stringId = (ushort)strings.Count;
+
+            if (bones[i].parent.gameObject.name == "[Root]")
+                section0Block0Entries[i].parentId = 0xFFFF;
+            else
+            {
+                for(int j = 0; j < bones.Count; j++)
+                    if(bones[i].parent == bones[j])
+                    {
+                        section0Block0Entries[i].parentId = (ushort)j;
+                        break;
+                    } //if
+            } //else
+
+            section0Block0Entries[i].boundingBoxId = (ushort)(i + 1); //Should work for now.
+            section0Block0Entries[i].unknown0 = 0x1;
+
+            //Unity uses left-handed coordinates so x and z get flipped.
+            section0Block0Entries[i].localPositionX = bones[i].localPosition.z;
+            section0Block0Entries[i].localPositionY = bones[i].localPosition.y;
+            section0Block0Entries[i].localPositionZ = bones[i].localPosition.x;
+            section0Block0Entries[i].worldPositionX = bones[i].position.z;
+            section0Block0Entries[i].worldPositionY = bones[i].position.y;
+            section0Block0Entries[i].worldPositionZ = bones[i].position.x;
+
+            strings.Add(bones[i].gameObject.name);
+        } //for
+
+        //Block 1
+        for(int i = 0; i < meshes.Count; i++)
+        {
+            bool addString = true;
+
+            for(int j = 0; j < meshGroupStrings.Count; j++)
+            {
+                if (meshes[i].name.Substring(4) == meshGroupStrings[j])
+                {
+                    addString = false;
+                    break;
+                } //if
+            } //for
+
+            if (addString)
+                meshGroupStrings.Add(meshes[i].name.Substring(4));
+        } //for
+        
+        section0Info[1].id = 1;
+        section0Info[1].numEntries = (ushort)meshGroupStrings.Count;
+        section0Info[1].offset = (uint)(section0Info[0].numEntries * 0x30);
+        section0Block1Entries = new Section0Block1Entry[section0Info[1].numEntries];
+
+        for(int i = 0; i < section0Block1Entries.Length; i++)
+        {
+            section0Block1Entries[i].stringId = (ushort)strings.Count;
+            section0Block1Entries[i].invisibilityFlag = 0x0;
+
+            if (i == 0)
+                section0Block1Entries[i].parentId = 0xFFFF;
+            else
+                section0Block1Entries[i].parentId = 0x0;
+
+            section0Block1Entries[i].unknown0 = 0xFFFF;
+            strings.Add(meshGroupStrings[i]);
+        } //for
+    } //Write
+
+    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Transform> bones)
+    {
+        GetMeshes(transform, meshes);
+
+        bones.AddRange(meshes[0].bones);
+    } //GetObjects
+
+    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
+    {
+        foreach (Transform t in transform)
+        {
+            if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+                meshes.Add(t.gameObject.GetComponent <SkinnedMeshRenderer>());
+
+            GetMeshes(t, meshes);
+        } //foreach
+    } //GetObjects
+
+    /*
         int numModelObjects = 1;
         Utils.GetNumObjects(fmdlObject.transform, ref numModelObjects);
 
@@ -1129,22 +1244,6 @@ public class Fmdl
         Utils.GetMeshes(fmdlObject.transform, meshes);
 
         UnityEngine.Debug.Log(meshes.Count);
-
-        const uint signature = 1279544646;
-        const uint unknown0 = 1073909596;
-        const uint unknown1 = 64;
-        const uint unknown2 = 0;
-        const uint unknown3 = 7827455;
-        const uint unknown4 = 0;
-        const uint unknown5 = 5;
-
-        writer.Write(signature);
-        writer.Write(unknown0);
-        writer.Write(unknown1);
-        writer.Write(unknown2);
-        writer.Write(unknown3);
-        writer.Write(unknown4);
-        writer.Write(unknown5);
 
         int[] faceCount = new int[meshes.Count];
 
@@ -1228,10 +1327,7 @@ public class Fmdl
             {
                 writer.Write((ushort)meshes[i].sharedMesh.triangles[j]);
             }
-        }
-
-        writer.Close();
-    }
+        }*/
 
     /****************************************************************
      * 
