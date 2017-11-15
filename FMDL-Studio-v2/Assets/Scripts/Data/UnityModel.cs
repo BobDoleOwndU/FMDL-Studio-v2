@@ -236,7 +236,6 @@ public class UnityModel
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             meshRenderer.material = materials[fmdl.GetSection0Block3Entries()[i].materialInstanceId].material;
-            //meshRenderer.material = AssetDatabase.GetBuiltinExtraResource<Material>("Default-Material.mat");
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;
@@ -255,7 +254,6 @@ public class UnityModel
             } //for
 
             mesh.bindposes = bindPoses;
-            //mesh.bounds = bounds[fmdl.GetSection0Block9Entries()[i].firstMeshFormatId]; //Not right. Boxes don't match up to meshes. Need to figure out what's actually done.
 
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;
