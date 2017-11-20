@@ -5,7 +5,7 @@ Fox Engine model importer (and planned exporter) for Unity.
 
 ### Importing an fmdl to Unity
 
-Open the project in Unity, go to the *FMDL Studio* menu option and select *Import Fmdl*. You will be prompted to select the fmdl of your choice, after which you will be prompted to select your texture folder.
+Open the project in Unity, go to the *FMDL Studio* menu option and select *Import Fmdl*. You will be prompted to select the fmdl of your choice. If you want textures to be applied to the model, go to the *Fmdl Studio* menu option and choose *Set Texture Folder*. Choose the folder that contains the textures for your model(s).
 
 **Note:** Make sure that when you select the texture folder, you DO NOT select the /Assets/ folder. Select the folder that contains /Assets/.
 
@@ -25,7 +25,7 @@ Open the project in Unity, go to the *FMDL Studio* menu option and select *Impor
 
 After a model has be imported into Unity, select the model in the editor (the object with the model's name). Go to the *FMDL Studio* menu option and select *Convert to FBX*. Select where you want the model to be exported to and click *Save*.
 
-By default the fbx file will search for textures in a folder with the name of the fmdl file at the same location the fbx was exported to.
+By default the fbx file will search for textures in the texture folder set with the *Set Texture Folder* menu option.
 
 **Note:** Currently only diffuse and normal textures are applied automatically.
 

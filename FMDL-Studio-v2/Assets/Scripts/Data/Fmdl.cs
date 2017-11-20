@@ -240,7 +240,7 @@ public class Fmdl
         public Half normalY;
         public Half normalZ;
         public Half normalW;
-        
+
         public Half tangentX;
         public Half tangentY;
         public Half tangentZ;
@@ -307,7 +307,7 @@ public class Fmdl
     } //struct
 
     //Instance Variables
-    private string name;
+    public string name { get; private set; }
 
     private uint signature;
     private uint unknown0;
@@ -321,58 +321,58 @@ public class Fmdl
     private uint section1Offset;
     private uint section1Length;
 
-    private int bonesIndex = -1;
-    private int meshGroupsIndex = -1;
-    private int meshGroupAssignmentIndex = -1;
-    private int meshInfoIndex = -1;
-    private int materialInstancesIndex = -1;
-    private int boneGroupsIndex = -1;
-    private int texturesIndex = -1;
-    private int textureTypesIndex = -1;
-    private int materialsIndex = -1;
-    private int meshFormatAssignmentIndex = -1;
-    private int meshFormatsIndex = -1;
-    private int vertexFormatsPosition = -1;
-    private int stringsIndex = -1;
-    private int boundingBoxesIndex = -1;
-    private int bufferOffsetsIndex = -1;
-    private int lodInfoIndex = -1;
-    private int faceIndicesIndex = -1;
-    private int type12Position = -1;
-    private int type14Position = -1;
-    private int texturePathsIndex = -1;
-    private int stringHashesIndex = -1;
+    public int bonesIndex { get; private set; } = -1;
+    public int meshGroupsIndex { get; private set; } = -1;
+    public int meshGroupAssignmentIndex { get; private set; } = -1;
+    public int meshInfoIndex { get; private set; } = -1;
+    public int materialInstancesIndex { get; private set; } = -1;
+    public int boneGroupsIndex { get; private set; } = -1;
+    public int texturesIndex { get; private set; } = -1;
+    public int textureTypesIndex { get; private set; } = -1;
+    public int materialsIndex { get; private set; } = -1;
+    public int meshFormatAssignmentIndex { get; private set; } = -1;
+    public int meshFormatsIndex { get; private set; } = -1;
+    public int vertexFormatsPosition { get; private set; } = -1;
+    public int stringsIndex { get; private set; } = -1;
+    public int boundingBoxesIndex { get; private set; } = -1;
+    public int bufferOffsetsIndex { get; private set; } = -1;
+    public int lodInfoIndex { get; private set; } = -1;
+    public int faceIndicesIndex { get; private set; } = -1;
+    public int type12Position { get; private set; } = -1;
+    public int type14Position { get; private set; } = -1;
+    public int texturePathsIndex { get; private set; } = -1;
+    public int stringHashesIndex { get; private set; } = -1;
 
     private int section1MaterialParametersIndex = -1;
     private int section1MeshDataIndex = -1;
     private int section1StringsIndex = -1;
 
-    private MaterialParameter[] materialParameters;
-    private Object[] objects;
-    private string[] strings;
+    public MaterialParameter[] materialParameters { get; private set; }
+    public Object[] objects { get; private set; }
+    public string[] strings { get; private set; }
 
     private Section0Info[] section0Info;
     private Section1Info[] section1Info;
 
-    private Section0Block0Entry[] section0Block0Entries;
-    private Section0Block1Entry[] section0Block1Entries;
-    private Section0Block2Entry[] section0Block2Entries;
-    private Section0Block3Entry[] section0Block3Entries;
-    private Section0Block4Entry[] section0Block4Entries;
-    private Section0Block5Entry[] section0Block5Entries;
-    private Section0Block6Entry[] section0Block6Entries;
-    private Section0Block7Entry[] section0Block7Entries;
-    private Section0Block8Entry[] section0Block8Entries;
-    private Section0Block9Entry[] section0Block9Entries;
-    private Section0BlockAEntry[] section0BlockAEntries;
-    private Section0BlockBEntry[] section0BlockBEntries;
-    private Section0BlockCEntry[] section0BlockCEntries;
-    private Section0BlockDEntry[] section0BlockDEntries;
-    private Section0BlockEEntry[] section0BlockEEntries;
-    private Section0Block10Entry[] section0Block10Entries;
-    private Section0Block11Entry[] section0Block11Entries;
-    private ulong[] section0Block15Entries;
-    private ulong[] section0Block16Entries;
+    public Section0Block0Entry[] section0Block0Entries { get; private set; }
+    public Section0Block1Entry[] section0Block1Entries { get; private set; }
+    public Section0Block2Entry[] section0Block2Entries { get; private set; }
+    public Section0Block3Entry[] section0Block3Entries { get; private set; }
+    public Section0Block4Entry[] section0Block4Entries { get; private set; }
+    public Section0Block5Entry[] section0Block5Entries { get; private set; }
+    public Section0Block6Entry[] section0Block6Entries { get; private set; }
+    public Section0Block7Entry[] section0Block7Entries { get; private set; }
+    public Section0Block8Entry[] section0Block8Entries { get; private set; }
+    public Section0Block9Entry[] section0Block9Entries { get; private set; }
+    public Section0BlockAEntry[] section0BlockAEntries { get; private set; }
+    public Section0BlockBEntry[] section0BlockBEntries { get; private set; }
+    public Section0BlockCEntry[] section0BlockCEntries { get; private set; }
+    public Section0BlockDEntry[] section0BlockDEntries { get; private set; }
+    public Section0BlockEEntry[] section0BlockEEntries { get; private set; }
+    public Section0Block10Entry[] section0Block10Entries { get; private set; }
+    public Section0Block11Entry[] section0Block11Entries { get; private set; }
+    public ulong[] section0Block15Entries { get; private set; }
+    public ulong[] section0Block16Entries { get; private set; }
 
     /*
      * Constructor
@@ -389,7 +389,7 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
-        if(File.Exists("fmdl_dictionary.txt"))
+        if (File.Exists("fmdl_dictionary.txt"))
             Hashing.ReadStringDictionary("fmdl_dictionary.txt");
 
         if (File.Exists("qar_dictionary.txt"))
@@ -955,7 +955,7 @@ public class Fmdl
             if (reader.BaseStream.Position % 0x10 != 0)
                 reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
         } //for
-        
+
         /****************************************************************
          *
          * ADDITIONAL VERTEX DATA
@@ -963,7 +963,7 @@ public class Fmdl
          ****************************************************************/
         reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset;
 
-        for(int i = 0; i < objects.Length; i++)
+        for (int i = 0; i < objects.Length; i++)
         {
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
             //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
@@ -1150,7 +1150,7 @@ public class Fmdl
         section0Info[0].offset = 0x0;
         section0Block0Entries = new Section0Block0Entry[section0Info[0].numEntries];
 
-        for(int i = 0; i < section0Block0Entries.Length; i++)
+        for (int i = 0; i < section0Block0Entries.Length; i++)
         {
             section0Block0Entries[i].stringId = (ushort)strings.Count;
 
@@ -1158,8 +1158,8 @@ public class Fmdl
                 section0Block0Entries[i].parentId = 0xFFFF;
             else
             {
-                for(int j = 0; j < bones.Count; j++)
-                    if(bones[i].parent == bones[j])
+                for (int j = 0; j < bones.Count; j++)
+                    if (bones[i].parent == bones[j])
                     {
                         section0Block0Entries[i].parentId = (ushort)j;
                         break;
@@ -1181,11 +1181,11 @@ public class Fmdl
         } //for
 
         //Block 1
-        for(int i = 0; i < meshes.Count; i++)
+        for (int i = 0; i < meshes.Count; i++)
         {
             bool addString = true;
 
-            for(int j = 0; j < meshGroupStrings.Count; j++)
+            for (int j = 0; j < meshGroupStrings.Count; j++)
             {
                 if (meshes[i].name.Substring(4) == meshGroupStrings[j])
                 {
@@ -1197,13 +1197,13 @@ public class Fmdl
             if (addString)
                 meshGroupStrings.Add(meshes[i].name.Substring(4));
         } //for
-        
+
         section0Info[1].id = 1;
         section0Info[1].numEntries = (ushort)meshGroupStrings.Count;
         section0Info[1].offset = (uint)(section0Info[0].numEntries * 0x30);
         section0Block1Entries = new Section0Block1Entry[section0Info[1].numEntries];
 
-        for(int i = 0; i < section0Block1Entries.Length; i++)
+        for (int i = 0; i < section0Block1Entries.Length; i++)
         {
             section0Block1Entries[i].stringId = (ushort)strings.Count;
             section0Block1Entries[i].invisibilityFlag = 0x0;
@@ -1230,7 +1230,7 @@ public class Fmdl
         foreach (Transform t in transform)
         {
             if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
-                meshes.Add(t.gameObject.GetComponent <SkinnedMeshRenderer>());
+                meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
 
             GetMeshes(t, meshes);
         } //foreach
@@ -1331,111 +1331,6 @@ public class Fmdl
 
     /****************************************************************
      * 
-     * GETTERS
-     * 
-     ****************************************************************/
-    public string GetName()
-    {
-        return name;
-    } //GetName
-
-    public int GetBonesPosition()
-    {
-        return bonesIndex;
-    } //GetBonesPosition
-
-    public int GetStringTablePosition()
-    {
-        return stringsIndex;
-    } //GetBonesPosition
-
-    public int GetTextureListPosition()
-    {
-        return texturePathsIndex;
-    } //GetTextureListPosition
-
-    public Object[] GetObjects()
-    {
-        return objects;
-    } //GetObjects
-
-    public string[] GetStrings()
-    {
-        return strings;
-    } //GetStrings
-
-    public Section0Block0Entry[] GetSection0Block0Entries()
-    {
-        return section0Block0Entries;
-    } //GetSection0Block0Entries
-
-    public Section0Block1Entry[] GetSection0Block1Entries()
-    {
-        return section0Block1Entries;
-    } //GetSection0Block1Entries
-
-    public Section0Block2Entry[] GetSection0Block2Entries()
-    {
-        return section0Block2Entries;
-    } //GetSection0Block2Entries
-
-    public Section0Block3Entry[] GetSection0Block3Entries()
-    {
-        return section0Block3Entries;
-    } //GetSection0Block3Entries
-
-    public Section0Block4Entry[] GetSection0Block4Entries()
-    {
-        return section0Block4Entries;
-    } //GetSection0Block4Entries
-
-    public Section0Block5Entry[] GetSection0Block5Entries()
-    {
-        return section0Block5Entries;
-    } //GetSection0Block5Entries
-
-    public Section0Block6Entry[] GetSection0Block6Entries()
-    {
-        return section0Block6Entries;
-    } //GetSection0Block6Entries
-
-    public Section0Block7Entry[] GetSection0Block7Entries()
-    {
-        return section0Block7Entries;
-    } //GetSection0Block7Entries
-
-    public Section0Block8Entry[] GetSection0Block8Entries()
-    {
-        return section0Block8Entries;
-    } //GetSection0Block8Entries
-
-    public Section0Block9Entry[] GetSection0Block9Entries()
-    {
-        return section0Block9Entries;
-    } //GetSection0Block9Entries
-
-    public Section0BlockDEntry[] GetSection0BlockDEntries()
-    {
-        return section0BlockDEntries;
-    } //GetSection0BlockDEntries
-
-    public Section0Block11Entry[] GetSection0Block11Entries()
-    {
-        return section0Block11Entries;
-    } //GetSection0Block11Entries
-
-    public ulong[] GetSection0Block15Entries()
-    {
-        return section0Block15Entries;
-    } //GetSection0Block16Entries
-
-    public ulong[] GetSection0Block16Entries()
-    {
-        return section0Block16Entries;
-    } //GetSection0Block16Entries
-
-    /****************************************************************
-     * 
      * DEBUG/LOGGING FUNCTIONS
      * 
      ****************************************************************/
@@ -1527,7 +1422,7 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void OutputSection0Block6Info()
     {
-        for(int i = 0; i < section0Block6Entries.Length; i++)
+        for (int i = 0; i < section0Block6Entries.Length; i++)
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
@@ -1589,9 +1484,9 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void OutputParamIds()
     {
-        for(int i = 0; i < section0Block4Entries.Length; i++)
+        for (int i = 0; i < section0Block4Entries.Length; i++)
         {
-            for(int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
+            for (int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
             {
                 UnityEngine.Debug.Log("Param Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
                 UnityEngine.Debug.Log("Parameters: [" + materialParameters[section0Block7Entries[j].referenceId].values[0] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[1] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[2] + ", " + materialParameters[section0Block7Entries[j].referenceId].values[3] + "]");
