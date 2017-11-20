@@ -30,6 +30,9 @@ sysinfo.txt
 *.ide
 *.db
 *.opendb
+*.lock
+*.ide-shm
+*.ide-wal
 
 ###
 # OS generated
@@ -63,7 +66,5 @@ Thumbs.db
 /FMDL-Studio-v2/qui0_main0_def.fmdl
 /FMDL-Studio-v2/qui0_main0_def.fbx
 /FMDL-Studio-v2/qui0_main0_def2.fbx
-*.ide
 FMDL-Studio-v2/.vs/FMDL-Studio-v2/v15/sqlite3/storage.ide
 FMDL-Studio-v2/.vs/FMDL-Studio-v2/v15/sqlite3/storage.ide
-*.ide
