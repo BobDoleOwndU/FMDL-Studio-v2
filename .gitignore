@@ -26,7 +26,10 @@ sysinfo.txt
 *.user
 *.userprefs
 *.pidb
-.DS_Store
+*.DS_Store
+*.ide
+*.db
+*.opendb
 
 ###
 # OS generated
@@ -39,6 +42,7 @@ sysinfo.txt
 Icon?
 ehthumbs.db
 Thumbs.db
+/.vs
 /FMDL-Studio-v2/qui0_main0_def
 /FMDL-Studio-v2/sna2_main0_def (tpp)
 /FMDL-Studio-v2/sna2_main0_def (gz)
@@ -59,3 +63,7 @@ Thumbs.db
 /FMDL-Studio-v2/qui0_main0_def.fmdl
 /FMDL-Studio-v2/qui0_main0_def.fbx
 /FMDL-Studio-v2/qui0_main0_def2.fbx
+*.ide
+FMDL-Studio-v2/.vs/FMDL-Studio-v2/v15/sqlite3/storage.ide
+FMDL-Studio-v2/.vs/FMDL-Studio-v2/v15/sqlite3/storage.ide
+*.ide
