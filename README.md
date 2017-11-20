@@ -8,6 +8,7 @@ Fox Engine model importer (and planned exporter) for Unity.
 Open the project in Unity, go to the *FMDL Studio* menu option and select *Import Fmdl*. You will be prompted to select the fmdl of your choice, after which you will be prompted to select your texture folder.
 
 **Note:** Make sure that when you select the texture folder, you DO NOT select the /Assets/ folder. Select the folder that contains /Assets/.
+
 **Note 2:** Currently only diffuse and normal textures are applied automatically. The tool will look for the other textures used by the model as well; but it will not apply them to the model.
 
 **Note 3:** You must convert the normal maps from the Fox Engine format to the standard normal map format if you want them to look right. To do this you must:
