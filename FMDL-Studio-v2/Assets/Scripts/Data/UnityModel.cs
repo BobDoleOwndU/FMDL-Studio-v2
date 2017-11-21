@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using UnityEditor;
 using UnityEngine;
 
 public class UnityModel
@@ -30,23 +29,25 @@ public class UnityModel
     //Instance Variables
     private UnityMesh[] meshes;
 
-    public void GetDataFromFmdl(Fmdl fmdl, string texturePath)
+    public void GetDataFromFmdl(Fmdl fmdl)
     {
-        meshes = new UnityMesh[fmdl.GetSection0Block3Entries().Length];
+        Globals.ReadTexturePath();
+
+        meshes = new UnityMesh[fmdl.section0Block3Entries.Length];
 
         GameObject fmdlGameObject = new GameObject();
-        fmdlGameObject.name = fmdl.GetName();
-        GameObject[] subFmdlGameObjects = new GameObject[fmdl.GetObjects().Length];
+        fmdlGameObject.name = fmdl.name;
+        GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
-        Bounds[] bounds = new Bounds[fmdl.GetSection0BlockDEntries().Length];
+        Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Length];
 
-        UnityMaterial[] materials = new UnityMaterial[fmdl.GetSection0Block4Entries().Length];
+        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Length];
 
-        if (fmdl.GetBonesPosition() != -1)
+        if (fmdl.bonesIndex != -1)
         {
-            bones = new Transform[fmdl.GetSection0Block0Entries().Length];
-            bindPoses = new Matrix4x4[fmdl.GetSection0Block0Entries().Length];
+            bones = new Transform[fmdl.section0Block0Entries.Length];
+            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Length];
         } //if
         else
         {
@@ -54,68 +55,86 @@ public class UnityModel
             bindPoses = new Matrix4x4[0];
         } //else
 
-        for(int i = 0; i < fmdl.GetSection0Block4Entries().Length; i++)
+        for(int i = 0; i < fmdl.section0Block4Entries.Length; i++)
         {
-            //materials[i].material = new Material(Shader.Find("Custom/Fox Shader (temp)"));
-            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
+            materials[i].material = new Material(Shader.Find("CustomShaders/FoxShaders"));
+            //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
             //materials[i].material = new Material(Shader.Find("Standard"));
 
-            if (fmdl.GetStringTablePosition() != -1)
+            if (fmdl.stringsIndex != -1)
             {
-                materials[i].material.name = fmdl.GetStrings()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].stringId];
-                materials[i].materialType = fmdl.GetStrings()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].typeId];
+                materials[i].material.name = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
+                materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
 
-                for (int j = fmdl.GetSection0Block4Entries()[i].firstTextureId; j < fmdl.GetSection0Block4Entries()[i].firstTextureId + fmdl.GetSection0Block4Entries()[i].numTextures; j++)
+                for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                 {
                     string textureName = "";
                     int extensionLocation;
 
-                    textureName = fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[j].referenceId].pathId] + fmdl.GetStrings()[fmdl.GetSection0Block6Entries()[fmdl.GetSection0Block7Entries()[j].referenceId].stringId];
-                    //materials[i].textureType = fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId];
+                    textureName = fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].pathId] + fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].stringId];
+                    //materials[i].textureType = fmdl.strings[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId];
 
                     extensionLocation = textureName.IndexOf('.');
                     textureName = textureName.Substring(0, extensionLocation);
 
-                    if (File.Exists(texturePath + "\\" + textureName + ".dds"))
+                    if (File.Exists(Globals.texturePath + "\\" + textureName + ".dds"))
                     {
-                        Texture2D texture = LoadTextureDXT(texturePath + "\\" + textureName + ".dds");
+                        Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
                         texture.name = textureName + ".dds";
 
-                        if (fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[j].stringId] == "Base_Tex_SRGB")
+                        if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex_SRGB")
                             materials[i].material.mainTexture = texture;
-                        else if (fmdl.GetStrings()[fmdl.GetSection0Block7Entries()[j].stringId] == "NormalMap_Tex_NRM")
+                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
                             materials[i].material.SetTexture("_BumpMap", texture);
+                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
+                        {
+                            //UnityEngine.Debug.Log("FOUND ONE");
+                            materials[i].material.SetTexture("_SRM", texture);
+                        }
+                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
+                            materials[i].material.SetTexture("_LayerTex", texture);
+                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
+                            materials[i].material.SetTexture("_LayerMask", texture);
                         //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
                     } //if
                     else
                     {
-                        UnityEngine.Debug.Log("Could not find: " + texturePath + "\\" + textureName + ".dds");
+                        UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
                     } //else
                 } //for
             } //if
             else
             {
-                materials[i].material.name = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].stringId]);
-                materials[i].materialType = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block8Entries()[fmdl.GetSection0Block4Entries()[i].materialId].typeId]);
+                materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
+                materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
 
-                if (fmdl.GetTextureListPosition() != -1)
+                if (fmdl.texturePathsIndex != -1)
                 {
-                    for (int j = fmdl.GetSection0Block4Entries()[i].firstTextureId; j < fmdl.GetSection0Block4Entries()[i].firstTextureId + fmdl.GetSection0Block4Entries()[i].numTextures; j++)
+                    for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                     {
-                        if (File.Exists(texturePath + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds"))
+                        if (File.Exists(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds"))
                         {
-                            Texture2D texture = LoadTextureDXT(texturePath + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds");
-                            texture.name = Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds";
-                            //materials[i].textureType = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[fmdl.GetSection0Block4Entries()[i].firstTextureId].stringId]);
+                            Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
+                            texture.name = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds";
+                            //materials[i].textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId]);
 
-                            if (Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[j].stringId]) == "Base_Tex_SRGB")
+                            if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex_SRGB")
                                 materials[i].material.mainTexture = texture;
-                            else if (Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block7Entries()[j].stringId]) == "NormalMap_Tex_NRM")
+                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
                                 materials[i].material.SetTexture("_BumpMap", texture);
+                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
+                            {
+                                //UnityEngine.Debug.Log("FOUND ONE");
+                                materials[i].material.SetTexture("_SRM", texture);
+                            }
+                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
+                                materials[i].material.SetTexture("_LayerTex", texture);
+                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
+                                materials[i].material.SetTexture("_LayerMask", texture);
                         } //if
                         else
                         {
-                            UnityEngine.Debug.Log("Could not find: " + texturePath + "\\" + Hashing.TryGetPathName(fmdl.GetSection0Block15Entries()[fmdl.GetSection0Block7Entries()[j].referenceId]) + ".dds");
+                            UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
                         } //else
                     } //for
                 } //if
@@ -124,7 +143,7 @@ public class UnityModel
 
         for(int i = 0; i < bounds.Length; i++)
         {
-            bounds[i].SetMinMax(new Vector3(fmdl.GetSection0BlockDEntries()[i].minZ, fmdl.GetSection0BlockDEntries()[i].minY, fmdl.GetSection0BlockDEntries()[i].minX), new Vector3(fmdl.GetSection0BlockDEntries()[i].maxZ, fmdl.GetSection0BlockDEntries()[i].maxY, fmdl.GetSection0BlockDEntries()[i].maxX));
+            bounds[i].SetMinMax(new Vector3(fmdl.section0BlockDEntries[i].minZ, fmdl.section0BlockDEntries[i].minY, fmdl.section0BlockDEntries[i].minX), new Vector3(fmdl.section0BlockDEntries[i].maxZ, fmdl.section0BlockDEntries[i].maxY, fmdl.section0BlockDEntries[i].maxX));
         } //for
 
         Transform rootBone = new GameObject("[Root]").transform; //From what I can tell, the real name is "". But it looks kinda dumb having "" as its name; so using "[Root]" as a placeholder seems better.
@@ -139,95 +158,95 @@ public class UnityModel
         for (int i = 0; i < bones.Length; i++)
         {
             bones[i] = new GameObject().transform;
-            bones[i].position = new Vector3(fmdl.GetSection0Block0Entries()[i].worldPositionZ, fmdl.GetSection0Block0Entries()[i].worldPositionY, fmdl.GetSection0Block0Entries()[i].worldPositionX);
+            bones[i].position = new Vector3(fmdl.section0Block0Entries[i].worldPositionZ, fmdl.section0Block0Entries[i].worldPositionY, fmdl.section0Block0Entries[i].worldPositionX);
             
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
-            collider.center = bones[i].InverseTransformPoint(bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
-            collider.size = bounds[fmdl.GetSection0Block0Entries()[i].boundingBoxId].size;
+            collider.center = bones[i].InverseTransformPoint(bounds[fmdl.section0Block0Entries[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
+            collider.size = bounds[fmdl.section0Block0Entries[i].boundingBoxId].size;
 
-            if (fmdl.GetStringTablePosition() != -1)
-                bones[i].name = fmdl.GetStrings()[fmdl.GetSection0Block0Entries()[i].stringId];
+            if (fmdl.stringsIndex != -1)
+                bones[i].name = fmdl.strings[fmdl.section0Block0Entries[i].stringId];
             else
-                bones[i].name = Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block0Entries()[i].stringId]);
+                bones[i].name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block0Entries[i].stringId]);
 
-            if (fmdl.GetSection0Block0Entries()[i].parentId != 0xFFFF)
-                bones[i].parent = bones[fmdl.GetSection0Block0Entries()[i].parentId];
+            if (fmdl.section0Block0Entries[i].parentId != 0xFFFF)
+                bones[i].parent = bones[fmdl.section0Block0Entries[i].parentId];
             else
                 bones[i].parent = rootBone;
         } //for
 
-        for (int i = 0; i < fmdl.GetObjects().Length; i++)
+        for (int i = 0; i < fmdl.objects.Length; i++)
         {
             int lod = 0; //Temporary solution. 0 loads the normal faces. 1 loads the first set of LOD faces. 2 loads the next set. Etc....
 
-            meshes[i].vertices = new Vector3[fmdl.GetObjects()[i].vertices.Length];
-            meshes[i].normals = new Vector3[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].tangents = new Vector4[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].colour = new Color[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].uv = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].uv2 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].uv3 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            meshes[i].uv4 = new Vector2[fmdl.GetObjects()[i].additionalVertexData.Length];
-            //meshes[i].faces = new int[fmdl.GetObjects()[i].faces.Length * 3];
-            meshes[i].faces = new int[fmdl.GetObjects()[i].lodFaces[lod].Length * 3];
-            meshes[i].boneWeights = new BoneWeight[fmdl.GetObjects()[i].additionalVertexData.Length];
+            meshes[i].vertices = new Vector3[fmdl.objects[i].vertices.Length];
+            meshes[i].normals = new Vector3[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].tangents = new Vector4[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].colour = new Color[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].uv = new Vector2[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].uv2 = new Vector2[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].uv3 = new Vector2[fmdl.objects[i].additionalVertexData.Length];
+            meshes[i].uv4 = new Vector2[fmdl.objects[i].additionalVertexData.Length];
+            //meshes[i].faces = new int[fmdl.objects[i].faces.Length * 3];
+            meshes[i].faces = new int[fmdl.objects[i].lodFaces[lod].Length * 3];
+            meshes[i].boneWeights = new BoneWeight[fmdl.objects[i].additionalVertexData.Length];
 
             //Position
-            for (int j = 0; j < fmdl.GetObjects()[i].vertices.Length; j++)
-                meshes[i].vertices[j] = new Vector3(fmdl.GetObjects()[i].vertices[j].z, fmdl.GetObjects()[i].vertices[j].y, fmdl.GetObjects()[i].vertices[j].x);
+            for (int j = 0; j < fmdl.objects[i].vertices.Length; j++)
+                meshes[i].vertices[j] = new Vector3(fmdl.objects[i].vertices[j].z, fmdl.objects[i].vertices[j].y, fmdl.objects[i].vertices[j].x);
 
             //Normals, Bone Weights, Bone Group Ids and UVs
-            for (int j = 0; j < fmdl.GetObjects()[i].additionalVertexData.Length; j++)
+            for (int j = 0; j < fmdl.objects[i].additionalVertexData.Length; j++)
             {
-                meshes[i].normals[j] = new Vector3(fmdl.GetObjects()[i].additionalVertexData[j].normalZ, fmdl.GetObjects()[i].additionalVertexData[j].normalY, fmdl.GetObjects()[i].additionalVertexData[j].normalX);
-                meshes[i].tangents[j] = new Vector4(fmdl.GetObjects()[i].additionalVertexData[j].tangentZ, fmdl.GetObjects()[i].additionalVertexData[j].tangentY, fmdl.GetObjects()[i].additionalVertexData[j].tangentX, fmdl.GetObjects()[i].additionalVertexData[j].tangentW);
-                meshes[i].colour[j] = new Color(fmdl.GetObjects()[i].additionalVertexData[j].colourR, fmdl.GetObjects()[i].additionalVertexData[j].colourG, fmdl.GetObjects()[i].additionalVertexData[j].colourB, fmdl.GetObjects()[i].additionalVertexData[j].colourA);
+                meshes[i].normals[j] = new Vector3(fmdl.objects[i].additionalVertexData[j].normalZ, fmdl.objects[i].additionalVertexData[j].normalY, fmdl.objects[i].additionalVertexData[j].normalX);
+                meshes[i].tangents[j] = new Vector4(fmdl.objects[i].additionalVertexData[j].tangentZ, fmdl.objects[i].additionalVertexData[j].tangentY, fmdl.objects[i].additionalVertexData[j].tangentX, fmdl.objects[i].additionalVertexData[j].tangentW);
+                meshes[i].colour[j] = new Color(fmdl.objects[i].additionalVertexData[j].colourR, fmdl.objects[i].additionalVertexData[j].colourG, fmdl.objects[i].additionalVertexData[j].colourB, fmdl.objects[i].additionalVertexData[j].colourA);
 
-                if (fmdl.GetBonesPosition() != -1)
+                if (fmdl.bonesIndex != -1)
                 {
-                    meshes[i].boneWeights[j].weight0 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightX;
-                    meshes[i].boneWeights[j].weight1 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightY;
-                    meshes[i].boneWeights[j].weight2 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightZ;
-                    meshes[i].boneWeights[j].weight3 = fmdl.GetObjects()[i].additionalVertexData[j].boneWeightW;
-                    meshes[i].boneWeights[j].boneIndex0 = fmdl.GetSection0Block5Entries()[fmdl.GetSection0Block3Entries()[i].boneGroupId].entries[fmdl.GetObjects()[i].additionalVertexData[j].boneGroup0Id];
-                    meshes[i].boneWeights[j].boneIndex1 = fmdl.GetSection0Block5Entries()[fmdl.GetSection0Block3Entries()[i].boneGroupId].entries[fmdl.GetObjects()[i].additionalVertexData[j].boneGroup1Id];
-                    meshes[i].boneWeights[j].boneIndex2 = fmdl.GetSection0Block5Entries()[fmdl.GetSection0Block3Entries()[i].boneGroupId].entries[fmdl.GetObjects()[i].additionalVertexData[j].boneGroup2Id];
-                    meshes[i].boneWeights[j].boneIndex3 = fmdl.GetSection0Block5Entries()[fmdl.GetSection0Block3Entries()[i].boneGroupId].entries[fmdl.GetObjects()[i].additionalVertexData[j].boneGroup3Id];
+                    meshes[i].boneWeights[j].weight0 = fmdl.objects[i].additionalVertexData[j].boneWeightX;
+                    meshes[i].boneWeights[j].weight1 = fmdl.objects[i].additionalVertexData[j].boneWeightY;
+                    meshes[i].boneWeights[j].weight2 = fmdl.objects[i].additionalVertexData[j].boneWeightZ;
+                    meshes[i].boneWeights[j].weight3 = fmdl.objects[i].additionalVertexData[j].boneWeightW;
+                    meshes[i].boneWeights[j].boneIndex0 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup0Id];
+                    meshes[i].boneWeights[j].boneIndex1 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup1Id];
+                    meshes[i].boneWeights[j].boneIndex2 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup2Id];
+                    meshes[i].boneWeights[j].boneIndex3 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup3Id];
                 } //if
 
-                meshes[i].uv[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].textureU, fmdl.GetObjects()[i].additionalVertexData[j].textureV);
-                meshes[i].uv2[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU0, fmdl.GetObjects()[i].additionalVertexData[j].unknownV0);
-                meshes[i].uv3[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU1, fmdl.GetObjects()[i].additionalVertexData[j].unknownV1);
-                meshes[i].uv4[j] = new Vector2(fmdl.GetObjects()[i].additionalVertexData[j].unknownU2, fmdl.GetObjects()[i].additionalVertexData[j].unknownV2);
+                meshes[i].uv[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].textureU, fmdl.objects[i].additionalVertexData[j].textureV);
+                meshes[i].uv2[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU0, fmdl.objects[i].additionalVertexData[j].unknownV0);
+                meshes[i].uv3[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU1, fmdl.objects[i].additionalVertexData[j].unknownV1);
+                meshes[i].uv4[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU2, fmdl.objects[i].additionalVertexData[j].unknownV2);
             } //for
 
             //Faces
-            /*for (int j = 0, h = 0; j < fmdl.GetObjects()[i].faces.Length; j++, h += 3)
+            /*for (int j = 0, h = 0; j < fmdl.objects[i].faces.Length; j++, h += 3)
             {
-                meshes[i].faces[h] = fmdl.GetObjects()[i].faces[j].vertex1Id;
-                meshes[i].faces[h + 1] = fmdl.GetObjects()[i].faces[j].vertex2Id;
-                meshes[i].faces[h + 2] = fmdl.GetObjects()[i].faces[j].vertex3Id;
+                meshes[i].faces[h] = fmdl.objects[i].faces[j].vertex1Id;
+                meshes[i].faces[h + 1] = fmdl.objects[i].faces[j].vertex2Id;
+                meshes[i].faces[h + 2] = fmdl.objects[i].faces[j].vertex3Id;
             } //for*/
 
-            for (int j = 0, h = 0; j < fmdl.GetObjects()[i].lodFaces[lod].Length; j++, h += 3)
+            for (int j = 0, h = 0; j < fmdl.objects[i].lodFaces[lod].Length; j++, h += 3)
             {
-                meshes[i].faces[h] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex1Id;
-                meshes[i].faces[h + 1] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex2Id;
-                meshes[i].faces[h + 2] = fmdl.GetObjects()[i].lodFaces[lod][j].vertex3Id;
+                meshes[i].faces[h] = fmdl.objects[i].lodFaces[lod][j].vertex1Id;
+                meshes[i].faces[h + 1] = fmdl.objects[i].lodFaces[lod][j].vertex2Id;
+                meshes[i].faces[h + 2] = fmdl.objects[i].lodFaces[lod][j].vertex3Id;
             } //for
 
             //Render the mesh in Unity.
             subFmdlGameObjects[i] = new GameObject();
 
             //Get the mesh name.
-            for (int j = 0; j < fmdl.GetSection0Block2Entries().Length; j++)
+            for (int j = 0; j < fmdl.section0Block2Entries.Length; j++)
             {
-                if (i >= fmdl.GetSection0Block2Entries()[j].firstObjectId && i < fmdl.GetSection0Block2Entries()[j].firstObjectId + fmdl.GetSection0Block2Entries()[j].numObjects)
+                if (i >= fmdl.section0Block2Entries[j].firstObjectId && i < fmdl.section0Block2Entries[j].firstObjectId + fmdl.section0Block2Entries[j].numObjects)
                 {
-                    if(fmdl.GetStringTablePosition() != -1)
-                        subFmdlGameObjects[i].name = i + " - " + fmdl.GetStrings()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].stringId];
+                    if(fmdl.stringsIndex != -1)
+                        subFmdlGameObjects[i].name = i + " - " + fmdl.strings[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId];
                     else
-                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.GetSection0Block16Entries()[fmdl.GetSection0Block1Entries()[fmdl.GetSection0Block2Entries()[j].meshGroupId].stringId]);
+                        subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId]);
                     break;
                 } //if
             } //for
@@ -235,7 +254,7 @@ public class UnityModel
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
-            meshRenderer.material = materials[fmdl.GetSection0Block3Entries()[i].materialInstanceId].material;
+            meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;
