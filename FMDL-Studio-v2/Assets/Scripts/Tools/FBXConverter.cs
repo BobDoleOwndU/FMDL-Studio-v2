@@ -38,6 +38,7 @@ public static class FBXConverter
 
     public static void ConvertToFBX(GameObject gameObject, string filePath)
     {
+        Globals.ReadTexturePath();
         CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
         Clear();
@@ -466,11 +467,11 @@ public static class FBXConverter
             fbx.AppendFormat("\n\tVideo: {0}, \"Video::{1}\", \"Clip\" {{", videos[i], textures[i].Item2.name);
             fbx.Append("\n\t\tType: \"Clip\"");
             fbx.Append("\n\t\tProperties70:  {");
-            fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name);
+            fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", Globals.texturePath + "\\" + textures[i].Item2.name);
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t\tUseMipMap: 0");
-            fbx.AppendFormat("\n\t\tFilename: \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name);
-            fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name);
+            fbx.AppendFormat("\n\t\tFilename: \"{0}\"", Globals.texturePath + "\\" + textures[i].Item2.name);
+            //fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name);
             fbx.Append("\n\t}");
         } //for
 
@@ -486,8 +487,8 @@ public static class FBXConverter
             fbx.Append("\n\t\t\tP: \"UseMaterial\", \"bool\", \"\", \"\",1");
             fbx.Append("\n\t\t}");
             fbx.AppendFormat("\n\t\tMedia: \"Video::{0}\"", textures[i].Item2.name);
-            fbx.AppendFormat("\n\t\tFileName: \"{0}\"", Path.GetDirectoryName(filePath) + "\\" + gameObject.name + "\\" + textures[i].Item2.name); //This won't work. But it's good enough for demo purposes.
-            fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name); //Same as above.
+            fbx.AppendFormat("\n\t\tFileName: \"{0}\"", Globals.texturePath + "\\" + textures[i].Item2.name);
+            //fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + textures[i].Item2.name);
             fbx.Append("\n\t\tModelUVTranslation: 0,0");
             fbx.Append("\n\t\tModelUVScaling: 1,1");
             fbx.Append("\n\t\tTexture_Alpha_Source: \"Alpha_Black\"");
