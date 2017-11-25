@@ -96,7 +96,7 @@ public class Fmdl
         public ushort numVertices;
         public uint firstFaceVertexId;
         public uint numFaceVertices;
-        public ulong firstFaceIndexId;
+        public ulong firstMeshFormatId;
     } //struct
 
     public struct Section0Block4Entry
@@ -627,7 +627,7 @@ public class Fmdl
                 reader.BaseStream.Position += 0x4;
                 section0Block3Entries[i].firstFaceVertexId = reader.ReadUInt32();
                 section0Block3Entries[i].numFaceVertices = reader.ReadUInt32();
-                section0Block3Entries[i].firstFaceIndexId = reader.ReadUInt64();
+                section0Block3Entries[i].firstMeshFormatId = reader.ReadUInt64();
                 reader.BaseStream.Position += 0x10;
             } //for
         } //if
@@ -1126,11 +1126,13 @@ public class Fmdl
     {
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+        List<Material> materials = new List<Material>(0);
         List<Transform> bones = new List<Transform>(0);
         List<string> strings = new List<string>(0);
         List<string> meshGroupStrings = new List<string>(0);
+        List<int> meshGroupTotals = new List<int>(0);
 
-        GetObjects(gameObject.transform, meshes, bones);
+        GetObjects(gameObject.transform, meshes, materials, bones);
 
         signature = 0x4c444d46;
         unknown0 = 0x40028f5c;
@@ -1216,23 +1218,94 @@ public class Fmdl
             section0Block1Entries[i].unknown0 = 0xFFFF;
             strings.Add(meshGroupStrings[i]);
         } //for
+
+        //Block 2
+        int counter = 1;
+
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            if (i != 0)
+                if (meshes[i].name.Substring(4) == meshes[i - 1].name.Substring(4))
+                    counter++;
+                else
+                {
+                    meshGroupTotals.Add(counter);
+                    counter = 1;
+                } //else
+        } //for
+
+        section0Info[2].id = 2;
+        section0Info[2].numEntries = (ushort)meshGroupTotals.Count;
+        section0Info[2].offset = (uint)(section0Info[1].offset + section0Info[1].numEntries * 0x8);
+        section0Block2Entries = new Section0Block2Entry[section0Info[2].numEntries];
+
+        for (int i = 0; i < section0Block2Entries.Length; i++)
+        {
+            section0Block2Entries[i].meshGroupId = (ushort)i;
+            section0Block2Entries[i].numObjects = (ushort)meshGroupTotals[i];
+            if (i != 0)
+                section0Block2Entries[i].firstObjectId = (ushort)meshGroupTotals[i - 1];
+            else
+                section0Block2Entries[i].firstObjectId = 0;
+            section0Block2Entries[i].id = (ushort)(i + 1);
+            section0Block2Entries[i].unknown0 = 0;
+        } //for
+
+        //Block 3
+        section0Info[3].id = 3;
+        section0Info[3].numEntries = (ushort)meshes.Count;
+        section0Info[3].offset = (uint)(section0Info[1].offset + section0Info[2].numEntries * 0x20);
+        section0Block3Entries = new Section0Block3Entry[section0Info[3].numEntries];
+
+        for (int i = 0; i < section0Block3Entries.Length; i++)
+        {
+            section0Block3Entries[i].unknown0 = 0x80;
+            for (int j = 0; j < materials.Count; j++)
+                if (meshes[i].sharedMaterial = materials[j])
+                {
+                    section0Block3Entries[i].materialInstanceId = (ushort)j;
+                    break;
+                } //if
+            //section0Block3Entries[i].boneGroupId;
+            section0Block3Entries[i].id = (ushort)i;
+            section0Block3Entries[i].numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
+
+            if (i != 0)
+                section0Block3Entries[i].firstFaceVertexId = section0Block3Entries[i - 1].firstFaceVertexId + section0Block3Entries[i - 1].numFaceVertices;
+            else
+                section0Block3Entries[i].firstFaceVertexId = 0;
+
+            section0Block3Entries[i].numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
+            section0Block3Entries[i].firstMeshFormatId = (ushort)(i * 4); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
+        } //for
     } //Write
 
-    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Transform> bones)
+    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Transform> bones)
     {
-        GetMeshes(transform, meshes);
+        GetMeshes(transform, meshes, materials);
 
         bones.AddRange(meshes[0].bones);
     } //GetObjects
 
-    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
+    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials)
     {
         foreach (Transform t in transform)
         {
             if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+            {
                 meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
 
-            GetMeshes(t, meshes);
+                bool add = true;
+
+                for (int i = 0; i < materials.Count; i++)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial == materials[i])
+                        add = false;
+
+                if (add)
+                    materials.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+            } //if
+
+            GetMeshes(t, meshes, materials);
         } //foreach
     } //GetObjects
 
@@ -1379,7 +1452,7 @@ public class Fmdl
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
             Console.WriteLine("Face Offset: " + section0Block3Entries[i].firstFaceVertexId);
             Console.WriteLine("Num Face Vertices: " + section0Block3Entries[i].numFaceVertices);
-            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].firstFaceIndexId);
+            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].firstMeshFormatId);
         } //for
     } //OutputSection2Info
 
