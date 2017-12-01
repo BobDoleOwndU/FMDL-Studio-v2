@@ -1127,12 +1127,14 @@ public class Fmdl
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
         List<Material> materials = new List<Material>(0);
+        List<Texture> textures = new List<Texture>(0);
         List<Transform> bones = new List<Transform>(0);
         List<string> strings = new List<string>(0);
+        List<string> paths = new List<string>(0);
         List<string> meshGroupStrings = new List<string>(0);
         List<int> meshGroupTotals = new List<int>(0);
 
-        GetObjects(gameObject.transform, meshes, materials, bones);
+        GetObjects(gameObject.transform, meshes, materials, textures, bones);
 
         signature = 0x4c444d46;
         unknown0 = 0x40028f5c;
@@ -1254,7 +1256,7 @@ public class Fmdl
         //Block 3
         section0Info[3].id = 3;
         section0Info[3].numEntries = (ushort)meshes.Count;
-        section0Info[3].offset = (uint)(section0Info[1].offset + section0Info[2].numEntries * 0x20);
+        section0Info[3].offset = (uint)(section0Info[2].offset + section0Info[2].numEntries * 0x20);
         section0Block3Entries = new Section0Block3Entry[section0Info[3].numEntries];
 
         for (int i = 0; i < section0Block3Entries.Length; i++)
@@ -1266,7 +1268,7 @@ public class Fmdl
                     section0Block3Entries[i].materialInstanceId = (ushort)j;
                     break;
                 } //if
-            //section0Block3Entries[i].boneGroupId;
+            section0Block3Entries[i].boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
             section0Block3Entries[i].id = (ushort)i;
             section0Block3Entries[i].numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
 
@@ -1278,16 +1280,114 @@ public class Fmdl
             section0Block3Entries[i].numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
             section0Block3Entries[i].firstMeshFormatId = (ushort)(i * 4); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
         } //for
+
+        //Block 4
+        section0Info[4].id = 4;
+        section0Info[4].numEntries = (ushort)materials.Count;
+        section0Info[4].offset = (uint)(section0Info[3].offset + section0Info[3].numEntries * 0x30);
+        section0Block4Entries = new Section0Block4Entry[section0Info[4].numEntries];
+
+        for(int i = 0; i < section0Block4Entries.Length; i++)
+        {
+            section0Block4Entries[i].stringId = (ushort)strings.Count;
+            section0Block4Entries[i].unknown0 = 0; //Probably just padding. Should remove.
+            section0Block4Entries[i].materialId = 0; //Should make adjustable at some point.
+            section0Block4Entries[i].numTextures = 0;
+            if (materials[i].GetTexture("_MainTex"))
+                section0Block4Entries[i].numTextures++;
+            if (materials[i].GetTexture("_BumpMap"))
+                section0Block4Entries[i].numTextures++;
+            //section0Block4Entries[i].numParameters;
+            //section0Block4Entries[i].firstTextureId;
+            //section0Block4Entries[i].firstParameterId;
+            strings.Add(materials[i].name);
+        } //for
+
+        //Block 5
+        section0Info[5].id = 5;
+        section0Info[5].numEntries = (ushort)meshes.Count; //Might have to change if bone groups actually matter.
+        section0Info[5].offset = (uint)(section0Info[4].offset + section0Info[4].numEntries * 0x10);
+        section0Block5Entries = new Section0Block5Entry[section0Info[5].numEntries];
+
+        for(int i = 0; i < section0Block5Entries.Length; i++)
+        {
+            List<int> indices = GetBoneGroup(meshes[i].sharedMesh);
+
+            section0Block5Entries[i].unknown0 = 0x4; //Most bone groups use 0x4. Dunno if it matters.
+            section0Block5Entries[i].numEntries = (ushort)indices.Count;
+            section0Block5Entries[i].entries = new ushort[indices.Count];
+
+            for (int j = 0; j < indices.Count; j++)
+            {
+                section0Block5Entries[i].entries[j] = (ushort)indices[j];
+            } //for
+        } //for
+
+        //Block 6
+        section0Info[6].id = 6;
+        section0Info[6].numEntries = (ushort)textures.Count;
+        section0Info[6].offset = (uint)(section0Info[5].offset + section0Info[5].numEntries * 0x44);
+        section0Block6Entries = new Section0Block6Entry[section0Info[6].numEntries];
+
+        for(int i = 0; i < section0Block6Entries.Length; i++)
+        {
+            section0Block6Entries[i].stringId = (ushort)strings.Count;
+            section0Block6Entries[i].pathId = (ushort)paths.Count;
+
+            strings.Add(i.ToString());
+            paths.Add(textures[i].name);
+        } //for
+
+        //Block 7
+        section0Info[7].id = 7;
+        section0Info[7].offset = (uint)(section0Info[6].offset + section0Info[6].numEntries * 0x4);
+
+        counter = 0;
+
+        for(int i = 0; i < section0Block4Entries.Length; i++)
+            counter += section0Block4Entries[i].numTextures; //Will need to change this to numTextures + numParameters.
+
+        section0Info[7].numEntries = (ushort)counter;
+        section0Block7Entries = new Section0Block7Entry[section0Info[7].numEntries];
+
+        counter = 0;
+
+        for(int i = 0; i < materials.Count; i++)
+        {
+            if(materials[i].mainTexture)
+                for(int j = 0; j < paths.Count; j++)
+                    if (materials[i].mainTexture.name == paths[j])
+                    {
+                        section0Block7Entries[counter].stringId = (ushort)strings.Count;
+                        section0Block7Entries[counter].referenceId = (ushort)j;
+                        counter++;
+                    } //if
+
+            if(materials[i].GetTexture("_BumpMap"))
+                for (int j = 0; j < paths.Count; j++)
+                    if (materials[i].GetTexture("_BumpMap").name == paths[j])
+                    {
+                        section0Block7Entries[counter].stringId = (ushort)(strings.Count + 1);
+                        section0Block7Entries[counter].referenceId = (ushort)j;
+                        counter++;
+                    } //if
+        } //for
+
+        strings.Add("Base_Tex_SRGB");
+        strings.Add("NormalMap_Tex_NRM");
+
+        //Block 8
+
     } //Write
 
-    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Transform> bones)
+    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Transform> bones)
     {
-        GetMeshes(transform, meshes, materials);
+        GetMeshes(transform, meshes, materials, textures);
 
         bones.AddRange(meshes[0].bones);
     } //GetObjects
 
-    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials)
+    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures)
     {
         foreach (Transform t in transform)
         {
@@ -1302,12 +1402,63 @@ public class Fmdl
                         add = false;
 
                 if (add)
+                {
                     materials.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture)
+                    {
+                        for (int i = 0; i < textures.Count; i++)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture == textures[i])
+                                add = false;
+
+                        if (add)
+                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture);
+                    } //if
+
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap"))
+                    {
+                        add = true;
+
+                        for (int i = 0; i < textures.Count; i++)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") == textures[i])
+                                add = false;
+
+                        if (add)
+                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap"));
+                    } //if
+                } //if
             } //if
 
-            GetMeshes(t, meshes, materials);
+            GetMeshes(t, meshes, materials, textures);
         } //foreach
-    } //GetObjects
+    } //GetMeshes
+
+    private List<int> GetBoneGroup(Mesh mesh)
+    {
+        List<int> indices = new List<int>(0);
+
+        for(int i = 0; i < mesh.boneWeights.Length; i++)
+        {
+            int[] meshIndices = { mesh.boneWeights[i].boneIndex0, mesh.boneWeights[i].boneIndex1, mesh.boneWeights[i].boneIndex2, mesh.boneWeights[i].boneIndex3 };
+
+            for (int j = 0; j < meshIndices.Length; j++)
+            {
+                bool add = true;
+
+                for (int h = 0; h < indices.Count; h++)
+                    if (meshIndices[j] == indices[h])
+                    {
+                        add = false;
+                        break;
+                    } //if
+
+                if (add)
+                    indices.Add(meshIndices[j]);
+            } //for
+        } //for
+
+        return indices;
+    } //GetBoneGroup
 
     /*
         int numModelObjects = 1;
@@ -1476,20 +1627,16 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void OutputSection0Block5Info()
     {
-        ushort greatestUnknown0 = 0;
-        ushort greatestEntry = 0;
-        for (int i = 0; i < section0Block5Entries.Length; i++)
+        for(int i = 0; i < section0Block5Entries.Length; i++)
         {
-            if (section0Block5Entries[i].unknown0 > greatestUnknown0)
-                greatestUnknown0 = section0Block5Entries[i].unknown0;
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
 
-            for (int j = 0; j < section0Block5Entries[i].entries.Length; j++)
-                if (section0Block5Entries[i].entries[j] > greatestEntry)
-                    greatestEntry = section0Block5Entries[i].entries[j];
+            for(int j = 0; j < section0Block5Entries[i].entries.Length; j++)
+            {
+                UnityEngine.Debug.Log(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block5Entries[i].entries[j]].stringId]));
+            } //for
         } //for
-
-        Console.WriteLine("The greatest unknown0 is: " + greatestUnknown0.ToString("x"));
-        Console.WriteLine("The greatest entry is: " + greatestEntry.ToString("x"));
     } //OutputSection2Info
 
     [Conditional("DEBUG")]
