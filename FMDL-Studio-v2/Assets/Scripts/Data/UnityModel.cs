@@ -33,21 +33,21 @@ public class UnityModel
     {
         Globals.ReadTexturePath();
 
-        meshes = new UnityMesh[fmdl.section0Block3Entries.Length];
+        meshes = new UnityMesh[fmdl.section0Block3Entries.Count];
 
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.name;
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
-        Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Length];
+        Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
-        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Length];
+        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
         {
-            bones = new Transform[fmdl.section0Block0Entries.Length];
-            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Length];
+            bones = new Transform[fmdl.section0Block0Entries.Count];
+            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Count];
         } //if
         else
         {
@@ -55,7 +55,7 @@ public class UnityModel
             bindPoses = new Matrix4x4[0];
         } //else
 
-        for(int i = 0; i < fmdl.section0Block4Entries.Length; i++)
+        for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
             //materials[i].material = new Material(Shader.Find("CustomShaders/FoxShaders"));
             materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
@@ -233,7 +233,7 @@ public class UnityModel
             subFmdlGameObjects[i] = new GameObject();
 
             //Get the mesh name.
-            for (int j = 0; j < fmdl.section0Block2Entries.Length; j++)
+            for (int j = 0; j < fmdl.section0Block2Entries.Count; j++)
             {
                 if (i >= fmdl.section0Block2Entries[j].firstObjectId && i < fmdl.section0Block2Entries[j].firstObjectId + fmdl.section0Block2Entries[j].numObjects)
                 {
