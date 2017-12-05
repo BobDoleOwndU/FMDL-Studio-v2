@@ -349,7 +349,7 @@ public class Fmdl
 
     public MaterialParameter[] materialParameters { get; private set; }
     public Object[] objects { get; private set; }
-    public string[] strings { get; private set; }
+    public List<string> strings { get; private set; } = new List<string>(0);
 
     private List<Section0Info> section0Info = new List<Section0Info>(0);
     private List<Section1Info> section1Info = new List<Section1Info>(0);
@@ -459,7 +459,6 @@ public class Fmdl
                     break;
                 case (ushort)Section0BlockType.Strings:
                     stringsIndex = i;
-                    strings = new string[s.numEntries];
                     break;
                 case (ushort)Section0BlockType.BoundingBoxes:
                     boundingBoxesIndex = i;
@@ -1170,11 +1169,11 @@ public class Fmdl
             for (int i = 0; i < section0BlockCEntries.Count; i++)
             {
                 reader.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section0BlockCEntries[i].offset;
-                strings[i] = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
+                string s = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
+
+                strings.Add(s);
             } //for
         } //if
-
-        OutputSection0Block8Info();
     } //Read
 
     /*
@@ -1183,13 +1182,11 @@ public class Fmdl
      */
     public void Write(GameObject gameObject, FileStream stream)
     {
-        /*BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
+        BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
         List<Material> materials = new List<Material>(0);
         List<Texture> textures = new List<Texture>(0);
         List<Transform> bones = new List<Transform>(0);
-        List<string> strings = new List<string>(0);
-        List<string> paths = new List<string>(0);
         List<string> meshGroupStrings = new List<string>(0);
         List<int> meshGroupTotals = new List<int>(0);
 
@@ -1200,50 +1197,43 @@ public class Fmdl
         unknown1 = 0x40;
         unknown2 = 0x776fff;
         unknown3 = 0x5;
-        numSection0Blocks = 0x14; //Temporary. Number can vary.
-        numSection1Blocks = 0x2; //Temporary. Should utilize GZ format.
+        //numSection0Blocks = 0x14; //Temporary. Number can vary.
+        //numSection1Blocks = 0x2; //Temporary. Should utilize GZ format.
 
-        section0Info = new Section0Info[numSection0Blocks];
-
-        strings.Add(""); //Every model has this empty string.
-
-        //Block 0
-        section0Info[0].id = 0;
-        section0Info[0].numEntries = (ushort)bones.Count;
-        section0Info[0].offset = 0x0;
-        section0Block0Entries = new Section0Block0Entry[section0Info[0].numEntries];
-
-        for (int i = 0; i < section0Block0Entries.Length; i++)
+        //Block 0 - Bones
+        for(int i = 0; i < bones.Count; i++)
         {
-            section0Block0Entries[i].stringId = (ushort)strings.Count;
+            Section0Block0Entry s = new Section0Block0Entry();
+
+            //s.stringId; To do strings now or later?
 
             if (bones[i].parent.gameObject.name == "[Root]")
-                section0Block0Entries[i].parentId = 0xFFFF;
+                s.parentId = 0xFFFF;
             else
             {
                 for (int j = 0; j < bones.Count; j++)
                     if (bones[i].parent == bones[j])
                     {
-                        section0Block0Entries[i].parentId = (ushort)j;
+                        s.parentId = (ushort)j;
                         break;
                     } //if
             } //else
 
-            section0Block0Entries[i].boundingBoxId = (ushort)(i + 1); //Should work for now.
-            section0Block0Entries[i].unknown0 = 0x1;
+            s.boundingBoxId = (ushort)(i + 1); //Should work for now.
+            s.unknown0 = 0x1;
 
             //Unity uses left-handed coordinates so x and z get flipped.
-            section0Block0Entries[i].localPositionX = bones[i].localPosition.z;
-            section0Block0Entries[i].localPositionY = bones[i].localPosition.y;
-            section0Block0Entries[i].localPositionZ = bones[i].localPosition.x;
-            section0Block0Entries[i].worldPositionX = bones[i].position.z;
-            section0Block0Entries[i].worldPositionY = bones[i].position.y;
-            section0Block0Entries[i].worldPositionZ = bones[i].position.x;
+            s.localPositionX = bones[i].localPosition.z;
+            s.localPositionY = bones[i].localPosition.y;
+            s.localPositionZ = bones[i].localPosition.x;
+            s.worldPositionX = bones[i].position.z;
+            s.worldPositionY = bones[i].position.y;
+            s.worldPositionZ = bones[i].position.x;
 
-            strings.Add(bones[i].gameObject.name);
+            section0Block0Entries.Add(s);
         } //for
 
-        //Block 1
+        //Block 1 - Mesh Groups
         for (int i = 0; i < meshes.Count; i++)
         {
             bool addString = true;
@@ -1261,26 +1251,25 @@ public class Fmdl
                 meshGroupStrings.Add(meshes[i].name.Substring(4));
         } //for
 
-        section0Info[1].id = 1;
-        section0Info[1].numEntries = (ushort)meshGroupStrings.Count;
-        section0Info[1].offset = (uint)(section0Info[0].numEntries * 0x30);
-        section0Block1Entries = new Section0Block1Entry[section0Info[1].numEntries];
-
-        for (int i = 0; i < section0Block1Entries.Length; i++)
+        for (int i = 0; i < meshGroupStrings.Count; i++)
         {
-            section0Block1Entries[i].stringId = (ushort)strings.Count;
-            section0Block1Entries[i].invisibilityFlag = 0x0;
+            Section0Block1Entry s = new Section0Block1Entry();
+
+            s.stringId = (ushort)strings.Count;
+            s.invisibilityFlag = 0x0;
 
             if (i == 0)
-                section0Block1Entries[i].parentId = 0xFFFF;
+                s.parentId = 0xFFFF;
             else
-                section0Block1Entries[i].parentId = 0x0;
+                s.parentId = 0x0;
 
-            section0Block1Entries[i].unknown0 = 0xFFFF;
-            strings.Add(meshGroupStrings[i]);
+            s.unknown0 = 0xFFFF;
+            //strings.Add(meshGroupStrings[i]);
+
+            section0Block1Entries.Add(s);
         } //for
 
-        //Block 2
+        //Block 2 - Mesh Group Assignments
         int counter = 1;
 
         for (int i = 0; i < meshes.Count; i++)
@@ -1295,126 +1284,109 @@ public class Fmdl
                 } //else
         } //for
 
-        section0Info[2].id = 2;
-        section0Info[2].numEntries = (ushort)meshGroupTotals.Count;
-        section0Info[2].offset = (uint)(section0Info[1].offset + section0Info[1].numEntries * 0x8);
-        section0Block2Entries = new Section0Block2Entry[section0Info[2].numEntries];
-
-        for (int i = 0; i < section0Block2Entries.Length; i++)
+        for (int i = 0; i < meshGroupTotals.Count; i++)
         {
-            section0Block2Entries[i].meshGroupId = (ushort)i;
-            section0Block2Entries[i].numObjects = (ushort)meshGroupTotals[i];
+            Section0Block2Entry s = new Section0Block2Entry();
+
+            s.meshGroupId = (ushort)i;
+            s.numObjects = (ushort)meshGroupTotals[i];
+
             if (i != 0)
-                section0Block2Entries[i].firstObjectId = (ushort)meshGroupTotals[i - 1];
+                s.firstObjectId = (ushort)meshGroupTotals[i - 1];
             else
-                section0Block2Entries[i].firstObjectId = 0;
-            section0Block2Entries[i].id = (ushort)(i + 1);
-            section0Block2Entries[i].unknown0 = 0;
+                s.firstObjectId = 0;
+
+            s.id = (ushort)(i + 1);
+            s.unknown0 = 0;
+
+            section0Block2Entries.Add(s);
         } //for
 
-        //Block 3
-        section0Info[3].id = 3;
-        section0Info[3].numEntries = (ushort)meshes.Count;
-        section0Info[3].offset = (uint)(section0Info[2].offset + section0Info[2].numEntries * 0x20);
-        section0Block3Entries = new Section0Block3Entry[section0Info[3].numEntries];
-
-        for (int i = 0; i < section0Block3Entries.Length; i++)
+        //Block 3 - Meshes
+        for (int i = 0; i < meshes.Count; i++)
         {
-            section0Block3Entries[i].unknown0 = 0x80;
+            Section0Block3Entry s = new Section0Block3Entry();
+
+            s.unknown0 = 0x80;
             for (int j = 0; j < materials.Count; j++)
                 if (meshes[i].sharedMaterial = materials[j])
                 {
-                    section0Block3Entries[i].materialInstanceId = (ushort)j;
+                    s.materialInstanceId = (ushort)j;
                     break;
                 } //if
-            section0Block3Entries[i].boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
-            section0Block3Entries[i].id = (ushort)i;
-            section0Block3Entries[i].numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
+            s.boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
+            s.id = (ushort)i;
+            s.numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
 
             if (i != 0)
-                section0Block3Entries[i].firstFaceVertexId = section0Block3Entries[i - 1].firstFaceVertexId + section0Block3Entries[i - 1].numFaceVertices;
+                s.firstFaceVertexId = section0Block3Entries[i - 1].firstFaceVertexId + section0Block3Entries[i - 1].numFaceVertices;
             else
-                section0Block3Entries[i].firstFaceVertexId = 0;
+                s.firstFaceVertexId = 0;
 
-            section0Block3Entries[i].numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
-            section0Block3Entries[i].firstMeshFormatId = (ushort)(i * 4); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
+            s.numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
+            s.firstMeshFormatId = (ushort)(i * 4); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
+
+            section0Block3Entries.Add(s);
         } //for
 
-        //Block 4
-        section0Info[4].id = 4;
-        section0Info[4].numEntries = (ushort)materials.Count;
-        section0Info[4].offset = (uint)(section0Info[3].offset + section0Info[3].numEntries * 0x30);
-        section0Block4Entries = new Section0Block4Entry[section0Info[4].numEntries];
-
-        for(int i = 0; i < section0Block4Entries.Length; i++)
+        //Block 4 - Material Instances
+        for (int i = 0; i < materials.Count; i++)
         {
-            section0Block4Entries[i].stringId = (ushort)strings.Count;
-            section0Block4Entries[i].unknown0 = 0; //Probably just padding. Should remove.
-            section0Block4Entries[i].materialId = 0; //Should make adjustable at some point.
-            section0Block4Entries[i].numTextures = 0;
+            Section0Block4Entry s = new Section0Block4Entry();
+
+            s.stringId = (ushort)strings.Count;
+            s.unknown0 = 0; //Probably just padding. Should remove.
+            s.materialId = 0; //Should make adjustable at some point.
+            s.numTextures = 0;
+
             if (materials[i].GetTexture("_MainTex"))
-                section0Block4Entries[i].numTextures++;
+                s.numTextures++;
             if (materials[i].GetTexture("_BumpMap"))
-                section0Block4Entries[i].numTextures++;
-            //section0Block4Entries[i].numParameters;
-            //section0Block4Entries[i].firstTextureId;
-            //section0Block4Entries[i].firstParameterId;
-            strings.Add(materials[i].name);
+                s.numTextures++;
+
+            //s.numParameters;
+            //s.firstTextureId;
+            //s.firstParameterId;
+            //strings.Add(materials[i].name);
+
+            section0Block4Entries.Add(s);
         } //for
 
-        //Block 5
-        section0Info[5].id = 5;
-        section0Info[5].numEntries = (ushort)meshes.Count; //Might have to change if bone groups actually matter.
-        section0Info[5].offset = (uint)(section0Info[4].offset + section0Info[4].numEntries * 0x10);
-        section0Block5Entries = new Section0Block5Entry[section0Info[5].numEntries];
-
-        for(int i = 0; i < section0Block5Entries.Length; i++)
+        //Block 5 - Bone Groups
+        for (int i = 0; i < meshes.Count; i++)
         {
+            Section0Block5Entry s = new Section0Block5Entry();
             List<int> indices = GetBoneGroup(meshes[i].sharedMesh);
 
-            section0Block5Entries[i].unknown0 = 0x4; //Most bone groups use 0x4. Dunno if it matters.
-            section0Block5Entries[i].numEntries = (ushort)indices.Count;
-            section0Block5Entries[i].entries = new ushort[indices.Count];
+            s.unknown0 = 0x4; //Most bone groups use 0x4. Dunno if it matters.
+            s.numEntries = (ushort)indices.Count;
+            s.entries = new ushort[indices.Count];
 
             for (int j = 0; j < indices.Count; j++)
             {
-                section0Block5Entries[i].entries[j] = (ushort)indices[j];
+                s.entries[j] = (ushort)indices[j];
             } //for
+
+            section0Block5Entries.Add(s);
         } //for
 
-        //Block 6
-        section0Info[6].id = 6;
-        section0Info[6].numEntries = (ushort)textures.Count;
-        section0Info[6].offset = (uint)(section0Info[5].offset + section0Info[5].numEntries * 0x44);
-        section0Block6Entries = new Section0Block6Entry[section0Info[6].numEntries];
-
-        for(int i = 0; i < section0Block6Entries.Length; i++)
+        //Block 6 - Textures
+        for (int i = 0; i < textures.Count; i++)
         {
-            section0Block6Entries[i].stringId = (ushort)strings.Count;
+            //Have to rewrite this.
+            /*section0Block6Entries[i].stringId = (ushort)strings.Count;
             section0Block6Entries[i].pathId = (ushort)paths.Count;
 
             strings.Add(i.ToString());
-            paths.Add(textures[i].name);
+            paths.Add(textures[i].name);*/
         } //for
 
-        //Block 7
-        section0Info[7].id = 7;
-        section0Info[7].offset = (uint)(section0Info[6].offset + section0Info[6].numEntries * 0x4);
-
-        counter = 0;
-
-        for(int i = 0; i < section0Block4Entries.Length; i++)
-            counter += section0Block4Entries[i].numTextures; //Will need to change this to numTextures + numParameters.
-
-        section0Info[7].numEntries = (ushort)counter;
-        section0Block7Entries = new Section0Block7Entry[section0Info[7].numEntries];
-
-        counter = 0;
-
-        for(int i = 0; i < materials.Count; i++)
+        //Block 7 - Texture Type/Material Parameter Assignments
+        for (int i = 0; i < materials.Count; i++)
         {
-            if(materials[i].mainTexture)
-                for(int j = 0; j < paths.Count; j++)
+            //Have to rewrite this.
+            /*if (materials[i].mainTexture)
+                for (int j = 0; j < paths.Count; j++)
                     if (materials[i].mainTexture.name == paths[j])
                     {
                         section0Block7Entries[counter].stringId = (ushort)strings.Count;
@@ -1422,33 +1394,15 @@ public class Fmdl
                         counter++;
                     } //if
 
-            if(materials[i].GetTexture("_BumpMap"))
+            if (materials[i].GetTexture("_BumpMap"))
                 for (int j = 0; j < paths.Count; j++)
                     if (materials[i].GetTexture("_BumpMap").name == paths[j])
                     {
                         section0Block7Entries[counter].stringId = (ushort)(strings.Count + 1);
                         section0Block7Entries[counter].referenceId = (ushort)j;
                         counter++;
-                    } //if
+                    } //if*/
         } //for
-
-        strings.Add("Base_Tex_SRGB");
-        strings.Add("NormalMap_Tex_NRM");
-
-        //Block 8
-        section0Info[8].id = 8;
-        section0Info[8].numEntries = 1; //eventually we'll want more than one. For now, one will do.
-        section0Info[8].offset = (uint)(section0Info[5].offset + section0Info[5].numEntries * 0x44);
-        section0Block8Entries = new Section0Block8Entry[section0Info[8].numEntries];
-
-        section0Block8Entries[0].stringId = (ushort)strings.Count;
-        strings.Add("tpp_3ddf_MetalicBacteria");
-        section0Block8Entries[0].typeId = (ushort)strings.Count;
-        strings.Add("tpp3DDF_MetalicBacteria_LNM");
-
-
-        //Block 9*/
-
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Transform> bones)
@@ -1788,7 +1742,7 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void OutputStringInfo()
     {
-        for (int i = 0; i < strings.Length; i++)
+        for (int i = 0; i < strings.Count; i++)
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
