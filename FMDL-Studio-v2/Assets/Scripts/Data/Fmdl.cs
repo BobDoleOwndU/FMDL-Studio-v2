@@ -306,6 +306,25 @@ public class Fmdl
         public Face[][] lodFaces;
     } //struct
 
+    //Importer Classes/Structs
+    private class MeshGroup
+    {
+        public string name;
+        public bool invisible;
+    } //MeshGroup
+
+    private class MeshGroupEntry
+    {
+        public int meshGroupIndex;
+        public int numMeshes;
+    } //MeshGroupEntry
+
+    private struct FoxMaterial
+    {
+        public string name;
+        public string type;
+    } //Material
+
     //Instance Variables
     public string name { get; private set; }
 
@@ -1184,13 +1203,15 @@ public class Fmdl
     {
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
-        List<Material> materials = new List<Material>(0);
+        List<Material> materialInstances = new List<Material>(0);
         List<Texture> textures = new List<Texture>(0);
         List<Transform> bones = new List<Transform>(0);
-        List<string> meshGroupStrings = new List<string>(0);
-        List<int> meshGroupTotals = new List<int>(0);
+        List<MeshGroup> meshGroups = new List<MeshGroup>(0);
+        List<MeshGroupEntry> meshGroupEntries = new List<MeshGroupEntry>(0);
+        List<FoxMaterial> materials = GetMaterials(gameObject.transform);
 
-        GetObjects(gameObject.transform, meshes, materials, textures, bones);
+        GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
+        GetMeshGroups(gameObject.transform, meshGroups, meshGroupEntries);
 
         signature = 0x4c444d46;
         unknown0 = 0x40028f5c;
@@ -1205,7 +1226,8 @@ public class Fmdl
         {
             Section0Block0Entry s = new Section0Block0Entry();
 
-            //s.stringId; To do strings now or later?
+            s.stringId = (ushort)strings.Count;
+            strings.Add(bones[i].gameObject.name);
 
             if (bones[i].parent.gameObject.name == "[Root]")
                 s.parentId = 0xFFFF;
@@ -1234,72 +1256,41 @@ public class Fmdl
         } //for
 
         //Block 1 - Mesh Groups
-        for (int i = 0; i < meshes.Count; i++)
-        {
-            bool addString = true;
-
-            for (int j = 0; j < meshGroupStrings.Count; j++)
-            {
-                if (meshes[i].name.Substring(4) == meshGroupStrings[j])
-                {
-                    addString = false;
-                    break;
-                } //if
-            } //for
-
-            if (addString)
-                meshGroupStrings.Add(meshes[i].name.Substring(4));
-        } //for
-
-        for (int i = 0; i < meshGroupStrings.Count; i++)
+        for(int i = 0; i < meshGroups.Count; i++)
         {
             Section0Block1Entry s = new Section0Block1Entry();
 
             s.stringId = (ushort)strings.Count;
-            s.invisibilityFlag = 0x0;
+            strings.Add(meshGroups[i].name);
+
+            if (meshGroups[i].invisible)
+                s.invisibilityFlag = 1;
+            else
+                s.invisibilityFlag = 0;
 
             if (i == 0)
                 s.parentId = 0xFFFF;
             else
-                s.parentId = 0x0;
+                s.parentId = 0;
 
-            s.unknown0 = 0xFFFF;
-            //strings.Add(meshGroupStrings[i]);
-
-            section0Block1Entries.Add(s);
+            s.unknown0 = 0xFF;
         } //for
 
         //Block 2 - Mesh Group Assignments
-        int counter = 1;
-
-        for (int i = 0; i < meshes.Count; i++)
-        {
-            if (i != 0)
-                if (meshes[i].name.Substring(4) == meshes[i - 1].name.Substring(4))
-                    counter++;
-                else
-                {
-                    meshGroupTotals.Add(counter);
-                    counter = 1;
-                } //else
-        } //for
-
-        for (int i = 0; i < meshGroupTotals.Count; i++)
+        for(int i = 0; i < meshGroupEntries.Count; i++)
         {
             Section0Block2Entry s = new Section0Block2Entry();
 
-            s.meshGroupId = (ushort)i;
-            s.numObjects = (ushort)meshGroupTotals[i];
+            s.meshGroupId = (ushort)meshGroupEntries[i].meshGroupIndex;
+            s.numObjects = (ushort)meshGroupEntries[i].numMeshes;
 
-            if (i != 0)
-                s.firstObjectId = (ushort)meshGroupTotals[i - 1];
-            else
+            if (i == 0)
                 s.firstObjectId = 0;
+            else
+                s.firstObjectId = (ushort)(section0Block2Entries[i - 1].firstObjectId + section0Block2Entries[i - 1].numObjects);
 
-            s.id = (ushort)(i + 1);
+            s.id = (ushort)i;
             s.unknown0 = 0;
-
-            section0Block2Entries.Add(s);
         } //for
 
         //Block 3 - Meshes
@@ -1308,12 +1299,14 @@ public class Fmdl
             Section0Block3Entry s = new Section0Block3Entry();
 
             s.unknown0 = 0x80;
-            for (int j = 0; j < materials.Count; j++)
-                if (meshes[i].sharedMaterial = materials[j])
+
+            for (int j = 0; j < materialInstances.Count; j++)
+                if (meshes[i].sharedMaterial = materialInstances[j])
                 {
                     s.materialInstanceId = (ushort)j;
                     break;
                 } //if
+
             s.boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
             s.id = (ushort)i;
             s.numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
@@ -1330,24 +1323,29 @@ public class Fmdl
         } //for
 
         //Block 4 - Material Instances
-        for (int i = 0; i < materials.Count; i++)
+        for (int i = 0; i < materialInstances.Count; i++)
         {
             Section0Block4Entry s = new Section0Block4Entry();
 
             s.stringId = (ushort)strings.Count;
+            strings.Add(materialInstances[i].name);
+
             s.unknown0 = 0; //Probably just padding. Should remove.
-            s.materialId = 0; //Should make adjustable at some point.
+            //s.materialId = 0;
             s.numTextures = 0;
 
-            if (materials[i].GetTexture("_MainTex"))
+            if (materialInstances[i].GetTexture("_MainTex"))
                 s.numTextures++;
-            if (materials[i].GetTexture("_BumpMap"))
+            if (materialInstances[i].GetTexture("_BumpMap"))
                 s.numTextures++;
 
             //s.numParameters;
-            //s.firstTextureId;
+
+            if (i == 0)
+                s.firstTextureId = 0;
+            else
+                s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
             //s.firstParameterId;
-            //strings.Add(materials[i].name);
 
             section0Block4Entries.Add(s);
         } //for
@@ -1370,49 +1368,67 @@ public class Fmdl
             section0Block5Entries.Add(s);
         } //for
 
+        UnityEngine.Debug.Log(textures.Count);
         //Block 6 - Textures
         for (int i = 0; i < textures.Count; i++)
         {
-            //Have to rewrite this.
-            /*section0Block6Entries[i].stringId = (ushort)strings.Count;
-            section0Block6Entries[i].pathId = (ushort)paths.Count;
+            Section0Block6Entry s = new Section0Block6Entry();
 
-            strings.Add(i.ToString());
-            paths.Add(textures[i].name);*/
+            string name = Path.GetFileNameWithoutExtension(textures[i].name);
+            s.stringId = (ushort)strings.Count;
+            strings.Add(name);
+
+            string path = Path.GetDirectoryName(textures[i].name);
+            bool add = true;
+
+            for(int j = 0; j < strings.Count; j++)
+            {
+                if (path == strings[j])
+                {
+                    add = false;
+                    s.pathId = (ushort)j;
+                    break;
+                } //if
+            } //for
+
+            if(add)
+            {
+                s.pathId = (ushort)strings.Count;
+                strings.Add(path);
+            } //if
+
+            section0Block6Entries.Add(s);
         } //for
 
         //Block 7 - Texture Type/Material Parameter Assignments
-        for (int i = 0; i < materials.Count; i++)
+        for (int i = 0; i < materialInstances.Count; i++)
         {
-            //Have to rewrite this.
-            /*if (materials[i].mainTexture)
-                for (int j = 0; j < paths.Count; j++)
-                    if (materials[i].mainTexture.name == paths[j])
-                    {
-                        section0Block7Entries[counter].stringId = (ushort)strings.Count;
-                        section0Block7Entries[counter].referenceId = (ushort)j;
-                        counter++;
-                    } //if
+            
+        } //for
 
-            if (materials[i].GetTexture("_BumpMap"))
-                for (int j = 0; j < paths.Count; j++)
-                    if (materials[i].GetTexture("_BumpMap").name == paths[j])
-                    {
-                        section0Block7Entries[counter].stringId = (ushort)(strings.Count + 1);
-                        section0Block7Entries[counter].referenceId = (ushort)j;
-                        counter++;
-                    } //if*/
+        //Block 8 - Materials
+        for(int i = 0; i < materials.Count; i++)
+        {
+            Section0Block8Entry s = new Section0Block8Entry();
+
+            s.stringId = (ushort)strings.Count;
+            strings.Add(materials[i].name);
+
+            s.typeId = (ushort)strings.Count;
+            strings.Add(materials[i].type);
+
+            section0Block8Entries.Add(s);
         } //for
     } //Write
 
-    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Transform> bones)
+    private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)
     {
-        GetMeshes(transform, meshes, materials, textures);
+        GetMeshes(transform, meshes, materialInstances, textures);
 
         bones.AddRange(meshes[0].bones);
     } //GetObjects
 
-    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures)
+    private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures)
     {
         foreach (Transform t in transform)
         {
@@ -1422,13 +1438,13 @@ public class Fmdl
 
                 bool add = true;
 
-                for (int i = 0; i < materials.Count; i++)
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial == materials[i])
+                for (int i = 0; i < materialInstances.Count; i++)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial == materialInstances[i])
                         add = false;
 
                 if (add)
                 {
-                    materials.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+                    materialInstances.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 
                     if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture)
                     {
@@ -1454,9 +1470,75 @@ public class Fmdl
                 } //if
             } //if
 
-            GetMeshes(t, meshes, materials, textures);
+            GetMeshes(t, meshes, materialInstances, textures);
         } //foreach
     } //GetMeshes
+
+    private void GetMeshGroups(Transform transform, List<MeshGroup> meshGroups, List<MeshGroupEntry> meshGroupEntries)
+    {
+        meshGroups = new List<MeshGroup>(0);
+        meshGroupEntries = new List<MeshGroupEntry>(0);
+        FoxModel foxModel = transform.GetComponent<FoxModel>();
+
+        for(int i = 0; i < foxModel.definitions.Length; i++)
+        {
+            if (i != 0)
+            {
+                MeshGroup meshGroup = new MeshGroup();
+                meshGroup.name = foxModel.definitions[i].meshGroup;
+                meshGroup.invisible = false;
+                meshGroups.Add(meshGroup);
+            } //if
+            else
+            {
+                MeshGroup meshGroup;
+
+                if (foxModel.definitions[i].meshGroup != "MESH_ROOT")
+                {
+                    meshGroup = new MeshGroup();
+                    meshGroup.name = "MESH_ROOT";
+                    meshGroup.invisible = false;
+                    meshGroups.Add(meshGroup);
+                } //if
+
+                meshGroup = new MeshGroup();
+                meshGroup.name = foxModel.definitions[i].meshGroup;
+                meshGroup.invisible = false;
+                meshGroups.Add(meshGroup);
+            } //else
+        } //for
+
+        for (int i = 0; i < foxModel.definitions.Length; i++)
+        {
+            if(i != 0)
+            {
+                if (foxModel.definitions[i].meshGroup == meshGroups[meshGroupEntries[meshGroupEntries.Count - 1].meshGroupIndex].name)
+                    meshGroupEntries[meshGroupEntries.Count - 1].numMeshes++;
+                else
+                    for(int j = 0; j < meshGroups.Count; j++)
+                        if(foxModel.definitions[i].meshGroup == meshGroups[j].name)
+                        {
+                            MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
+                            meshGroupEntry.meshGroupIndex = j;
+                            meshGroupEntry.numMeshes = 1;
+                            meshGroupEntries.Add(meshGroupEntry);
+                            break;
+                        } //if
+            } //if
+            else
+            {
+                for (int j = 0; j < meshGroups.Count; j++)
+                    if (foxModel.definitions[i].meshGroup == meshGroups[j].name)
+                    {
+                        MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
+                        meshGroupEntry.meshGroupIndex = j;
+                        meshGroupEntry.numMeshes = 1;
+                        meshGroupEntries.Add(meshGroupEntry);
+                        break;
+                    } //if
+            } //else
+        } //for
+    } //GetMeshGroups
 
     private List<int> GetBoneGroup(Mesh mesh)
     {
@@ -1484,6 +1566,35 @@ public class Fmdl
 
         return indices;
     } //GetBoneGroup
+
+    private List<FoxMaterial> GetMaterials(Transform transform)
+    {
+        List<FoxMaterial> materials = new List<FoxMaterial>(0);
+        FoxModel foxModel = transform.GetComponent<FoxModel>();
+
+        for(int i = 0; i < foxModel.definitions.Length; i++)
+        {
+            bool add = true;
+
+            for(int j = 0; j < materials.Count; j++)
+            {
+                if (foxModel.definitions[i].material == materials[j].name)
+                {
+                    add = false;
+                    break;
+                } //if
+            } //for
+
+            if(add)
+            {
+                FoxMaterial f = new FoxMaterial();
+                f.name = foxModel.definitions[i].material;
+                f.type = foxModel.definitions[i].materialType;
+            } //add
+        } //for
+
+        return materials;
+    } //GetMaterials
 
     /*
         int numModelObjects = 1;
@@ -1671,8 +1782,8 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
-            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block6Entries[i].stringId]));
-            UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block6Entries[i].pathId]));
+            UnityEngine.Debug.Log("Name: " + strings[section0Block6Entries[i].stringId]);
+            UnityEngine.Debug.Log("Texture: " + strings[section0Block6Entries[i].pathId]);
         } //for
     } //OutputSection0Block6Info
 

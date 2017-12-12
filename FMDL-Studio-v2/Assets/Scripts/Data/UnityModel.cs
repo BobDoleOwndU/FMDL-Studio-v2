@@ -43,7 +43,6 @@ public class UnityModel
         Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
         fmdlGameObject.AddComponent<FoxModel>().definitions = new FoxMeshDefinition[fmdl.objects.Length];
-        Debug.Log(fmdlGameObject.GetComponent<FoxModel>().definitions.Length);
         UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
