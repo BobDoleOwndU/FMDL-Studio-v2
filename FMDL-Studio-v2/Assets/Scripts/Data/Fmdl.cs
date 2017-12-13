@@ -325,6 +325,28 @@ public class Fmdl
         public string type;
     } //Material
 
+    private class MeshFormat
+    {
+        public byte meshFormat0Size = 1;
+        public byte meshFormat1Size = 0;
+        public byte meshFormat2Size = 0;
+        public byte meshFormat3Size = 0;
+        public uint zeroOffset;
+        public uint additionalOffset;
+        public byte size = 0;
+        public bool normals;
+        public bool tangents;
+        public bool colour;
+        public bool weights0;
+        public bool indices0;
+        public bool uv0;
+        public bool uv1;
+        public bool uv2;
+        public bool uv3;
+        public bool weights1;
+        public bool indices1;
+    } //MeshFormat
+
     //Instance Variables
     public string name { get; private set; }
 
@@ -1209,9 +1231,11 @@ public class Fmdl
         List<MeshGroup> meshGroups = new List<MeshGroup>(0);
         List<MeshGroupEntry> meshGroupEntries = new List<MeshGroupEntry>(0);
         List<FoxMaterial> materials = GetMaterials(gameObject.transform);
+        List<MeshFormat> meshFormats;
 
         GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
         GetMeshGroups(gameObject.transform, meshGroups, meshGroupEntries);
+        meshFormats = GetMeshFormats(meshes);
 
         signature = 0x4c444d46;
         unknown0 = 0x40028f5c;
@@ -1419,6 +1443,228 @@ public class Fmdl
 
             section0Block8Entries.Add(s);
         } //for
+
+        //Block 9 - Mesh Format Assignments
+        for(int i = 0; i < meshFormats.Count; i++)
+        {
+            Section0Block9Entry s = new Section0Block9Entry();
+
+            byte numMeshFormatEntries = 0;
+            byte numVertexFormatEntries = 0;
+
+            if (meshFormats[i].meshFormat0Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat0Size;
+            } //if
+
+            if (meshFormats[i].meshFormat1Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat1Size;
+            } //if
+
+            if (meshFormats[i].meshFormat2Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat2Size;
+            } //if
+
+            if (meshFormats[i].meshFormat3Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat3Size;
+            } //if
+
+            s.numMeshFormatEntries = numMeshFormatEntries;
+            s.numVertexFormatEntries = numVertexFormatEntries;
+            s.unknown0 = 0x100;
+
+            if (i == 0)
+            {
+                s.firstMeshFormatId = 0;
+                s.firstVertexFormatId = 0;
+            } //if
+            else
+            {
+                s.firstMeshFormatId = (ushort)(section0Block9Entries[i - 1].firstMeshFormatId + section0Block9Entries[i - 1].numMeshFormatEntries);
+                s.firstVertexFormatId = (ushort)(section0Block9Entries[i - 1].firstVertexFormatId + section0Block9Entries[i - 1].numVertexFormatEntries);
+            } //else
+
+            section0Block9Entries.Add(s);
+        } //for
+
+        //Block A - Mesh Formats
+        for(int i = 0; i < meshFormats.Count; i++)
+        {
+            if(meshFormats[i].meshFormat0Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 0;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat0Size;
+                s.length = 0xC;
+                s.type = 0;
+                s.offset = meshFormats[i].zeroOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat1Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat1Size;
+                s.length = meshFormats[i].size;
+                s.type = 1;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat2Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat2Size;
+                s.length = meshFormats[i].size;
+                s.type = 2;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat3Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat3Size;
+                s.length = meshFormats[i].size;
+                s.type = 3;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+        } //for
+
+        //Block B - Vertex Formats
+        for(int i = 0; i < meshFormats.Count; i++)
+        {
+            ushort offset = 0;
+
+            Section0BlockBEntry s = new Section0BlockBEntry();
+
+            s.usage = 0;
+            s.format = 1;
+            s.offset = offset;
+
+            section0BlockBEntries.Add(s);
+
+            if(meshFormats[i].normals)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 2;
+                s.format = 6;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+
+            if (meshFormats[i].tangents)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xE;
+                s.format = 6;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+
+            if (meshFormats[i].colour)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 3;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].weights0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 1;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].indices0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 7;
+                s.format = 9;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 8;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 9;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv2)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xA;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv3)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xB;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].weights1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xC;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].indices1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xD;
+                s.format = 4;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+        } //for
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)
@@ -1595,6 +1841,91 @@ public class Fmdl
 
         return materials;
     } //GetMaterials
+
+    private List<MeshFormat> GetMeshFormats(List<SkinnedMeshRenderer> meshes)
+    {
+        List<MeshFormat> meshFormats = new List<MeshFormat>(0);
+
+        for(int i = 0; i < meshes.Count; i++)
+        {
+            MeshFormat meshFormat = new MeshFormat();
+
+            if (i == 0)
+            {
+                meshFormat.zeroOffset = 0;
+                meshFormat.additionalOffset = 0;
+            } //if
+            else
+            {
+                meshFormat.zeroOffset = (uint)meshes[i - 1].sharedMesh.vertices.Length * 0xC;
+                meshFormat.additionalOffset = (uint)(meshFormats[i - 1].additionalOffset + meshFormats[i - 1].size * meshes[i - 1].sharedMesh.vertices.Length);
+            } //else
+
+            if (meshes[i].sharedMesh.normals.Length > 0)
+            {
+                meshFormat.normals = true;
+                meshFormat.meshFormat1Size++;
+                meshFormat.size += 8;
+            } //if
+
+            if (meshes[i].sharedMesh.tangents.Length > 0)
+            {
+                meshFormat.tangents = true;
+                meshFormat.meshFormat1Size++;
+                meshFormat.size += 8;
+            } //if
+
+            if (meshes[i].sharedMesh.colors.Length > 0)
+            {
+                meshFormat.colour = true;
+                meshFormat.meshFormat2Size++;
+                meshFormat.size += 4;
+            } //if
+
+            if (meshes[i].sharedMesh.boneWeights.Length > 0)
+            {
+                meshFormat.weights0 = true;
+                meshFormat.indices0 = true;
+                meshFormat.meshFormat3Size += 2;
+                meshFormat.size += 8;
+            } //if
+
+            if (meshes[i].sharedMesh.uv.Length > 0)
+            {
+                meshFormat.uv0 = true;
+                meshFormat.meshFormat3Size++;
+                meshFormat.size += 4;
+            } //if
+
+            if (meshes[i].sharedMesh.uv2.Length > 0)
+            {
+                meshFormat.uv1 = true;
+                meshFormat.meshFormat3Size++;
+                meshFormat.size += 4;
+            } //if
+
+            if (meshes[i].sharedMesh.uv3.Length > 0)
+            {
+                meshFormat.uv2 = true;
+                meshFormat.meshFormat3Size++;
+                meshFormat.size += 4;
+            } //if
+
+            if (meshes[i].sharedMesh.uv4.Length > 0)
+            {
+                meshFormat.uv3 = true;
+                meshFormat.meshFormat3Size++;
+                meshFormat.size += 4;
+            } //if
+
+            meshFormat.weights1 = false;
+            meshFormat.indices1 = false;
+
+            meshFormats.Add(meshFormat);
+        } //for
+
+        return meshFormats;
+    } //GetMeshFormats
 
     /*
         int numModelObjects = 1;
