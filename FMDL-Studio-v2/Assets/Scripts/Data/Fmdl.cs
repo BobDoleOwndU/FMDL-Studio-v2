@@ -220,7 +220,22 @@ public class Fmdl
     {
         public uint firstFaceVertexId;
         public uint numFaceVertices;
-    }
+    } //struct
+
+    public struct Section0Block12Entry
+    {
+        public ulong unknown0; //Always 0.
+    } //struct
+
+    public struct Section0Block14Entry
+    {
+        public float unknown0; //Nulling triggers lowest LOD faces.
+        public float unknown1;
+        public float unknown2;
+        public float unknown3; //Always a whole number?
+        public uint unknown4;
+        public uint unknown5;
+    } //struct
 
     public struct MaterialParameter
     {
@@ -379,8 +394,8 @@ public class Fmdl
     public int bufferOffsetsIndex { get; private set; } = -1;
     public int lodInfoIndex { get; private set; } = -1;
     public int faceIndicesIndex { get; private set; } = -1;
-    public int type12Position { get; private set; } = -1;
-    public int type14Position { get; private set; } = -1;
+    public int type12Index { get; private set; } = -1;
+    public int type14Index { get; private set; } = -1;
     public int texturePathsIndex { get; private set; } = -1;
     public int stringHashesIndex { get; private set; } = -1;
 
@@ -412,6 +427,8 @@ public class Fmdl
     public List<Section0BlockEEntry> section0BlockEEntries { get; private set; } = new List<Section0BlockEEntry>(0);
     public List<Section0Block10Entry> section0Block10Entries { get; private set; } = new List<Section0Block10Entry>(0);
     public List<Section0Block11Entry> section0Block11Entries { get; private set; } = new List<Section0Block11Entry>(0);
+    public List<Section0Block12Entry> section0Block12Entries { get; private set; } = new List<Section0Block12Entry>(0);
+    public List<Section0Block14Entry> section0Block14Entries { get; private set; } = new List<Section0Block14Entry>(0);
     public List<ulong> section0Block15Entries { get; private set; } = new List<ulong>(0);
     public List<ulong> section0Block16Entries { get; private set; } = new List<ulong>(0);
 
@@ -514,10 +531,10 @@ public class Fmdl
                     faceIndicesIndex = i;
                     break;
                 case (ushort)Section0BlockType.Type12:
-                    type12Position = i;
+                    type12Index = i;
                     break;
                 case (ushort)Section0BlockType.Type14:
-                    type14Position = i;
+                    type14Index = i;
                     break;
                 case (ushort)Section0BlockType.TexturePaths:
                     texturePathsIndex = i;
@@ -978,6 +995,54 @@ public class Fmdl
 
         /****************************************************************
          *
+         * SECTION 0 BLOCK 0x12 - UNKNOWN
+         *
+         ****************************************************************/
+        if (type12Index != -1)
+        {
+            //go to and get the section 0x12 entry info.
+            reader.BaseStream.Position = section0Info[type12Index].offset + section0Offset;
+
+            for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
+            {
+                Section0Block12Entry s = new Section0Block12Entry();
+
+                s.unknown0 = reader.ReadUInt64();
+
+                section0Block12Entries.Add(s);
+            } //for
+        } //if
+
+        /****************************************************************
+         *
+         * SECTION 0 BLOCK 0x14 - UNKNOWN
+         *
+         ****************************************************************/
+        if (type14Index != -1)
+        {
+            //go to and get the section 0x14 entry info.
+            reader.BaseStream.Position = section0Info[type14Index].offset + section0Offset;
+
+            for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
+            {
+                Section0Block14Entry s = new Section0Block14Entry();
+
+                reader.BaseStream.Position += 0x4;
+                s.unknown0 = reader.ReadSingle();
+                s.unknown1 = reader.ReadSingle();
+                s.unknown2 = reader.ReadSingle();
+                s.unknown3 = reader.ReadSingle();
+                reader.BaseStream.Position += 0x8;
+                s.unknown4 = reader.ReadUInt32();
+                s.unknown5 = reader.ReadUInt32();
+                reader.BaseStream.Position += 0x5C;
+
+                section0Block14Entries.Add(s);
+            } //for
+        } //if
+
+        /****************************************************************
+         *
          * SECTION 0 BLOCK Ox15 - TEXTURE PATH DEFINITIONS
          *
          ****************************************************************/
@@ -1425,10 +1490,7 @@ public class Fmdl
         } //for
 
         //Block 7 - Texture Type/Material Parameter Assignments
-        for (int i = 0; i < materialInstances.Count; i++)
-        {
-            
-        } //for
+        //To do....
 
         //Block 8 - Materials
         for(int i = 0; i < materials.Count; i++)
@@ -1665,6 +1727,68 @@ public class Fmdl
                 offset += 8;
             } //if
         } //for
+
+        //Block C - Strings
+        for(int i = 0; i < strings.Count; i++)
+        {
+            Section0BlockCEntry s = new Section0BlockCEntry();
+            s.section1BlockId = 3;
+            s.length = (ushort)strings[i].Length;
+
+            if(i == 0)
+            {
+                s.offset = 0;
+            } //if
+            else
+            {
+                s.offset = section0BlockCEntries[i].offset + section0BlockCEntries[i].length + 1;
+            } //else
+
+            section0BlockCEntries.Add(s);
+        } //for
+
+        //Block D - Bounding Boxes
+        //To do....
+
+        //Block E - Buffer Offsets
+        //Doing during actual file writing might be better.
+
+        //Block 10 - LOD Info
+        {
+            Section0Block10Entry s = new Section0Block10Entry();
+            s.unknown0 = 1;
+            s.highDetailDistance = 1.0f;
+            s.highDetailDistance = 1.0f;
+            s.highDetailDistance = 1.0f;
+            section0Block10Entries.Add(s);
+        } //code block
+
+        //Block 11 - Face Indices
+        for(int i = 0; i < meshes.Count; i++)
+        {
+            Section0Block11Entry s = new Section0Block11Entry();
+            s.firstFaceVertexId = 0;
+            s.numFaceVertices = (uint)meshes[i].sharedMesh.triangles.Length;
+            section0Block11Entries.Add(s);
+        } //for
+
+        //Block 12 - Unknown
+        {
+            Section0Block12Entry s = new Section0Block12Entry();
+            s.unknown0 = 0;
+            section0Block12Entries.Add(s);
+        } //code block
+
+        //Block 14 - Unknown
+        {
+            Section0Block14Entry s = new Section0Block14Entry();
+            s.unknown0 = 3.33850384f;
+            s.unknown1 = 0.8753322f;
+            s.unknown2 = 0.200000048f;
+            s.unknown3 = 5f;
+            s.unknown4 = 5;
+            s.unknown5 = 1;
+        } //code block
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)
