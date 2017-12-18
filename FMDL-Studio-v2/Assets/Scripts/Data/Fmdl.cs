@@ -89,7 +89,8 @@ public class Fmdl
 
     public struct Section0Block3Entry
     {
-        public uint unknown0;
+        public byte unknown0;
+        public byte noShadowFlag;
         public ushort materialInstanceId;
         public ushort boneGroupId;
         public ushort id;
@@ -675,7 +676,9 @@ public class Fmdl
             {
                 Section0Block3Entry s = new Section0Block3Entry();
 
-                s.unknown0 = reader.ReadUInt32();
+                s.unknown0 = reader.ReadByte();
+                s.noShadowFlag = reader.ReadByte();
+                reader.BaseStream.Position += 0x2;
                 s.materialInstanceId = reader.ReadUInt16();
                 s.boneGroupId = reader.ReadUInt16();
                 s.id = reader.ReadUInt16();
@@ -1388,6 +1391,7 @@ public class Fmdl
             Section0Block3Entry s = new Section0Block3Entry();
 
             s.unknown0 = 0x80;
+            s.noShadowFlag = 0;
 
             for (int j = 0; j < materialInstances.Count; j++)
                 if (meshes[i].sharedMaterial = materialInstances[j])
@@ -1445,7 +1449,7 @@ public class Fmdl
             Section0Block5Entry s = new Section0Block5Entry();
             List<int> indices = GetBoneGroup(meshes[i].sharedMesh);
 
-            s.unknown0 = 0x4; //Most bone groups use 0x4. Dunno if it matters.
+            s.unknown0 = 4; //Most bone groups use 0x4. Dunno if it matters.
             s.numEntries = (ushort)indices.Count;
             s.entries = new ushort[indices.Count];
 
@@ -1788,7 +1792,93 @@ public class Fmdl
             s.unknown3 = 5f;
             s.unknown4 = 5;
             s.unknown5 = 1;
+            section0Block14Entries.Add(s);
         } //code block
+
+        //Objects
+        for(int i = 0; i < meshes.Count; i++)
+        {
+            Object o = new Object();
+            o.vertices = new Vertex[meshes[i].sharedMesh.vertices.Length];
+            o.additionalVertexData = new AdditionalVertexData[meshes[i].sharedMesh.vertices.Length];
+            o.faces = new Face[meshes[i].sharedMesh.triangles.Length / 3];
+
+            for(int j = 0; j < o.vertices.Length; j++)
+            {
+                o.vertices[j].x = meshes[i].sharedMesh.vertices[j].z;
+                o.vertices[j].y = meshes[i].sharedMesh.vertices[j].y;
+                o.vertices[j].z = meshes[i].sharedMesh.vertices[j].x;
+                o.additionalVertexData[j].normalX = new Half(meshes[i].sharedMesh.normals[j].z);
+                o.additionalVertexData[j].normalY = new Half(meshes[i].sharedMesh.normals[j].y);
+                o.additionalVertexData[j].normalZ = new Half(meshes[i].sharedMesh.normals[j].x);
+                o.additionalVertexData[j].normalW = new Half(1f);
+                o.additionalVertexData[j].tangentX = new Half(meshes[i].sharedMesh.tangents[j].z);
+                o.additionalVertexData[j].tangentY = new Half(meshes[i].sharedMesh.tangents[j].y);
+                o.additionalVertexData[j].tangentZ = new Half(meshes[i].sharedMesh.tangents[j].x);
+                o.additionalVertexData[j].tangentW = new Half(meshes[i].sharedMesh.tangents[j].w);
+                //o.additionalVertexData[j].colourR = meshes[i].sharedMesh.colors[j].r;
+                //o.additionalVertexData[j].colourG = meshes[i].sharedMesh.colors[j].g;
+                //o.additionalVertexData[j].colourB = meshes[i].sharedMesh.colors[j].b;
+                //o.additionalVertexData[j].colourA = meshes[i].sharedMesh.colors[j].a;
+                o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
+                o.additionalVertexData[j].boneWeightY = meshes[i].sharedMesh.boneWeights[j].weight1;
+                o.additionalVertexData[j].boneWeightZ = meshes[i].sharedMesh.boneWeights[j].weight2;
+                o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
+
+                for(int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                {
+                    if(meshes[i].sharedMesh.boneWeights[j].boneIndex0 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    {
+                        o.additionalVertexData[j].boneGroup0Id = (byte)h;
+                        break;
+                    } //if
+                } //for
+
+                for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                {
+                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex1 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    {
+                        o.additionalVertexData[j].boneGroup2Id = (byte)h;
+                        break;
+                    } //if
+                } //for
+
+
+                for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                {
+                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex2 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    {
+                        o.additionalVertexData[j].boneGroup2Id = (byte)h;
+                        break;
+                    } //if
+                } //for
+
+                for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                {
+                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex3 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    {
+                        o.additionalVertexData[j].boneGroup3Id = (byte)h;
+                        break;
+                    } //if
+                } //for
+
+                o.additionalVertexData[j].textureU = new Half(meshes[i].sharedMesh.uv[j].x);
+                o.additionalVertexData[j].textureV = new Half(meshes[i].sharedMesh.uv[j].y);
+                o.additionalVertexData[j].unknownU0 = new Half(meshes[i].sharedMesh.uv2[j].x);
+                o.additionalVertexData[j].unknownV0 = new Half(meshes[i].sharedMesh.uv2[j].y);
+                o.additionalVertexData[j].unknownU1 = new Half(meshes[i].sharedMesh.uv3[j].x);
+                o.additionalVertexData[j].unknownV1 = new Half(meshes[i].sharedMesh.uv3[j].y);
+                o.additionalVertexData[j].unknownU2 = new Half(meshes[i].sharedMesh.uv4[j].x);
+                o.additionalVertexData[j].unknownV2 = new Half(meshes[i].sharedMesh.uv4[j].y);
+            } //for
+
+            for(int j = 0, h = 0; j < o.faces.Length; j++, h += 3)
+            {
+                o.faces[j].vertex1Id = (ushort)meshes[i].sharedMesh.triangles[h];
+                o.faces[j].vertex2Id = (ushort)meshes[i].sharedMesh.triangles[h + 1];
+                o.faces[j].vertex3Id = (ushort)meshes[i].sharedMesh.triangles[h + 2];
+            } //for
+        } //for
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)
@@ -2207,10 +2297,17 @@ public class Fmdl
             UnityEngine.Debug.Log("Entry No: " + i);
             UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].stringId]));
             UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].stringId]));
+
             for (int j = section0Block4Entries[i].firstTextureId; j < section0Block4Entries[i].firstTextureId + section0Block4Entries[i].numTextures; j++)
             {
-                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[j].referenceId]));
                 UnityEngine.Debug.Log("Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[j].referenceId]));
+            } //for
+
+            for (int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
+            {
+                UnityEngine.Debug.Log("Parameter Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+                UnityEngine.Debug.Log(string.Format("Parameters: {{{0}, {1}, {2}, {3}}}", materialParameters[section0Block7Entries[j].referenceId].values[0], materialParameters[section0Block7Entries[j].referenceId].values[1], materialParameters[section0Block7Entries[j].referenceId].values[2], materialParameters[section0Block7Entries[j].referenceId].values[3]));
             } //for
         } //for
     } //OutputSection0Block4Info
