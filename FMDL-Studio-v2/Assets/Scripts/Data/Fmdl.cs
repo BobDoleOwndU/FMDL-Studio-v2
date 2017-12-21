@@ -1447,7 +1447,7 @@ public class Fmdl
         for (int i = 0; i < meshes.Count; i++)
         {
             Section0Block5Entry s = new Section0Block5Entry();
-            List<int> indices = GetBoneGroup(meshes[i].sharedMesh);
+            List<int> indices = GetBoneGroup(meshes[i], bones);
 
             s.unknown0 = 4; //Most bone groups use 0x4. Dunno if it matters.
             s.numEntries = (ushort)indices.Count;
@@ -1461,7 +1461,6 @@ public class Fmdl
             section0Block5Entries.Add(s);
         } //for
 
-        UnityEngine.Debug.Log(textures.Count);
         //Block 6 - Textures
         for (int i = 0; i < textures.Count; i++)
         {
@@ -1752,7 +1751,35 @@ public class Fmdl
         } //for
 
         //Block D - Bounding Boxes
-        //To do....
+        {
+            Section0BlockDEntry s = new Section0BlockDEntry();
+
+            foreach(Transform t in gameObject.transform)
+            {
+                if(t.gameObject.name == "[Root]")
+                {
+                    s.minX = t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
+                    s.minY = t.gameObject.GetComponent<BoxCollider>().bounds.min.y;
+                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
+                    s.maxX = t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
+                    s.maxY = t.gameObject.GetComponent<BoxCollider>().bounds.max.y;
+                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
+                    section0BlockDEntries.Add(s);
+                    break;
+                } //if
+            } //foreach
+        } //code block
+        for(int i = 0; i < bones.Count; i++)
+        {
+            Section0BlockDEntry s = new Section0BlockDEntry();
+            s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
+            s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
+            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
+            s.maxX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
+            s.maxY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.y;
+            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
+            section0BlockDEntries.Add(s);
+        } //for
 
         //Block E - Buffer Offsets
         //Doing during actual file writing might be better.
@@ -1885,8 +1912,25 @@ public class Fmdl
     {
         GetMeshes(transform, meshes, materialInstances, textures);
 
-        bones.AddRange(meshes[0].bones);
+        foreach(Transform t in transform)
+        {
+            if (t.gameObject.name == "[Root]")
+            {
+                GetBones(t, bones);
+                break;
+            } //if
+        } //foreach
     } //GetObjects
+
+    public static void GetBones(Transform transform, List<Transform> bones)
+    {
+        foreach (Transform t in transform)
+        {
+            bones.Add(t);
+
+            GetBones(t, bones);
+        } //foreach
+    } //GetBones
 
     private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures)
     {
@@ -2000,29 +2044,14 @@ public class Fmdl
         } //for
     } //GetMeshGroups
 
-    private List<int> GetBoneGroup(Mesh mesh)
+    private List<int> GetBoneGroup(SkinnedMeshRenderer mesh, List<Transform> bones)
     {
         List<int> indices = new List<int>(0);
 
-        for (int i = 0; i < mesh.boneWeights.Length; i++)
-        {
-            int[] meshIndices = { mesh.boneWeights[i].boneIndex0, mesh.boneWeights[i].boneIndex1, mesh.boneWeights[i].boneIndex2, mesh.boneWeights[i].boneIndex3 };
-
-            for (int j = 0; j < meshIndices.Length; j++)
-            {
-                bool add = true;
-
-                for (int h = 0; h < indices.Count; h++)
-                    if (meshIndices[j] == indices[h])
-                    {
-                        add = false;
-                        break;
-                    } //if
-
-                if (add)
-                    indices.Add(meshIndices[j]);
-            } //for
-        } //for
+        for(int i = 0; i < bones.Count; i++)
+            for(int j = 0; j < mesh.bones.Length; j++)
+                if (bones[i] == mesh.bones[j])
+                    indices.Add(i);
 
         return indices;
     } //GetBoneGroup
