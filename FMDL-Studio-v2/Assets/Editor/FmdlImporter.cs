@@ -14,6 +14,7 @@ public class FmdlImporter : ScriptedImporter
         UnityModel model = new UnityModel();
         fmdl.Read(stream);
         GameObject fmdlGameObject = model.GetDataFromFmdl(fmdl);
+        ctx.AddObjectToAsset(ctx.assetPath, fmdlGameObject);
         ctx.SetMainObject(fmdlGameObject);
         stream.Close();
     }
