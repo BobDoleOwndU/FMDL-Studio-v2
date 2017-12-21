@@ -29,7 +29,7 @@ public class UnityModel
     //Instance Variables
     private UnityMesh[] meshes;
 
-    public void GetDataFromFmdl(Fmdl fmdl)
+    public GameObject GetDataFromFmdl(Fmdl fmdl)
     {
         Globals.ReadTexturePath();
 
@@ -289,6 +289,7 @@ public class UnityModel
             fmdlGameObject.GetComponent<FoxModel>().definitions[i] = foxMeshDefinition;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
+        return fmdlGameObject;
     } //GetDataFromFmdl
 
     public static Texture2D LoadTextureDXT(string path)
