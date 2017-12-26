@@ -6,12 +6,15 @@ public class FmdlStudioWindow : EditorWindow
     [MenuItem("FMDL Studio/Import FMDL", false, 0)]
     public static void ImportFMDLOption()
     {
-        //FmdlStudioWindow fmdlWindow = (FmdlStudioWindow)CreateInstance("FmdlStudioWindow");
-
         string windowPath = EditorUtility.OpenFilePanel("Select FMDL", "", "fmdl");
-        FmdlImporter.FMDLRead(windowPath);
 
-        UnityEngine.Debug.Log("Selected FMDL: " + windowPath);
+        if (!string.IsNullOrWhiteSpace(windowPath))
+        {
+            FmdlImporter.FMDLRead(windowPath);
+            Debug.Log("Selected FMDL: " + windowPath);
+        } //if
+        else
+            Debug.Log("No path selected.");
     } //ImportFMDLOption
 
     [MenuItem("FMDL Studio/Convert to FBX", false, 1)]
