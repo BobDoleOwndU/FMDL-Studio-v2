@@ -5,7 +5,7 @@ public static class BoundingBoxGenerator
 {
     public static void GenerateBoundingBoxes(Transform transform)
     {
-        List<SkinnedMeshRenderer> meshes = GetMeshes(transform);
+       //List<SkinnedMeshRenderer> meshes = GetMeshes(transform);
         List<Transform> bones = new List<Transform>(0);
 
         foreach(Transform t in transform)

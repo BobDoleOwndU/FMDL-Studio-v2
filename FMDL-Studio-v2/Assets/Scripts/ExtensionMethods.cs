@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.IO;
+using UnityEngine;
 
 public static class ExtensionMethods
 {
@@ -13,4 +14,10 @@ public static class ExtensionMethods
 
         return true;
     } //IsNullOrZeroes
+
+    public static void WriteZeroes(this BinaryWriter writer, int numZeroes)
+    {
+        byte[] bytes = new byte[numZeroes];
+        writer.Write(bytes);
+    } //WriteZeroes
 } //class
