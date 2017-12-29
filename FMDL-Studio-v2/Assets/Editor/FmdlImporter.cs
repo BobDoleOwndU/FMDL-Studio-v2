@@ -19,8 +19,8 @@ public class FmdlImporter : ScriptedImporter
         stream.Close();
     }
 }
-
 #else
+
 public static class FmdlImporter
 {
     public static void FMDLRead(string fmdlPath)

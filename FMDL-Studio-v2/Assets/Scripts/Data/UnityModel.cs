@@ -22,8 +22,8 @@ public class UnityModel
     private struct UnityMaterial
     {
         public Material material;
+        public string materialName;
         public string materialType;
-        public string textureType;
     } //struct
 
     //Instance Variables
@@ -33,21 +33,22 @@ public class UnityModel
     {
         Globals.ReadTexturePath();
 
-        meshes = new UnityMesh[fmdl.section0Block3Entries.Length];
+        meshes = new UnityMesh[fmdl.section0Block3Entries.Count];
 
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.name;
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Length];
         Transform[] bones;
         Matrix4x4[] bindPoses;
-        Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Length];
+        Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
-        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Length];
+        fmdlGameObject.AddComponent<FoxModel>().definitions = new FoxMeshDefinition[fmdl.objects.Length];
+        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
         {
-            bones = new Transform[fmdl.section0Block0Entries.Length];
-            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Length];
+            bones = new Transform[fmdl.section0Block0Entries.Count];
+            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Count];
         } //if
         else
         {
@@ -55,7 +56,7 @@ public class UnityModel
             bindPoses = new Matrix4x4[0];
         } //else
 
-        for(int i = 0; i < fmdl.section0Block4Entries.Length; i++)
+        for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
             materials[i].material = new Material(Shader.Find("CustomShaders/FoxShaders"));
             //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
@@ -63,7 +64,8 @@ public class UnityModel
 
             if (fmdl.stringsIndex != -1)
             {
-                materials[i].material.name = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
+                materials[i].material.name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
+                materials[i].materialName = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
                 materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
 
                 for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
@@ -87,14 +89,7 @@ public class UnityModel
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
                             materials[i].material.SetTexture("_BumpMap", texture);
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
-<<<<<<< HEAD
                             materials[i].material.SetTexture("_SRM", texture);
-=======
-                        {
-                            //UnityEngine.Debug.Log("FOUND ONE");
-                            materials[i].material.SetTexture("_SRM", texture);
-                        }
->>>>>>> parent of 2a5c352... Merge pull request #18 from BobDoleOwndU/master
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
                             materials[i].material.SetTexture("_LayerTex", texture);
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
@@ -109,7 +104,8 @@ public class UnityModel
             } //if
             else
             {
-                materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
+                materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
+                materials[i].materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
                 materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
 
                 if (fmdl.texturePathsIndex != -1)
@@ -127,14 +123,7 @@ public class UnityModel
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
                                 materials[i].material.SetTexture("_BumpMap", texture);
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
-<<<<<<< HEAD
                                 materials[i].material.SetTexture("_SRM", texture);
-=======
-                            {
-                                //UnityEngine.Debug.Log("FOUND ONE");
-                                materials[i].material.SetTexture("_SRM", texture);
-                            }
->>>>>>> parent of 2a5c352... Merge pull request #18 from BobDoleOwndU/master
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
                                 materials[i].material.SetTexture("_LayerTex", texture);
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
@@ -245,16 +234,24 @@ public class UnityModel
 
             //Render the mesh in Unity.
             subFmdlGameObjects[i] = new GameObject();
+            FoxMeshDefinition foxMeshDefinition = new FoxMeshDefinition();
 
             //Get the mesh name.
-            for (int j = 0; j < fmdl.section0Block2Entries.Length; j++)
+            for (int j = 0; j < fmdl.section0Block2Entries.Count; j++)
             {
                 if (i >= fmdl.section0Block2Entries[j].firstObjectId && i < fmdl.section0Block2Entries[j].firstObjectId + fmdl.section0Block2Entries[j].numObjects)
                 {
-                    if(fmdl.stringsIndex != -1)
+                    if (fmdl.stringsIndex != -1)
+                    {
                         subFmdlGameObjects[i].name = i + " - " + fmdl.strings[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId];
+                        foxMeshDefinition.meshGroup = fmdl.strings[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId];
+                    } //if
                     else
+                    {
                         subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId]);
+                        foxMeshDefinition.meshGroup = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId]);
+                    } //else
+
                     break;
                 } //if
             } //for
@@ -263,8 +260,12 @@ public class UnityModel
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
+            foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
+            foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;
 
             Mesh mesh = new Mesh();
+            foxMeshDefinition.mesh = mesh;
+
             mesh.vertices = meshes[i].vertices;
             mesh.uv = meshes[i].uv;
             mesh.uv2 = meshes[i].uv2;
@@ -284,6 +285,8 @@ public class UnityModel
 
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;
+
+            fmdlGameObject.GetComponent<FoxModel>().definitions[i] = foxMeshDefinition;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
         return fmdlGameObject;

@@ -55,4 +55,15 @@ public class FmdlStudioWindow : EditorWindow
         else
             Debug.Log("No folder selected.");
     } //ImportFMDLOption
+
+    [MenuItem("FMDL Studio/Generate Bounding Boxes", false, 101)]
+    public static void GenerateBoundingBoxes()
+    {
+        if (Selection.activeGameObject != null)
+        {
+            BoundingBoxGenerator.GenerateBoundingBoxes(Selection.activeGameObject.transform);
+        } //if
+        else
+            Debug.Log("No objects selected.");
+    } //ImportFMDLOption
 } //class
