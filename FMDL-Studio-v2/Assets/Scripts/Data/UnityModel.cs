@@ -37,12 +37,12 @@ public class UnityModel
 
         GameObject fmdlGameObject = new GameObject();
         fmdlGameObject.name = fmdl.name;
-        GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Length];
+        GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Count];
         Transform[] bones;
         Matrix4x4[] bindPoses;
         Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
-        fmdlGameObject.AddComponent<FoxModel>().definitions = new FoxMeshDefinition[fmdl.objects.Length];
+        fmdlGameObject.AddComponent<FoxModel>().definitions = new FoxMeshDefinition[fmdl.objects.Count];
         UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
@@ -172,7 +172,7 @@ public class UnityModel
                 bones[i].parent = rootBone;
         } //for
 
-        for (int i = 0; i < fmdl.objects.Length; i++)
+        for (int i = 0; i < fmdl.objects.Count; i++)
         {
             int lod = 0; //Temporary solution. 0 loads the normal faces. 1 loads the first set of LOD faces. 2 loads the next set. Etc....
 
