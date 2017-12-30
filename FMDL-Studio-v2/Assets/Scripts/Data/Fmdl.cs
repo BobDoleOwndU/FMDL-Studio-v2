@@ -1316,7 +1316,7 @@ public class Fmdl
 
         for (int i = 0; i < gameObject.GetComponent<FoxModel>().definitions.Length; i++)
         {
-            List<FoxMaterialParameter> m = GetMeshParameters(gameObject.GetComponent<FoxModel>().definitions[i].material);
+            List<FoxMaterialParameter> m = GetMaterialParameters(gameObject.GetComponent<FoxModel>().definitions[i].material);
             meshParameters.Add(m);
         } //for
 
@@ -1382,7 +1382,7 @@ public class Fmdl
             else
                 s.parentId = 0;
 
-            s.unknown0 = 0xFF;
+            s.unknown0 = 0xFFFF;
 
             section0Block1Entries.Add(s);
         } //for
@@ -1527,11 +1527,11 @@ public class Fmdl
         {
             Section0Block6Entry s = new Section0Block6Entry();
 
-            string name = Path.GetFileNameWithoutExtension(textures[i].name);
+            string name = Path.GetFileNameWithoutExtension(textures[i].name) + ".tga";
             s.stringId = (ushort)strings.Count;
             strings.Add(name);
 
-            string path = Path.GetDirectoryName(textures[i].name);
+            string path = Path.GetDirectoryName(textures[i].name) + "/";
             bool add = true;
 
             for (int j = 0; j < strings.Count; j++)
@@ -1949,8 +1949,8 @@ public class Fmdl
             Section0Block10Entry s = new Section0Block10Entry();
             s.numLods = 1;
             s.unknown0 = 1.0f;
-            s.unknown0 = 1.0f;
-            s.unknown0 = 1.0f;
+            s.unknown1 = 1.0f;
+            s.unknown2 = 1.0f;
             section0Block10Entries.Add(s);
         } //code block
 
@@ -2016,7 +2016,7 @@ public class Fmdl
 
                 for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                 {
-                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex0 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    if (meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex0] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]])
                     {
                         o.additionalVertexData[j].boneGroup0Id = (byte)h;
                         break;
@@ -2025,7 +2025,7 @@ public class Fmdl
 
                 for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                 {
-                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex1 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                     {
                         o.additionalVertexData[j].boneGroup2Id = (byte)h;
                         break;
@@ -2035,7 +2035,7 @@ public class Fmdl
 
                 for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                 {
-                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex2 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex2] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                     {
                         o.additionalVertexData[j].boneGroup2Id = (byte)h;
                         break;
@@ -2044,7 +2044,7 @@ public class Fmdl
 
                 for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                 {
-                    if (meshes[i].sharedMesh.boneWeights[j].boneIndex3 == section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h])
+                    if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex3] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                     {
                         o.additionalVertexData[j].boneGroup3Id = (byte)h;
                         break;
@@ -2888,7 +2888,7 @@ public class Fmdl
 
             for(int i = 0; i < strings.Count; i++)
             {
-                byte[] arr = Encoding.ASCII.GetBytes(strings[i]);
+                byte[] arr = Encoding.ASCII.GetBytes(Hashing.DenormalizeFilePath(strings[i]));
 
                 writer.Write(arr);
                 writer.WriteZeroes(1);
@@ -2899,7 +2899,13 @@ public class Fmdl
             writer.BaseStream.Position = writer.BaseStream.Position = 0x44 + 0x8 * numSection0Blocks + 0xC * section1StringsIndex;
             writer.Write(section1Info[section1StringsIndex].offset);
             writer.Write(section1Info[section1StringsIndex].length);
+
+            writer.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section1Info[section1StringsIndex].length;
         } //if
+
+        section1Length = (uint)(writer.BaseStream.Position - section1Offset);
+        writer.BaseStream.Position = 0x34;
+        writer.Write(section1Length);
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)
@@ -3054,10 +3060,15 @@ public class Fmdl
     {
         List<int> indices = new List<int>(0);
 
-        for (int i = 0; i < bones.Count; i++)
+        for (int i = 0; i < mesh.bones.Length; i++)
+            for (int j = 0; j < bones.Count; j++)
+                if (mesh.bones[i] == bones[j])
+                    indices.Add(j);
+
+        /*for (int i = 0; i < bones.Count; i++)
             for (int j = 0; j < mesh.bones.Length; j++)
                 if (bones[i] == mesh.bones[j])
-                    indices.Add(i);
+                    indices.Add(i);*/
 
         return indices;
     } //GetBoneGroup
@@ -3092,7 +3103,7 @@ public class Fmdl
         return materials;
     } //GetMaterials
 
-    private List<FoxMaterialParameter> GetMeshParameters(string name)
+    private List<FoxMaterialParameter> GetMaterialParameters(string name)
     {
         List<FoxMaterialParameter> meshParameters = new List<FoxMaterialParameter>(0);
 
@@ -3171,6 +3182,22 @@ public class Fmdl
             case "d75680ee296f":
                 meshParameter.name = "MatParamIndex_0";
                 meshParameter.values = new float[4] { 140f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+                break;
+
+            case "fox_3ddf_skin":
+                meshParameter.name = "MatParamIndex_0";
+                meshParameter.values = new float[4] { 116f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Roughness";
+                meshParameter.values = new float[4] { 5f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Color";
+                meshParameter.values = new float[4] { 0.8f, 0.8f, 0.8f, 0.3f };
                 meshParameters.Add(meshParameter);
                 break;
         } //switch

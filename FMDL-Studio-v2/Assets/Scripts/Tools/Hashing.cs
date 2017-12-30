@@ -248,7 +248,7 @@ public static class Hashing
         return hash;
     } //HashFileNameWithExtension
 
-    private static string DenormalizeFilePath(string filePath)
+    public static string DenormalizeFilePath(string filePath)
     {
         return filePath.Replace("\\", "/");
     } //DenormalizeFilePath
