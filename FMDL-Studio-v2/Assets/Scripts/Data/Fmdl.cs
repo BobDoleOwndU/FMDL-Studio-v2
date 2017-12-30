@@ -1276,7 +1276,6 @@ public class Fmdl
             } //for
         } //code block
 
-
         /****************************************************************
          *
          * STRINGS
@@ -1326,8 +1325,8 @@ public class Fmdl
         unknown1 = 0x40;
         unknown2 = 0x776fff;
         unknown3 = 0x5;
-        //numSection0Blocks = 0x14; //Temporary. Number can vary.
-        //numSection1Blocks = 0x2; //Temporary. Should utilize GZ format.
+
+        strings.Add("");
 
         //Block 0 - Bones
         for (int i = 0; i < bones.Count; i++)
@@ -1902,13 +1901,13 @@ public class Fmdl
             {
                 if (t.gameObject.name == "[Root]")
                 {
-                    s.minX = t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
+                    s.minX = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
                     s.minY = t.gameObject.GetComponent<BoxCollider>().bounds.min.y;
-                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
+                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
                     s.minW = 1f;
-                    s.maxX = t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
+                    s.maxX = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
                     s.maxY = t.gameObject.GetComponent<BoxCollider>().bounds.max.y;
-                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
+                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
                     s.maxW = 1f;
                     section0BlockDEntries.Add(s);
                     break;
@@ -1918,12 +1917,14 @@ public class Fmdl
         for (int i = 0; i < bones.Count; i++)
         {
             Section0BlockDEntry s = new Section0BlockDEntry();
-            s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
+            s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
             s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
-            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
-            s.maxX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
+            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
+            s.minW = 1f;
+            s.maxX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
             s.maxY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.y;
-            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
+            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
+            s.maxW = 1f;
             section0BlockDEntries.Add(s);
         } //for
 
@@ -2434,6 +2435,8 @@ public class Fmdl
                 writer.Write(section0Block3Entries[i].boneGroupId);
                 writer.Write(section0Block3Entries[i].id);
                 writer.Write(section0Block3Entries[i].numVertices);
+                writer.WriteZeroes(4);
+                writer.Write(section0Block3Entries[i].firstFaceVertexId);
                 writer.Write(section0Block3Entries[i].numFaceVertices);
                 writer.Write(section0Block3Entries[i].firstMeshFormatId);
                 writer.WriteZeroes(0x10);
@@ -2758,7 +2761,8 @@ public class Fmdl
             section0BlockEEntries[0].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
 
             //Positions
-            for(int i = 0; i < objects.Count; i++)
+            for (int i = 0; i < objects.Count; i++)
+            {
                 for (int j = 0; j < objects[i].vertices.Length; j++)
                 {
                     writer.Write(objects[i].vertices[j].x);
@@ -2766,12 +2770,17 @@ public class Fmdl
                     writer.Write(objects[i].vertices[j].z);
                 } //for
 
+                if (writer.BaseStream.Position % 0x10 != 0)
+                    writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+            } //for
+
             section0BlockEEntries[0].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[0].offset);
 
             section0BlockEEntries[1].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
 
             //Additional Vertex Data.
             for (int i = 0; i < objects.Count; i++)
+            {
                 for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
                     for (int h = section0Block9Entries[i].firstVertexFormatId; h < section0Block9Entries[i].firstVertexFormatId + section0Block9Entries[i].numVertexFormatEntries; h++)
                         switch (section0BlockBEntries[h].usage)
@@ -2785,16 +2794,16 @@ public class Fmdl
                                 writer.Write((byte)Math.Round(objects[i].additionalVertexData[j].boneWeightW * 255f));
                                 break;
                             case 2: //normals.
-                                writer.Write(objects[i].additionalVertexData[j].normalX);
-                                writer.Write(objects[i].additionalVertexData[j].normalY);
-                                writer.Write(objects[i].additionalVertexData[j].normalZ);
-                                writer.Write(objects[i].additionalVertexData[j].normalW);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalX));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalY));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalZ));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalW));
                                 break;
                             case 3: //diffuse.
                                 writer.Write(objects[i].additionalVertexData[j].colourR);
                                 writer.Write(objects[i].additionalVertexData[j].colourG);
                                 writer.Write(objects[i].additionalVertexData[j].colourB);
-                                writer.Write(objects[i].additionalVertexData[j].colourA);  
+                                writer.Write(objects[i].additionalVertexData[j].colourA);
                                 break;
                             case 7: //bone indices.
                                 writer.Write(objects[i].additionalVertexData[j].boneGroup0Id);
@@ -2803,20 +2812,20 @@ public class Fmdl
                                 writer.Write(objects[i].additionalVertexData[j].boneGroup3Id);
                                 break;
                             case 8: //UV.
-                                writer.Write(objects[i].additionalVertexData[j].textureU);
-                                writer.Write(objects[i].additionalVertexData[j].textureV);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].textureU));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].textureV));
                                 break;
                             case 9: //UV 2?
-                                writer.Write(objects[i].additionalVertexData[j].unknownU0);
-                                writer.Write(objects[i].additionalVertexData[j].unknownV0);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU0));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV0));
                                 break;
                             case 10: //UV 3?
-                                writer.Write(objects[i].additionalVertexData[j].unknownU1);
-                                writer.Write(objects[i].additionalVertexData[j].unknownV1);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU1));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV1));
                                 break;
                             case 11: //UV 4?
-                                writer.Write(objects[i].additionalVertexData[j].unknownU2);
-                                writer.Write(objects[i].additionalVertexData[j].unknownV2);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU2));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV2));
                                 break;
                             case 12: //bone weights 2?
                                 writer.Write(objects[i].additionalVertexData[j].unknownWeight0);
@@ -2831,12 +2840,16 @@ public class Fmdl
                                 writer.Write(objects[i].additionalVertexData[j].unknownId3);
                                 break;
                             case 14: //tangent.
-                                writer.Write(objects[i].additionalVertexData[j].tangentX);
-                                writer.Write(objects[i].additionalVertexData[j].tangentY);
-                                writer.Write(objects[i].additionalVertexData[j].tangentZ);
-                                writer.Write(objects[i].additionalVertexData[j].tangentW);
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentX));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentY));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentZ));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentW));
                                 break;
                         } //switch
+
+                if (writer.BaseStream.Position % 0x10 != 0)
+                    writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+            } //for
 
             section0BlockEEntries[1].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[1].offset);
 
@@ -2875,7 +2888,9 @@ public class Fmdl
 
             for(int i = 0; i < strings.Count; i++)
             {
-                writer.Write(strings[i]);
+                byte[] arr = Encoding.ASCII.GetBytes(strings[i]);
+
+                writer.Write(arr);
                 writer.WriteZeroes(1);
             } //for
 
@@ -3179,7 +3194,14 @@ public class Fmdl
             else
             {
                 meshFormat.zeroOffset = (uint)meshes[i - 1].sharedMesh.vertices.Length * 0xC;
+
+                if (meshFormat.zeroOffset % 0x10 != 0)
+                    meshFormat.zeroOffset += 0x10 - meshFormat.zeroOffset % 0x10;
+
                 meshFormat.additionalOffset = (uint)(meshFormats[i - 1].additionalOffset + meshFormats[i - 1].size * meshes[i - 1].sharedMesh.vertices.Length);
+
+                if (meshFormat.additionalOffset % 0x10 != 0)
+                    meshFormat.additionalOffset += 0x10 - meshFormat.additionalOffset % 0x10;
             } //else
 
             if (meshes[i].sharedMesh.normals.Length > 0)
