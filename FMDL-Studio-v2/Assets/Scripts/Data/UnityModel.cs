@@ -58,7 +58,7 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
-            materials[i].material = new Material(Shader.Find("CustomShaders/FoxShaders"));
+            materials[i].material = new Material(Shader.Find("FoxShaders/Base"));
             //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
             //materials[i].material = new Material(Shader.Find("Standard"));
 
