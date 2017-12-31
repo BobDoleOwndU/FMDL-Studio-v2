@@ -31,6 +31,17 @@ public class FoxModel : MonoBehaviour
 
         foreach (Transform t in transform)
         {
+            if (t.GetComponent<MeshRenderer>())
+            {
+                MeshRenderer renderer = t.GetComponent<MeshRenderer>();
+                Mesh mesh = t.gameObject.GetComponent<MeshFilter>().sharedMesh;
+                Material material = renderer.sharedMaterial;
+
+                SkinnedMeshRenderer skinnedRenderer = t.gameObject.AddComponent<SkinnedMeshRenderer>();
+                skinnedRenderer.sharedMesh = mesh;
+                skinnedRenderer.material = material;
+            } //if
+
             if (t.GetComponent<SkinnedMeshRenderer>())
                 meshes.Add(t.GetComponent<SkinnedMeshRenderer>().sharedMesh);
         } //foreach

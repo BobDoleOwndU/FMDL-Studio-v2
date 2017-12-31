@@ -1321,10 +1321,10 @@ public class Fmdl
         } //for
 
         signature = 0x4c444d46;
-        unknown0 = 0x40028f5c;
+        unknown0 = 0x4001eb85;
         unknown1 = 0x40;
-        unknown2 = 0x776fff;
-        unknown3 = 0x5;
+        unknown2 = 0x177fff;
+        unknown3 = 0xd;
 
         strings.Add("");
 
@@ -1456,6 +1456,10 @@ public class Fmdl
             Section0Block4Entry s = new Section0Block4Entry();
 
             s.stringId = (ushort)strings.Count;
+
+            if (materialInstances[i].name.Contains(" (UnityEngine.Material)"))
+                materialInstances[i].name = materialInstances[i].name.Substring(0, materialInstances[i].name.IndexOf(" (UnityEngine.Material)"));
+
             strings.Add(materialInstances[i].name);
 
             s.numTextures = 0;
@@ -2009,10 +2013,14 @@ public class Fmdl
                 //o.additionalVertexData[j].colourG = meshes[i].sharedMesh.colors[j].g;
                 //o.additionalVertexData[j].colourB = meshes[i].sharedMesh.colors[j].b;
                 //o.additionalVertexData[j].colourA = meshes[i].sharedMesh.colors[j].a;
-                o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
-                o.additionalVertexData[j].boneWeightY = meshes[i].sharedMesh.boneWeights[j].weight1;
-                o.additionalVertexData[j].boneWeightZ = meshes[i].sharedMesh.boneWeights[j].weight2;
-                o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
+
+                if (meshes[i].sharedMesh.boneWeights.Length > 0)
+                {
+                    o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
+                    o.additionalVertexData[j].boneWeightY = meshes[i].sharedMesh.boneWeights[j].weight1;
+                    o.additionalVertexData[j].boneWeightZ = meshes[i].sharedMesh.boneWeights[j].weight2;
+                    o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
+                } //if
 
                 for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                 {
