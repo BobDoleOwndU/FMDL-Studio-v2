@@ -29,7 +29,7 @@ public class UnityModel
     //Instance Variables
     private UnityMesh[] meshes;
 
-    public void GetDataFromFmdl(Fmdl fmdl)
+    public GameObject GetDataFromFmdl(Fmdl fmdl)
     {
         Globals.ReadTexturePath();
 
@@ -58,8 +58,8 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
-            //materials[i].material = new Material(Shader.Find("CustomShaders/FoxShaders"));
-            materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
+            materials[i].material = new Material(Shader.Find("FoxShaders/Base"));
+            //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
             //materials[i].material = new Material(Shader.Find("Standard"));
 
             if (fmdl.stringsIndex != -1)
@@ -88,8 +88,8 @@ public class UnityModel
                             materials[i].material.mainTexture = texture;
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
                             materials[i].material.SetTexture("_BumpMap", texture);
-                        /*else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
-                            materials[i].material.SetTexture("_SRM", texture);*/
+                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
+                            materials[i].material.SetTexture("_SRM", texture);
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
                             materials[i].material.SetTexture("_LayerTex", texture);
                         else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
@@ -122,8 +122,8 @@ public class UnityModel
                                 materials[i].material.mainTexture = texture;
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
                                 materials[i].material.SetTexture("_BumpMap", texture);
-                            /*else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
-                                materials[i].material.SetTexture("_SRM", texture);*/
+                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
+                                materials[i].material.SetTexture("_SRM", texture);
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
                                 materials[i].material.SetTexture("_LayerTex", texture);
                             else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
@@ -289,6 +289,7 @@ public class UnityModel
             fmdlGameObject.GetComponent<FoxModel>().definitions[i] = foxMeshDefinition;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
+        return fmdlGameObject;
     } //GetDataFromFmdl
 
     public static Texture2D LoadTextureDXT(string path)
