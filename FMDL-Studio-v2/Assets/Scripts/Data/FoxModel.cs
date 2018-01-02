@@ -18,9 +18,9 @@ public class FoxModel : MonoBehaviour
             {
                 definitions[i] = new FoxMeshDefinition();
                 definitions[i].mesh = meshes[i];
-                definitions[i].meshGroup = meshes[i].name.Substring(4);
-                definitions[i].material = "fox_3ddf_skin_tension_dirty";
-                definitions[i].materialType = "fox3DDF_Skin_Tension_Dirty";
+                definitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
+                definitions[i].material = "fox_3ddf_skin_dirty";
+                definitions[i].materialType = "fox3DDF_Skin_Dirty_LNM";
             } //for
         } //if
     } //Start

@@ -84,7 +84,7 @@ public class Fmdl
         public ushort numObjects;
         public ushort firstObjectId;
         public ushort id;
-        public ushort unknown0;
+        public ushort firstFaceIndexId;
     } //struct
 
     public struct Section0Block3Entry
@@ -97,7 +97,7 @@ public class Fmdl
         public ushort numVertices;
         public uint firstFaceVertexId;
         public uint numFaceVertices;
-        public ulong firstMeshFormatId;
+        public ulong firstFaceIndexId;
     } //struct
 
     public struct Section0Block4Entry
@@ -658,7 +658,7 @@ public class Fmdl
                 s.firstObjectId = reader.ReadUInt16();
                 s.id = reader.ReadUInt16();
                 reader.BaseStream.Position += 0x4;
-                s.unknown0 = reader.ReadUInt16();
+                s.firstFaceIndexId = reader.ReadUInt16();
                 reader.BaseStream.Position += 0xE;
 
                 section0Block2Entries.Add(s);
@@ -689,7 +689,7 @@ public class Fmdl
                 reader.BaseStream.Position += 0x4;
                 s.firstFaceVertexId = reader.ReadUInt32();
                 s.numFaceVertices = reader.ReadUInt32();
-                s.firstMeshFormatId = reader.ReadUInt64();
+                s.firstFaceIndexId = reader.ReadUInt64();
                 reader.BaseStream.Position += 0x10;
 
                 section0Block3Entries.Add(s);
@@ -1108,10 +1108,12 @@ public class Fmdl
          ****************************************************************/
         objects = new List<Object>(0);
 
-        reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset;
-
         for (int i = 0; i < section0Block3Entries.Count; i++)
         {
+            reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset;
+
+            UnityEngine.Debug.Log(section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset.ToString("x"));
+
             Object o = new Object();
 
             o.vertices = new Vertex[section0Block3Entries[i].numVertices];
@@ -1405,7 +1407,7 @@ public class Fmdl
                 s.firstObjectId = (ushort)(section0Block2Entries[i - 1].firstObjectId + section0Block2Entries[i - 1].numObjects);
 
             s.id = (ushort)i;
-            s.unknown0 = 0;
+            s.firstFaceIndexId = s.firstObjectId;
 
             section0Block2Entries.Add(s);
         } //for
@@ -1415,7 +1417,7 @@ public class Fmdl
         {
             Section0Block3Entry s = new Section0Block3Entry();
 
-            s.unknown0 = 0x80;
+            s.unknown0 = 0;
             s.noShadowFlag = 0;
 
             for (int j = 0; j < materialInstances.Count; j++)
@@ -1435,7 +1437,7 @@ public class Fmdl
                 s.firstFaceVertexId = 0;
 
             s.numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
-            s.firstMeshFormatId = (ushort)(i * 4); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
+            s.firstFaceIndexId = (ushort)(i * 1); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
 
             section0Block3Entries.Add(s);
         } //for
@@ -1476,7 +1478,12 @@ public class Fmdl
             if (i == 0)
                 s.firstTextureId = 0;
             else
-                s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
+            {
+                if (section0Block4Entries[i - 1].firstParameterId > section0Block4Entries[i - 1].firstTextureId)
+                    s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                else
+                    s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
+            } //else
 
             for (int j = 0; j < meshes.Count; j++)
             {
@@ -1923,6 +1930,7 @@ public class Fmdl
                 } //if
             } //foreach
         } //code block
+
         for (int i = 0; i < bones.Count; i++)
         {
             Section0BlockDEntry s = new Section0BlockDEntry();
@@ -2010,15 +2018,20 @@ public class Fmdl
                 o.additionalVertexData[j].normalY = new Half(meshes[i].sharedMesh.normals[j].y);
                 o.additionalVertexData[j].normalZ = new Half(meshes[i].sharedMesh.normals[j].x);
                 o.additionalVertexData[j].normalW = new Half(1f);
-                o.additionalVertexData[j].tangentX = new Half(meshes[i].sharedMesh.tangents[j].z);
-                o.additionalVertexData[j].tangentY = new Half(meshes[i].sharedMesh.tangents[j].y);
-                o.additionalVertexData[j].tangentZ = new Half(meshes[i].sharedMesh.tangents[j].x);
-                o.additionalVertexData[j].tangentW = new Half(meshes[i].sharedMesh.tangents[j].w);
+
+                if (meshes[i].sharedMesh.tangents.Length > 0)
+                {
+                    o.additionalVertexData[j].tangentX = new Half(meshes[i].sharedMesh.tangents[j].z);
+                    o.additionalVertexData[j].tangentY = new Half(meshes[i].sharedMesh.tangents[j].y);
+                    o.additionalVertexData[j].tangentZ = new Half(meshes[i].sharedMesh.tangents[j].x);
+                    o.additionalVertexData[j].tangentW = new Half(meshes[i].sharedMesh.tangents[j].w);
+                } //if
+
                 //o.additionalVertexData[j].colourR = meshes[i].sharedMesh.colors[j].r;
                 //o.additionalVertexData[j].colourG = meshes[i].sharedMesh.colors[j].g;
                 //o.additionalVertexData[j].colourB = meshes[i].sharedMesh.colors[j].b;
                 //o.additionalVertexData[j].colourA = meshes[i].sharedMesh.colors[j].a;
-
+                
                 if (meshes[i].sharedMesh.boneWeights.Length > 0)
                 {
                     o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
@@ -2445,7 +2458,7 @@ public class Fmdl
                 writer.Write(section0Block2Entries[i].firstObjectId);
                 writer.Write(section0Block2Entries[i].id);
                 writer.WriteZeroes(4);
-                writer.Write(section0Block2Entries[i].unknown0);
+                writer.Write(section0Block2Entries[i].firstFaceIndexId);
                 writer.WriteZeroes(0xE);
             } //for
         } //if
@@ -2469,7 +2482,7 @@ public class Fmdl
                 writer.WriteZeroes(4);
                 writer.Write(section0Block3Entries[i].firstFaceVertexId);
                 writer.Write(section0Block3Entries[i].numFaceVertices);
-                writer.Write(section0Block3Entries[i].firstMeshFormatId);
+                writer.Write(section0Block3Entries[i].firstFaceIndexId);
                 writer.WriteZeroes(0x10);
             } //for
         } //if
@@ -3231,6 +3244,83 @@ public class Fmdl
                 meshParameter.values = new float[4] { 0.8f, 0.8f, 0.8f, 0.3f };
                 meshParameters.Add(meshParameter);
                 break;
+
+            case "fox_3ddf_eye":
+                meshParameter.name = "MatParamIndex_0";
+                meshParameter.values = new float[4] { 111f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "HeightScale";
+                meshParameter.values = new float[4] { 0.6f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+                break;
+
+            case "fox_3ddc_basic":
+                meshParameter.name = "MatParamIndex_0";
+                meshParameter.values = new float[4] { 100f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+                break;
+
+            case "fox_3ddf_hair":
+                meshParameter.name = "MatParamIndex_0";
+                meshParameter.values = new float[4] { 119f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Anistropic_Diffusion";
+                meshParameter.values = new float[4] { 16f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Anistropic_MainLightDir";
+                meshParameter.values = new float[4] { 0f, 1f, -1f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Roughness";
+                meshParameter.values = new float[4] { 4f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Color";
+                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.25f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "HairShiftScale";
+                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "URepeat_UV";
+                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "VRepeat_UV";
+                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+                break;
+
+            case "fox_3ddf_incidence_nrmuv_dirty":
+                meshParameter.name = "MatParamIndex_0";
+                meshParameter.values = new float[4] { 139f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Roughness";
+                meshParameter.values = new float[4] { 1.5f, 0f, 0f, 0f };
+                meshParameters.Add(meshParameter);
+
+                meshParameter = new FoxMaterialParameter();
+                meshParameter.name = "Incidence_Color";
+                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.15f };
+                meshParameters.Add(meshParameter);
+                break;
+
+            case "fox_3dndw_shadow":
+                break;
         } //switch
 
         return meshParameters;
@@ -3251,7 +3341,7 @@ public class Fmdl
             } //if
             else
             {
-                meshFormat.zeroOffset = (uint)meshes[i - 1].sharedMesh.vertices.Length * 0xC;
+                meshFormat.zeroOffset = (uint)(meshFormats[i - 1].zeroOffset + meshes[i - 1].sharedMesh.vertices.Length * 0xC);
 
                 if (meshFormat.zeroOffset % 0x10 != 0)
                     meshFormat.zeroOffset += 0x10 - meshFormat.zeroOffset % 0x10;
@@ -3360,7 +3450,7 @@ public class Fmdl
             Console.WriteLine("Mesh Group: " + Hashing.TryGetStringName(section0Block16Entries[section0Block1Entries[section0Block2Entries[i].meshGroupId].stringId]));
             Console.WriteLine("Number of Objects: " + section0Block2Entries[i].numObjects);
             Console.WriteLine("Number of Preceding Objects: " + section0Block2Entries[i].firstObjectId);
-            Console.WriteLine("Material ID: " + section0Block2Entries[i].unknown0);
+            Console.WriteLine("Material ID: " + section0Block2Entries[i].firstFaceIndexId);
         } //for
     } //OutputSection2Info
 
@@ -3378,7 +3468,7 @@ public class Fmdl
             Console.WriteLine("Num Vertices " + section0Block3Entries[i].numVertices);
             Console.WriteLine("Face Offset: " + section0Block3Entries[i].firstFaceVertexId);
             Console.WriteLine("Num Face Vertices: " + section0Block3Entries[i].numFaceVertices);
-            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].firstMeshFormatId);
+            Console.WriteLine("Unknown 2: " + section0Block3Entries[i].firstFaceIndexId);
         } //for
     } //OutputSection2Info
 
