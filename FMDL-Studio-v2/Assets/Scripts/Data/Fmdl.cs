@@ -1111,9 +1111,7 @@ public class Fmdl
         for (int i = 0; i < section0Block3Entries.Count; i++)
         {
             reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset;
-
-            UnityEngine.Debug.Log(section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset.ToString("x"));
-
+            
             Object o = new Object();
 
             o.vertices = new Vertex[section0Block3Entries[i].numVertices];
@@ -1543,11 +1541,13 @@ public class Fmdl
         {
             Section0Block6Entry s = new Section0Block6Entry();
 
-            string name = Path.GetFileNameWithoutExtension(textures[i].name) + ".tga";
+            string fileName = textures[i].name.Replace('$', '/');
+
+            string name = Path.GetFileNameWithoutExtension(fileName) + ".tga";
             s.stringId = (ushort)strings.Count;
             strings.Add(name);
 
-            string path = Path.GetDirectoryName(textures[i].name) + "/";
+            string path = Path.GetDirectoryName(fileName) + "/";
             bool add = true;
 
             for (int j = 0; j < strings.Count; j++)
@@ -2079,7 +2079,7 @@ public class Fmdl
                 } //if
 
                 o.additionalVertexData[j].textureU = new Half(meshes[i].sharedMesh.uv[j].x);
-                o.additionalVertexData[j].textureV = new Half(meshes[i].sharedMesh.uv[j].y);
+                o.additionalVertexData[j].textureV = new Half(-meshes[i].sharedMesh.uv[j].y);
 
                 if (meshes[i].sharedMesh.uv2.Length > 0)
                 {

@@ -211,10 +211,10 @@ public class UnityModel
                     meshes[i].boneWeights[j].boneIndex3 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup3Id];
                 } //if
 
-                meshes[i].uv[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].textureU, fmdl.objects[i].additionalVertexData[j].textureV);
-                meshes[i].uv2[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU0, fmdl.objects[i].additionalVertexData[j].unknownV0);
-                meshes[i].uv3[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU1, fmdl.objects[i].additionalVertexData[j].unknownV1);
-                meshes[i].uv4[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU2, fmdl.objects[i].additionalVertexData[j].unknownV2);
+                meshes[i].uv[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].textureU, -fmdl.objects[i].additionalVertexData[j].textureV);
+                meshes[i].uv2[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU0, -fmdl.objects[i].additionalVertexData[j].unknownV0);
+                meshes[i].uv3[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU1, -fmdl.objects[i].additionalVertexData[j].unknownV1);
+                meshes[i].uv4[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU2, -fmdl.objects[i].additionalVertexData[j].unknownV2);
             } //for
 
             //Faces
