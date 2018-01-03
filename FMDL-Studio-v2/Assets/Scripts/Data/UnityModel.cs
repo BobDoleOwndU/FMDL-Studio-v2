@@ -260,6 +260,14 @@ public class UnityModel
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
+
+            //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
+            meshRenderer.material.SetTextureScale("_MainTex", new Vector2(1, -1));
+            meshRenderer.material.SetTextureScale("_BumpMap", new Vector2(1, -1));
+            meshRenderer.material.SetTextureScale("_SRM", new Vector2(1, -1));
+            meshRenderer.material.SetTextureScale("_LayerTex", new Vector2(1, -1));
+            meshRenderer.material.SetTextureScale("_LayerMask", new Vector2(1, -1));
+
             foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
             foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;
 
@@ -292,7 +300,7 @@ public class UnityModel
         return fmdlGameObject;
     } //GetDataFromFmdl
 
-    public static Texture2D LoadTextureDXT(string path)
+    private Texture2D LoadTextureDXT(string path)
     {
         byte[] ddsBytes = File.ReadAllBytes(path);
         TextureFormat textureFormat;
