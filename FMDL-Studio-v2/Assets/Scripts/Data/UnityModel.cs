@@ -262,11 +262,11 @@ public class UnityModel
             meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
 
             //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
-            meshRenderer.material.SetTextureScale("_MainTex", new Vector2(1, -1));
-            meshRenderer.material.SetTextureScale("_BumpMap", new Vector2(1, -1));
-            meshRenderer.material.SetTextureScale("_SRM", new Vector2(1, -1));
-            meshRenderer.material.SetTextureScale("_LayerTex", new Vector2(1, -1));
-            meshRenderer.material.SetTextureScale("_LayerMask", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_MainTex", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_BumpMap", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_SRM", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
 
             foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
             foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;
