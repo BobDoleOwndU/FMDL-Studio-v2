@@ -2053,7 +2053,7 @@ public class Fmdl
                     {
                         if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
-                            o.additionalVertexData[j].boneGroup2Id = (byte)h;
+                            o.additionalVertexData[j].boneGroup1Id = (byte)h;
                             break;
                         } //if
                     } //for
