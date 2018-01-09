@@ -54,6 +54,21 @@ namespace FmdlStudio
                 Debug.Log("No objects selected.");
         } //ImportFMDLOption
 
+        public static void PublicExportFMDLOption(string filepath)
+        {
+            if (Selection.activeGameObject != null)
+            {
+                if (!string.IsNullOrWhiteSpace(filepath))
+                {
+                    FmdlExporter.FMDLWrite(filepath);
+                }
+                else
+                    UnityEngine.Debug.Log("No path selected");
+            }
+            else
+                UnityEngine.Debug.Log("No objects selected");
+        }
+
         [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]
         public static void SetTextureFolder()
         {
