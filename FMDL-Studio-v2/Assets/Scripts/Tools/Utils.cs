@@ -1,26 +1,29 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public static class Utils
+namespace FmdlStudio
 {
-    public static void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
+    public static class Utils
     {
-        foreach (Transform t in transform)
+        public static void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
         {
-            if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+            foreach (Transform t in transform)
             {
-                meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
-                GetMeshes(t, meshes);
-            } //if
-        } //foreach
-    } //GetMeshes ends
+                if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+                {
+                    meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
+                    GetMeshes(t, meshes);
+                } //if
+            } //foreach
+        } //GetMeshes ends
 
-    public static void GetNumObjects(Transform transform, ref int count)
-    {
-        foreach (Transform t in transform)
+        public static void GetNumObjects(Transform transform, ref int count)
         {
-            count++;
-            GetNumObjects(t, ref count);
-        } //foreach
-    } //GetNumObjects
-} //class
+            foreach (Transform t in transform)
+            {
+                count++;
+                GetNumObjects(t, ref count);
+            } //foreach
+        } //GetNumObjects
+    } //class
+}

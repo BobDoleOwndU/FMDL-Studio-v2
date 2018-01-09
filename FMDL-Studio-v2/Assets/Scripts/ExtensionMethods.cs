@@ -1,23 +1,26 @@
 ﻿using System.IO;
 using UnityEngine;
 
-public static class ExtensionMethods
+namespace FmdlStudio
 {
-    public static bool IsNullOrZeroes(this Vector2[] array)
+    public static class ExtensionMethods
     {
-        if (array == null)
+        public static bool IsNullOrZeroes(this Vector2[] array)
+        {
+            if (array == null)
+                return true;
+
+            for (int i = 0; i < array.Length; i++)
+                if (array[i].x != 0 || array[i].y != 0)
+                    return false;
+
             return true;
-        
-        for (int i = 0; i < array.Length; i++)
-            if (array[i].x != 0 || array[i].y != 0)
-                return false;
+        } //IsNullOrZeroes
 
-        return true;
-    } //IsNullOrZeroes
-
-    public static void WriteZeroes(this BinaryWriter writer, int numZeroes)
-    {
-        byte[] bytes = new byte[numZeroes];
-        writer.Write(bytes);
-    } //WriteZeroes
-} //class
+        public static void WriteZeroes(this BinaryWriter writer, int numZeroes)
+        {
+            byte[] bytes = new byte[numZeroes];
+            writer.Write(bytes);
+        } //WriteZeroes
+    } //class
+}

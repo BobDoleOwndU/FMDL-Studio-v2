@@ -2,16 +2,19 @@
 using UnityEngine;
 using UnityEditor;
 
-public class FmdlExporter
+namespace FmdlStudio
 {
-    public static void FMDLWrite(string path)
+    public class FmdlExporter
     {
-        FileStream stream = new FileStream(path, FileMode.Create);
+        public static void FMDLWrite(string path)
+        {
+            FileStream stream = new FileStream(path, FileMode.Create);
 
-        GameObject selectedGameObject = Selection.activeGameObject;
-        Fmdl fmdl = new Fmdl(selectedGameObject.name);
-        fmdl.Write(selectedGameObject, stream);
+            GameObject selectedGameObject = Selection.activeGameObject;
+            Fmdl fmdl = new Fmdl(selectedGameObject.name);
+            fmdl.Write(selectedGameObject, stream);
 
-        stream.Close();
+            stream.Close();
+        }
     }
 }

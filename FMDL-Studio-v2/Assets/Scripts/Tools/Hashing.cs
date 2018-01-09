@@ -3,17 +3,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-public static class Hashing
+namespace FmdlStudio
 {
-    static List<string> stringDictionary = new List<string>(0);
-    static List<ulong> stringHashDictionary = new List<ulong>(0);
+    public static class Hashing
+    {
+        static List<string> stringDictionary = new List<string>(0);
+        static List<ulong> stringHashDictionary = new List<ulong>(0);
 
-    static List<string> pathDictionary = new List<string>(0);
-    static List<ulong> pathHashDictionary = new List<ulong>(0);
+        static List<string> pathDictionary = new List<string>(0);
+        static List<ulong> pathHashDictionary = new List<ulong>(0);
 
-    public const ulong MetaFlag = 0x4000000000000;
+        public const ulong MetaFlag = 0x4000000000000;
 
-    private static readonly List<string> FileExtensions = new List<string>
+        private static readonly List<string> FileExtensions = new List<string>
     {
         "1.ftexs",
         "1.nav2",
@@ -155,143 +157,144 @@ public static class Hashing
         "xml"
     };
 
-    private static readonly Dictionary<ulong, string> ExtensionsMap = FileExtensions.ToDictionary(HashFileExtension);
+        private static readonly Dictionary<ulong, string> ExtensionsMap = FileExtensions.ToDictionary(HashFileExtension);
 
-    public static ulong HashFileExtension(string fileExtension) //from private to public
-    {
-        return HashFileName(fileExtension, false) & 0x1FFF;
-    } //HashFileExtension
-
-    /*
-     * HashFileNameLegacy
-     * Hashes a given string and outputs the ulong result.
-     */
-    public static ulong HashFileNameLegacy(string text, bool removeExtension = true)
-    {
-        if (removeExtension)
+        public static ulong HashFileExtension(string fileExtension) //from private to public
         {
-            int index = text.IndexOf('.');
-            text = index == -1 ? text : text.Substring(0, index);
-        }
+            return HashFileName(fileExtension, false) & 0x1FFF;
+        } //HashFileExtension
 
-        const ulong seed0 = 0x9ae16a3b2f90404f;
-        ulong seed1 = text.Length > 0 ? (uint)((text[0]) << 16) + (uint)text.Length : 0;
-        return CityHash.CityHash.CityHash64WithSeeds(text + "\0", seed0, seed1) & 0xFFFFFFFFFFFF;
-    } //HashFileNameLegacy
-
-    public static ulong HashFileName(string text, bool removeExtension = true)
-    {
-        if (removeExtension)
+        /*
+         * HashFileNameLegacy
+         * Hashes a given string and outputs the ulong result.
+         */
+        public static ulong HashFileNameLegacy(string text, bool removeExtension = true)
         {
-            int index = text.IndexOf('.');
-            text = index == -1 ? text : text.Substring(0, index);
-        }
+            if (removeExtension)
+            {
+                int index = text.IndexOf('.');
+                text = index == -1 ? text : text.Substring(0, index);
+            }
 
-        bool metaFlag = false;
-        const string assetsConstant = "/Assets/";
-        if (text.StartsWith(assetsConstant))
+            const ulong seed0 = 0x9ae16a3b2f90404f;
+            ulong seed1 = text.Length > 0 ? (uint)((text[0]) << 16) + (uint)text.Length : 0;
+            return CityHash.CityHash.CityHash64WithSeeds(text + "\0", seed0, seed1) & 0xFFFFFFFFFFFF;
+        } //HashFileNameLegacy
+
+        public static ulong HashFileName(string text, bool removeExtension = true)
         {
-            text = text.Substring(assetsConstant.Length);
+            if (removeExtension)
+            {
+                int index = text.IndexOf('.');
+                text = index == -1 ? text : text.Substring(0, index);
+            }
 
-            if (text.StartsWith("tpptest"))
+            bool metaFlag = false;
+            const string assetsConstant = "/Assets/";
+            if (text.StartsWith(assetsConstant))
+            {
+                text = text.Substring(assetsConstant.Length);
+
+                if (text.StartsWith("tpptest"))
+                {
+                    metaFlag = true;
+                }
+            }
+            else
             {
                 metaFlag = true;
             }
-        }
-        else
+
+            text = text.TrimStart('/');
+
+            const ulong seed0 = 0x9ae16a3b2f90404f;
+            byte[] seed1Bytes = new byte[sizeof(ulong)];
+            for (int i = text.Length - 1, j = 0; i >= 0 && j < sizeof(ulong); i--, j++)
+            {
+                seed1Bytes[j] = Convert.ToByte(text[i]);
+            }
+            ulong seed1 = BitConverter.ToUInt64(seed1Bytes, 0);
+            ulong maskedHash = CityHash.CityHash.CityHash64WithSeeds(text, seed0, seed1) & 0x3FFFFFFFFFFFF;
+
+            return metaFlag
+                ? maskedHash | MetaFlag
+                : maskedHash;
+        } //HashFileName
+
+        public static ulong HashFileNameWithExtension(string filePath)
         {
-            metaFlag = true;
-        }
+            filePath = DenormalizeFilePath(filePath);
+            string hashablePart;
+            string extensionPart;
+            int extensionIndex = filePath.IndexOf(".", StringComparison.Ordinal);
+            if (extensionIndex == -1)
+            {
+                hashablePart = filePath;
+                extensionPart = "";
+            }
+            else
+            {
+                hashablePart = filePath.Substring(0, extensionIndex);
+                extensionPart = filePath.Substring(extensionIndex + 1, filePath.Length - extensionIndex - 1);
+            }
 
-        text = text.TrimStart('/');
+            ulong typeId = 0;
+            var extensions = ExtensionsMap.Where(e => e.Value == extensionPart).ToList();
+            if (extensions.Count == 1)
+            {
+                var extension = extensions.Single();
+                typeId = extension.Key;
+            }
+            ulong hash = HashFileName(hashablePart);
+            hash = (typeId << 51) | hash;
+            return hash;
+        } //HashFileNameWithExtension
 
-        const ulong seed0 = 0x9ae16a3b2f90404f;
-        byte[] seed1Bytes = new byte[sizeof(ulong)];
-        for (int i = text.Length - 1, j = 0; i >= 0 && j < sizeof(ulong); i--, j++)
+        public static string DenormalizeFilePath(string filePath)
         {
-            seed1Bytes[j] = Convert.ToByte(text[i]);
-        }
-        ulong seed1 = BitConverter.ToUInt64(seed1Bytes, 0);
-        ulong maskedHash = CityHash.CityHash.CityHash64WithSeeds(text, seed0, seed1) & 0x3FFFFFFFFFFFF;
+            return filePath.Replace("\\", "/");
+        } //DenormalizeFilePath
 
-        return metaFlag
-            ? maskedHash | MetaFlag
-            : maskedHash;
-    } //HashFileName
-
-    public static ulong HashFileNameWithExtension(string filePath)
-    {
-        filePath = DenormalizeFilePath(filePath);
-        string hashablePart;
-        string extensionPart;
-        int extensionIndex = filePath.IndexOf(".", StringComparison.Ordinal);
-        if (extensionIndex == -1)
+        public static void ReadStringDictionary(string path)
         {
-            hashablePart = filePath;
-            extensionPart = "";
-        }
-        else
+            stringDictionary.Clear();
+            stringHashDictionary.Clear();
+
+            foreach (string line in File.ReadAllLines(path))
+            {
+                stringDictionary.Add(line);
+                stringHashDictionary.Add(HashFileNameLegacy(line));
+            } //foreach
+        } //ReadStringDictionary
+
+        public static void ReadPathDictionary(string path)
         {
-            hashablePart = filePath.Substring(0, extensionIndex);
-            extensionPart = filePath.Substring(extensionIndex + 1, filePath.Length - extensionIndex - 1);
-        }
+            pathDictionary.Clear();
+            pathHashDictionary.Clear();
 
-        ulong typeId = 0;
-        var extensions = ExtensionsMap.Where(e => e.Value == extensionPart).ToList();
-        if (extensions.Count == 1)
+            foreach (string line in File.ReadAllLines(path))
+            {
+                pathDictionary.Add(line);
+                pathHashDictionary.Add(HashFileNameWithExtension(line));
+            } //foreach
+        } //ReadPathDictionary
+
+        public static string TryGetStringName(ulong hash)
         {
-            var extension = extensions.Single();
-            typeId = extension.Key;
-        }
-        ulong hash = HashFileName(hashablePart);
-        hash = (typeId << 51) | hash;
-        return hash;
-    } //HashFileNameWithExtension
+            for (int i = 0; i < stringHashDictionary.Count; i++)
+                if (hash == stringHashDictionary[i])
+                    return stringDictionary[i];
 
-    public static string DenormalizeFilePath(string filePath)
-    {
-        return filePath.Replace("\\", "/");
-    } //DenormalizeFilePath
+            return hash.ToString("x");
+        } //TryGetStringName
 
-    public static void ReadStringDictionary(string path)
-    {
-        stringDictionary.Clear();
-        stringHashDictionary.Clear();
-
-        foreach (string line in File.ReadAllLines(path))
+        public static string TryGetPathName(ulong hash)
         {
-            stringDictionary.Add(line);
-            stringHashDictionary.Add(HashFileNameLegacy(line));
-        } //foreach
-    } //ReadStringDictionary
+            for (int i = 0; i < pathHashDictionary.Count; i++)
+                if (hash - 0x1568000000000000 == pathHashDictionary[i])
+                    return pathDictionary[i];
 
-	public static void ReadPathDictionary(string path)
-    {
-        pathDictionary.Clear();
-        pathHashDictionary.Clear();
-
-        foreach (string line in File.ReadAllLines(path))
-        {
-            pathDictionary.Add(line);
-            pathHashDictionary.Add(HashFileNameWithExtension(line));
-        } //foreach
-    } //ReadPathDictionary
-
-	public static string TryGetStringName(ulong hash)
-    {
-        for (int i = 0; i < stringHashDictionary.Count; i++)
-            if (hash == stringHashDictionary[i])
-                return stringDictionary[i];
-
-        return hash.ToString("x");
-    } //TryGetStringName
-
-    public static string TryGetPathName(ulong hash)
-    {
-        for (int i = 0; i < pathHashDictionary.Count; i++)
-            if (hash - 0x1568000000000000 == pathHashDictionary[i])
-                return pathDictionary[i];
-
-        return (hash - 0x1568000000000000).ToString("x");
-    } //TryGetStringName
-} //class
+            return (hash - 0x1568000000000000).ToString("x");
+        } //TryGetStringName
+    } //class
+}
