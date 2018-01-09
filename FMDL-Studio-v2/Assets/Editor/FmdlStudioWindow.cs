@@ -39,11 +39,17 @@ public class FmdlStudioWindow : EditorWindow
         if (Selection.activeGameObject != null)
         {
             string windowPath = EditorUtility.SaveFilePanel("Export To FMDL", "", Selection.activeGameObject.name, "fmdl");
-            FmdlExporter.FMDLWrite(windowPath);
+
+            if (!string.IsNullOrWhiteSpace(windowPath))
+            {
+                FmdlExporter.FMDLWrite(windowPath);
+                UnityEngine.Debug.Log("Fmdl Exported to: " + windowPath);
+            } //if
+            else
+                Debug.Log("No path selected.");
         }
         else
-            Debug.Log("No path selected.");
-        UnityEngine.Debug.Log("Selected FMDL Name: ");
+            Debug.Log("No objects selected.");
     } //ImportFMDLOption
 
     [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]

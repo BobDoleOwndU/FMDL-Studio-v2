@@ -211,10 +211,10 @@ public class UnityModel
                     meshes[i].boneWeights[j].boneIndex3 = fmdl.section0Block5Entries[fmdl.section0Block3Entries[i].boneGroupId].entries[fmdl.objects[i].additionalVertexData[j].boneGroup3Id];
                 } //if
 
-                meshes[i].uv[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].textureU, fmdl.objects[i].additionalVertexData[j].textureV);
-                meshes[i].uv2[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU0, fmdl.objects[i].additionalVertexData[j].unknownV0);
-                meshes[i].uv3[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU1, fmdl.objects[i].additionalVertexData[j].unknownV1);
-                meshes[i].uv4[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU2, fmdl.objects[i].additionalVertexData[j].unknownV2);
+                meshes[i].uv[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].textureU, -fmdl.objects[i].additionalVertexData[j].textureV);
+                meshes[i].uv2[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU0, -fmdl.objects[i].additionalVertexData[j].unknownV0);
+                meshes[i].uv3[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU1, -fmdl.objects[i].additionalVertexData[j].unknownV1);
+                meshes[i].uv4[j] = new Vector2(fmdl.objects[i].additionalVertexData[j].unknownU2, -fmdl.objects[i].additionalVertexData[j].unknownV2);
             } //for
 
             //Faces
@@ -260,6 +260,14 @@ public class UnityModel
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
+
+            //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
+            meshRenderer.sharedMaterial.SetTextureScale("_MainTex", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_BumpMap", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_SRM", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
+            meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
+
             foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
             foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;
 
@@ -292,7 +300,7 @@ public class UnityModel
         return fmdlGameObject;
     } //GetDataFromFmdl
 
-    public static Texture2D LoadTextureDXT(string path)
+    private Texture2D LoadTextureDXT(string path)
     {
         byte[] ddsBytes = File.ReadAllBytes(path);
         TextureFormat textureFormat;
