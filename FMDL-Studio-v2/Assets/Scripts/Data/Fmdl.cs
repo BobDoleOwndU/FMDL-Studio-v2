@@ -1411,7 +1411,7 @@ public class Fmdl
             section0Block2Entries.Add(s);
         } //for
 
-        section0Block5Entries = DebugBoneGroups(bones); //DEBUG!
+        //section0Block5Entries = DebugBoneGroups(bones); //DEBUG!
 
         //Block 3 - Meshes
         for (int i = 0; i < meshes.Count; i++)
@@ -1421,14 +1421,14 @@ public class Fmdl
             s.unknown0 = 0;
             s.noShadowFlag = 0;
 
-            for (int j = 0; j < materialInstances.Count; j++)
+            /*for (int j = 0; j < materialInstances.Count; j++)
                 if (meshes[i].sharedMaterial == materialInstances[j])
                 {
                     s.materialInstanceId = (ushort)j;
                     break;
-                } //if
+                } //if*/
 
-            //s.boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
+            s.boneGroupId = (ushort)i;
 
             for(int j = 0; j < section0Block5Entries.Count; j++)
             {
@@ -1543,7 +1543,7 @@ public class Fmdl
         } //for
 
         //Block 5 - Bone Groups
-        /*if (bones.Count > 0)
+        if (bones.Count > 0)
             for (int i = 0; i < meshes.Count; i++)
             {
                 Section0Block5Entry s = new Section0Block5Entry();
@@ -1559,7 +1559,7 @@ public class Fmdl
                 } //for
 
                 section0Block5Entries.Add(s);
-            } //for*/
+            } //for
 
         //Block 6 - Textures
         for (int i = 0; i < textures.Count; i++)
