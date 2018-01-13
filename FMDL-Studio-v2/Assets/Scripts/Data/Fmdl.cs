@@ -1291,6 +1291,8 @@ public class Fmdl
                 strings.Add(s);
             } //for
         } //if
+
+        OutputSection0Block4Info();
     } //Read
 
     /*
@@ -1421,16 +1423,16 @@ public class Fmdl
             s.unknown0 = 0;
             s.noShadowFlag = 0;
 
-            /*for (int j = 0; j < materialInstances.Count; j++)
+            for (int j = 0; j < materialInstances.Count; j++)
                 if (meshes[i].sharedMaterial == materialInstances[j])
                 {
                     s.materialInstanceId = (ushort)j;
                     break;
-                } //if*/
+                } //if
 
             s.boneGroupId = (ushort)i;
 
-            for(int j = 0; j < section0Block5Entries.Count; j++)
+            /*for(int j = 0; j < section0Block5Entries.Count; j++)
             {
                 bool containsAll = true;
                 List<int> boneIndices = GetBoneGroup(meshes[i], bones);
@@ -1449,7 +1451,7 @@ public class Fmdl
                     s.boneGroupId = (ushort)j;
                     break;
                 } //if
-            } //for
+            } //for*/
 
             s.id = (ushort)i;
             s.numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
@@ -1502,7 +1504,7 @@ public class Fmdl
                 s.firstTextureId = 0;
             else
             {
-                if (section0Block4Entries[i - 1].firstParameterId > section0Block4Entries[i - 1].firstTextureId)
+                if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId)
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
                 else
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
@@ -1523,7 +1525,7 @@ public class Fmdl
 
                             if (i != 0)
                             {
-                                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters > s.firstTextureId + s.numTextures)
+                                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
                                     s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
                                 else
                                     s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
@@ -2995,9 +2997,18 @@ public class Fmdl
     {
         foreach (Transform t in transform)
         {
-            bones.Add(t);
-
             GetBones(t, bones);
+
+            ulong outUlong;
+
+            if (!UInt64.TryParse(t.gameObject.name, out outUlong))
+            {
+                bones.Add(t);
+            } //if
+            else
+            {
+                UnityEngine.Object.Destroy(t.gameObject);
+            } //else
         } //foreach
     } //GetBones
 
@@ -3714,18 +3725,18 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
-            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].stringId]));
-            UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].stringId]));
+            UnityEngine.Debug.Log("Name: " + strings[section0Block4Entries[i].stringId]);
+            UnityEngine.Debug.Log("Material: " + strings[section0Block8Entries[section0Block4Entries[i].materialId].stringId]);
 
             for (int j = section0Block4Entries[i].firstTextureId; j < section0Block4Entries[i].firstTextureId + section0Block4Entries[i].numTextures; j++)
             {
-                UnityEngine.Debug.Log("Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
-                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[j].referenceId]));
+                UnityEngine.Debug.Log("Texture Type: " + strings[section0Block7Entries[j].stringId]);
+                UnityEngine.Debug.Log("Texture: " + strings[section0Block6Entries[section0Block7Entries[j].referenceId].pathId] + strings[section0Block6Entries[section0Block7Entries[j].referenceId].stringId]);
             } //for
 
             for (int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
             {
-                UnityEngine.Debug.Log("Parameter Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+                UnityEngine.Debug.Log("Parameter Type: " + strings[section0Block7Entries[j].stringId]);
                 UnityEngine.Debug.Log(string.Format("Parameters: {{{0}, {1}, {2}, {3}}}", materialParameters[section0Block7Entries[j].referenceId].values[0], materialParameters[section0Block7Entries[j].referenceId].values[1], materialParameters[section0Block7Entries[j].referenceId].values[2], materialParameters[section0Block7Entries[j].referenceId].values[3]));
             } //for
         } //for
@@ -3782,11 +3793,9 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
-            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].stringId]));
-            if (section0Block7Entries[i].referenceId < section0Block15Entries.Count)
-                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[i].referenceId]));
-            else
-                UnityEngine.Debug.Log("Material Reference: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].referenceId]));
+            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + strings[section0Block7Entries[i].stringId]);
+            if(section0Block7Entries[i].referenceId < section0Block6Entries.Count)
+                UnityEngine.Debug.Log("Reference: " + strings[section0Block6Entries[section0Block7Entries[i].referenceId].stringId]);
         } //for
     } //OutputSection2Info
 

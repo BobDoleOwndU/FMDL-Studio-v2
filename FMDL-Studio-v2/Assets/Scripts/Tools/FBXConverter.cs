@@ -159,7 +159,7 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv.Length * 2);
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.uv.Length; j++)
-                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, -meshes[i].Item2.sharedMesh.uv[j].y);
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, meshes[i].Item2.sharedMesh.uv[j].y);
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
