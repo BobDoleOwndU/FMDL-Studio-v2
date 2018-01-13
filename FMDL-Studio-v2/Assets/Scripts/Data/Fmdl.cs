@@ -1291,8 +1291,6 @@ public class Fmdl
                 strings.Add(s);
             } //for
         } //if
-
-        OutputSection0Block4Info();
     } //Read
 
     /*
