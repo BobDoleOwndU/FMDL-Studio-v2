@@ -3,14 +3,13 @@
 	Properties
 	{
 		_MainTex("Albedo", 2D) = "white" {}
-		Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
-		LayerColor("Secondary Color", Color) = (1.0, 1.0, 1.0, 1.0)
-		Layer_Tex_SRGB("Secondary Albedo", 2D) = "white" {}
-		LayerMask_Tex_LIN("Secondary Albedo Mask", 2D) = "black" {}
 		NormalMap_Tex_NRM("Normal Map", 2D) = "bump" {}
 		Metalness("Metalness", Range(0,1)) = 0
 		SpecularMap_Tex_LIN("Roughness", 2D) = "white" {}
 		Translucent_Tex_LIN("Transmissive - placeholder", 2D) = "white" {}
+		ViewReflection_Tex_LIN("Precomputed reflection (not a cubemap) - placeholder", 2D) = "white" {}
+		LensHeight_Tex_LIN("Parallax height map - placeholder", 2D) = "white" {}
+		Base_Tex2_SRGB("Iris texture - placeholder", 2D) = "white" {}
 	}
 
 	SubShader
@@ -19,7 +18,7 @@
 		LOD 200
 
 		// Alpha blending
-		Blend SrcAlpha OneMinusSrcAlpha     
+		Blend SrcAlpha OneMinusSrcAlpha    
 
 		// paste in forward rendering passes from Transparent/Diffuse
 		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
@@ -42,33 +41,25 @@
 		sampler2D SpecularMap_Tex_LIN;
 		sampler2D Translucent_Tex_LIN;
 
-		//Secondary textures for camos and other materials using a lerp-derived albedo
-		sampler2D Layer_Tex_SRGB;
-		sampler2D LayerMask_Tex_LIN;
+		//Placeholder textures for eye material writing
+		sampler2D ViewReflection_Tex_LIN;
+		sampler2D LensHeight_Tex_LIN;
+		sampler2D Base_Tex2_SRGB;
 
-		struct Input 
+		struct Input
 		{
-			float2 uv_Main;
+		float2 uv_Main;
 		};
 
 		half Metalness;
-		fixed4 Color;
-		fixed4 LayerColor;
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
 			//Albedo
 			fixed4 mainTex = tex2D(_MainTex, IN.uv_Main);
-			Color.a = 1.0f;
-			fixed4 mainTinted = mainTex * Color;
-			fixed4 layerTex = tex2D(Layer_Tex_SRGB, IN.uv_Main);
-			LayerColor.a = 1.0f;
-			fixed4 layerTinted = layerTex * LayerColor;
-			fixed4 layerMask = tex2D(LayerMask_Tex_LIN, IN.uv_Main);
-			fixed4 finalColor = lerp(mainTinted, layerTinted, layerMask);
-			o.Albedo = finalColor.rgb;
-			o.Alpha = finalColor.a;
-
+			o.Albedo = mainTex.rgb;
+			o.Alpha = mainTex.a;
+	
 			//Specular
 			o.Metallic = Metalness;
 			o.Smoothness = 1.0f - tex2D(SpecularMap_Tex_LIN, IN.uv_Main).g;
