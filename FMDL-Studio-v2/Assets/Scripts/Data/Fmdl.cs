@@ -2542,7 +2542,11 @@ public class Fmdl
             for (int i = 0; i < section0Block5Entries.Count; i++)
             {
                 writer.Write(section0Block5Entries[i].unknown0);
-                writer.Write(section0Block5Entries[i].numEntries);
+
+                if (section0Block5Entries[i].numEntries > 0)
+                    writer.Write(section0Block5Entries[i].numEntries);
+                else
+                    writer.Write((ushort)1);
 
                 for (int j = 0; j < section0Block5Entries[i].entries.Count; j++)
                     writer.Write(section0Block5Entries[i].entries[j]);
@@ -3000,7 +3004,7 @@ public class Fmdl
             try
             {
                 Convert.ToUInt64(t.gameObject.name, 16);
-                UnityEngine.Object.DestroyImmediate(t.gameObject);
+                //UnityEngine.Object.DestroyImmediate(t.gameObject);
             } //try
             catch
             {
