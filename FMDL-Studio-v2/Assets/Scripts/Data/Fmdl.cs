@@ -2997,16 +2997,15 @@ public class Fmdl
         {
             GetBones(t, bones);
 
-            ulong outUlong;
-
-            if (!UInt64.TryParse(t.gameObject.name, out outUlong))
+            try
+            {
+                Convert.ToUInt64(t.gameObject.name, 16);
+                UnityEngine.Object.DestroyImmediate(t.gameObject);
+            } //try
+            catch
             {
                 bones.Add(t);
-            } //if
-            else
-            {
-                UnityEngine.Object.Destroy(t.gameObject);
-            } //else
+            } //catch
         } //foreach
     } //GetBones
 
