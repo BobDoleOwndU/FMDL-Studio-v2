@@ -1315,9 +1315,9 @@ public class Fmdl
         meshFormats = GetMeshFormats(meshes);
         bones.Sort((x, y) => x.gameObject.name.CompareTo(y.gameObject.name));
 
-        for (int i = 0; i < gameObject.GetComponent<FoxModel>().definitions.Length; i++)
+        for (int i = 0; i < gameObject.GetComponent<FoxModel>().materialDefinitions.Length; i++)
         {
-            List<FoxMaterialParameter> m = GetMaterialParameters(gameObject.GetComponent<FoxModel>().definitions[i].material);
+            List<FoxMaterialParameter> m = GetMaterialParameters(gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName);
             meshParameters.Add(m);
         } //for
 
@@ -1508,32 +1508,24 @@ public class Fmdl
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
             } //else
 
-            for (int j = 0; j < meshes.Count; j++)
+            string materialName = gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName;
+            
+            for(int j = 0; j < section0Block8Entries.Count; j++)
             {
-                if (meshes[j].sharedMaterial.name == materialInstances[i].name)
+                if(materialName == strings[section0Block8Entries[j].stringId])
                 {
-                    string materialName = gameObject.GetComponent<FoxModel>().definitions[i].material;
+                    s.materialId = (ushort)j;
+                    s.numParameters = (byte)meshParameters[j].Count;
 
-                    for (int h = 0; h < section0Block8Entries.Count; h++)
+                    if (i != 0)
                     {
-                        if (materialName == strings[section0Block8Entries[h].stringId])
-                        {
-                            s.materialId = (ushort)h;
-                            s.numParameters = (byte)meshParameters[h].Count;
-
-                            if (i != 0)
-                            {
-                                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
-                                    s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
-                                else
-                                    s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
-                            } //if
-                            else
-                                s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
-
-                            break;
-                        } //if
-                    } //for
+                        if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
+                            s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                        else
+                            s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
+                    } //if
+                    else
+                        s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
 
                     break;
                 } //if
@@ -3063,7 +3055,7 @@ public class Fmdl
     {
         FoxModel foxModel = transform.gameObject.GetComponent<FoxModel>();
 
-        for (int i = 0; i < foxModel.definitions.Length; i++)
+        for (int i = 0; i < foxModel.meshDefinitions.Length; i++)
         {
             if (i != 0)
             {
@@ -3071,7 +3063,7 @@ public class Fmdl
 
                 for (int j = 0; j < meshGroups.Count; j++)
                 {
-                    if (foxModel.definitions[i].meshGroup == meshGroups[j].name)
+                    if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
                     {
                         add = false;
                         break;
@@ -3081,7 +3073,7 @@ public class Fmdl
                 if (add)
                 {
                     MeshGroup meshGroup = new MeshGroup();
-                    meshGroup.name = foxModel.definitions[i].meshGroup;
+                    meshGroup.name = foxModel.meshDefinitions[i].meshGroup;
                     meshGroup.invisible = false;
                     meshGroups.Add(meshGroup);
                 } //if
@@ -3090,7 +3082,7 @@ public class Fmdl
             {
                 MeshGroup meshGroup;
 
-                if (foxModel.definitions[i].meshGroup != "MESH_ROOT")
+                if (foxModel.meshDefinitions[i].meshGroup != "MESH_ROOT")
                 {
                     meshGroup = new MeshGroup();
                     meshGroup.name = "MESH_ROOT";
@@ -3099,21 +3091,21 @@ public class Fmdl
                 } //if
 
                 meshGroup = new MeshGroup();
-                meshGroup.name = foxModel.definitions[i].meshGroup;
+                meshGroup.name = foxModel.meshDefinitions[i].meshGroup;
                 meshGroup.invisible = false;
                 meshGroups.Add(meshGroup);
             } //else
         } //for
 
-        for (int i = 0; i < foxModel.definitions.Length; i++)
+        for (int i = 0; i < foxModel.meshDefinitions.Length; i++)
         {
             if (i != 0)
             {
-                if (foxModel.definitions[i].meshGroup == meshGroups[meshGroupEntries[meshGroupEntries.Count - 1].meshGroupIndex].name)
+                if (foxModel.meshDefinitions[i].meshGroup == meshGroups[meshGroupEntries[meshGroupEntries.Count - 1].meshGroupIndex].name)
                     meshGroupEntries[meshGroupEntries.Count - 1].numMeshes++;
                 else
                     for (int j = 0; j < meshGroups.Count; j++)
-                        if (foxModel.definitions[i].meshGroup == meshGroups[j].name)
+                        if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
                         {
                             MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
                             meshGroupEntry.meshGroupIndex = j;
@@ -3125,7 +3117,7 @@ public class Fmdl
             else
             {
                 for (int j = 0; j < meshGroups.Count; j++)
-                    if (foxModel.definitions[i].meshGroup == meshGroups[j].name)
+                    if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
                     {
                         MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
                         meshGroupEntry.meshGroupIndex = j;
@@ -3159,26 +3151,15 @@ public class Fmdl
         List<FoxMaterial> materials = new List<FoxMaterial>(0);
         FoxModel foxModel = transform.GetComponent<FoxModel>();
 
-        for (int i = 0; i < foxModel.definitions.Length; i++)
+        for(int i = 0; i < foxModel.materialDefinitions.Length; i++)
         {
-            bool add = true;
-
-            for (int j = 0; j < materials.Count; j++)
-            {
-                if (foxModel.definitions[i].material == materials[j].name)
-                {
-                    add = false;
-                    break;
-                } //if
-            } //for
-
-            if (add)
+            if(!materials.Contains(materials.Find(x => x.name == foxModel.materialDefinitions[i].materialName)))
             {
                 FoxMaterial f = new FoxMaterial();
-                f.name = foxModel.definitions[i].material;
-                f.type = foxModel.definitions[i].materialType;
+                f.name = foxModel.materialDefinitions[i].materialName;
+                f.type = foxModel.materialDefinitions[i].materialType;
                 materials.Add(f);
-            } //add
+            } //if
         } //for
 
         return materials;

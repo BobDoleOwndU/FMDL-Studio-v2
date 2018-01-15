@@ -42,7 +42,10 @@ public class UnityModel
         Matrix4x4[] bindPoses;
         Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
-        fmdlGameObject.AddComponent<FoxModel>().definitions = new FoxMeshDefinition[fmdl.objects.Count];
+        FoxModel foxModel = fmdlGameObject.AddComponent<FoxModel>();
+        foxModel.meshDefinitions = new FoxMeshDefinition[fmdl.objects.Count];
+        foxModel.materialDefinitions = new FoxMaterialDefinition[fmdl.section0Block4Entries.Count];
+
         UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
@@ -64,6 +67,7 @@ public class UnityModel
 
             if (fmdl.stringsIndex != -1)
             {
+                FoxMaterialDefinition foxMaterialDefintion = new FoxMaterialDefinition();
                 materials[i].material.name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
                 materials[i].materialName = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
                 materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
@@ -98,12 +102,18 @@ public class UnityModel
                     } //if
                     else
                     {
-                        UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
+                        Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
                     } //else
                 } //for
+                
+                foxMaterialDefintion.materialInstance = materials[i].material;
+                foxMaterialDefintion.materialName = materials[i].materialName;
+                foxMaterialDefintion.materialType = materials[i].materialType;
+                foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //if
             else
             {
+                FoxMaterialDefinition foxMaterialDefintion = new FoxMaterialDefinition();
                 materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
                 materials[i].materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
                 materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
@@ -131,10 +141,15 @@ public class UnityModel
                         } //if
                         else
                         {
-                            UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
+                            Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
                         } //else
                     } //for
                 } //if
+
+                foxMaterialDefintion.materialInstance = materials[i].material;
+                foxMaterialDefintion.materialName = materials[i].materialName;
+                foxMaterialDefintion.materialType = materials[i].materialType;
+                foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //else
         } //for
 
@@ -259,7 +274,7 @@ public class UnityModel
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
-            meshRenderer.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
+            meshRenderer.sharedMaterial = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
 
             //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
             meshRenderer.sharedMaterial.SetTextureScale("_MainTex", new Vector2(1, -1));
@@ -268,12 +283,7 @@ public class UnityModel
             meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
             meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
 
-            foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
-            foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;
-
             Mesh mesh = new Mesh();
-            foxMeshDefinition.mesh = mesh;
-
             mesh.vertices = meshes[i].vertices;
             mesh.uv = meshes[i].uv;
             mesh.uv2 = meshes[i].uv2;
@@ -294,9 +304,11 @@ public class UnityModel
             meshRenderer.bones = bones;
             meshRenderer.sharedMesh = mesh;
 
-            fmdlGameObject.GetComponent<FoxModel>().definitions[i] = foxMeshDefinition;
+            foxMeshDefinition.mesh = meshRenderer.sharedMesh;
+            foxModel.meshDefinitions[i] = foxMeshDefinition;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();
         } //for
+
         return fmdlGameObject;
     } //GetDataFromFmdl
 
