@@ -30,8 +30,7 @@ public class FoxModel : MonoBehaviour
             {
                 materialDefinitions[i] = new FoxMaterialDefinition();
                 materialDefinitions[i].materialInstance = materials[i];
-                materialDefinitions[i].materialName = "fox_3ddf_skin_dirty";
-                materialDefinitions[i].materialType = "fox3DDF_Skin_Dirty_LNM";
+                materialDefinitions[i].materialName = "fox_3ddf_skin_tension_dirty";
             } //for
         } //if
     } //Start
@@ -74,5 +73,4 @@ public class FoxMaterialDefinition
 {
     public Material materialInstance;
     public string materialName;
-    public string materialType;
 } //cass

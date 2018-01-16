@@ -50,7 +50,7 @@ public class FmdlStudioWindow : EditorWindow
         }
         else
             Debug.Log("No objects selected.");
-    } //ImportFMDLOption
+    } //ExportFMDLOption
 
     [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]
     public static void SetTextureFolder()
@@ -63,7 +63,7 @@ public class FmdlStudioWindow : EditorWindow
         } //if
         else
             Debug.Log("No folder selected.");
-    } //ImportFMDLOption
+    } //SetTextureFolder
 
     [MenuItem("FMDL Studio/Generate Bounding Boxes", false, 101)]
     public static void GenerateBoundingBoxes()
@@ -74,5 +74,5 @@ public class FmdlStudioWindow : EditorWindow
         } //if
         else
             Debug.Log("No objects selected.");
-    } //ImportFMDLOption
+    } //GenerateBoundingBoxes
 } //class

@@ -108,7 +108,6 @@ public class UnityModel
                 
                 foxMaterialDefintion.materialInstance = materials[i].material;
                 foxMaterialDefintion.materialName = materials[i].materialName;
-                foxMaterialDefintion.materialType = materials[i].materialType;
                 foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //if
             else
@@ -148,7 +147,6 @@ public class UnityModel
 
                 foxMaterialDefintion.materialInstance = materials[i].material;
                 foxMaterialDefintion.materialName = materials[i].materialName;
-                foxMaterialDefintion.materialType = materials[i].materialType;
                 foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //else
         } //for

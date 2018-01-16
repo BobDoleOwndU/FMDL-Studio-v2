@@ -334,7 +334,7 @@ public class Fmdl
         public int numMeshes;
     } //MeshGroupEntry
 
-    private struct FoxMaterial
+    /*private struct FoxMaterial
     {
         public string name;
         public string type;
@@ -344,7 +344,7 @@ public class Fmdl
     {
         public string name;
         public float[] values;
-    } //class
+    } //class*/
 
     private class MeshFormat
     {
@@ -1299,6 +1299,8 @@ public class Fmdl
      */
     public void Write(GameObject gameObject, FileStream stream)
     {
+        Globals.ReadMaterialList();
+
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
         List<Material> materialInstances = new List<Material>(0);
@@ -1308,18 +1310,11 @@ public class Fmdl
         List<MeshGroupEntry> meshGroupEntries = new List<MeshGroupEntry>(0);
         List<FoxMaterial> materials = GetMaterials(gameObject.transform);
         List<MeshFormat> meshFormats;
-        List<List<FoxMaterialParameter>> meshParameters = new List<List<FoxMaterialParameter>>(0);
 
         GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
         GetMeshGroups(gameObject.transform, meshGroups, meshGroupEntries);
         meshFormats = GetMeshFormats(meshes);
         bones.Sort((x, y) => x.gameObject.name.CompareTo(y.gameObject.name));
-
-        for (int i = 0; i < gameObject.GetComponent<FoxModel>().materialDefinitions.Length; i++)
-        {
-            List<FoxMaterialParameter> m = GetMaterialParameters(gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName);
-            meshParameters.Add(m);
-        } //for
 
         signature = 0x4c444d46;
         versionNum = 2.03f;
@@ -1515,7 +1510,7 @@ public class Fmdl
                 if(materialName == strings[section0Block8Entries[j].stringId])
                 {
                     s.materialId = (ushort)j;
-                    s.numParameters = (byte)meshParameters[j].Count;
+                    s.numParameters = (byte)Globals.foxMaterialList.foxMaterials.Find(x => x.name == materialName).materialParameters.Count;
 
                     if (i != 0)
                     {
@@ -1657,29 +1652,27 @@ public class Fmdl
                 section0Block7Entries.Add(s);
             } //if
 
-            for (int j = 0; j < meshParameters[section0Block4Entries[i].materialId].Count; j++)
+            for(int j = 0; j < materials[section0Block4Entries[i].materialId].materialParameters.Count; j++)
             {
                 Section0Block7Entry s = new Section0Block7Entry();
 
-                bool add = true;
+                int stringIndex = strings.IndexOf(materials[section0Block4Entries[i].materialId].materialParameters[j].name);
+                int numPrecedingParameters = 0;
 
-                for (int h = 0; h < strings.Count; h++)
+                if(stringIndex == -1)
                 {
-                    if (strings[h] == meshParameters[section0Block4Entries[i].materialId][j].name)
-                    {
-                        s.stringId = (ushort)h;
-                        add = false;
-                        break;
-                    } //if
-                } //for
-
-                if (add)
-                {
-                    s.stringId = (ushort)strings.Count;
-                    strings.Add(meshParameters[section0Block4Entries[i].materialId][j].name);
+                    stringIndex = strings.Count;
+                    strings.Add(materials[section0Block4Entries[i].materialId].materialParameters[j].name);
                 } //if
 
-                s.referenceId = (ushort)j;
+                s.stringId = (ushort)stringIndex;
+
+                for(int h = 0; h < section0Block4Entries[i].materialId; h++)
+                {
+                    numPrecedingParameters += materials[h].materialParameters.Count;
+                } //for
+
+                s.referenceId = (ushort)(numPrecedingParameters + j);
 
                 section0Block7Entries.Add(s);
             } //for
@@ -2340,7 +2333,7 @@ public class Fmdl
         numSection0Blocks = (uint)section0Info.Count;
 
         //Section 1 Info
-        if (meshParameters.Count > 0)
+        if (materials.Count > 0)
         {
             Section1Info s = new Section1Info();
             s.id = 0;
@@ -2806,10 +2799,10 @@ public class Fmdl
         {
             section1Info[section1MaterialParametersIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
 
-            for (int i = 0; i < meshParameters.Count; i++)
-                for (int j = 0; j < meshParameters[i].Count; j++)
-                    for (int h = 0; h < meshParameters[i][j].values.Length; h++)
-                        writer.Write(meshParameters[i][j].values[h]);
+            for (int i = 0; i < materials.Count; i++)
+                for (int j = 0; j < materials[i].materialParameters.Count; j++)
+                    for(int h = 0; h < materials[i].materialParameters[h].values.Length; h++)
+                        writer.Write(materials[i].materialParameters[j].values[h]);
 
             section1Info[section1MaterialParametersIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MaterialParametersIndex].offset);
 
@@ -3155,194 +3148,20 @@ public class Fmdl
         {
             if(!materials.Contains(materials.Find(x => x.name == foxModel.materialDefinitions[i].materialName)))
             {
-                FoxMaterial f = new FoxMaterial();
-                f.name = foxModel.materialDefinitions[i].materialName;
-                f.type = foxModel.materialDefinitions[i].materialType;
-                materials.Add(f);
+                int index = Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.name == foxModel.materialDefinitions[i].materialName));
+
+                if (index != -1)
+                {
+                    FoxMaterial f = Globals.foxMaterialList.foxMaterials[index];
+                    materials.Add(f);
+                } //if
+                else
+                    throw new Exception("Material not in material list!");
             } //if
         } //for
 
         return materials;
     } //GetMaterials
-
-    private List<FoxMaterialParameter> GetMaterialParameters(string name)
-    {
-        List<FoxMaterialParameter> meshParameters = new List<FoxMaterialParameter>(0);
-
-        FoxMaterialParameter meshParameter = new FoxMaterialParameter();
-
-        switch (name)
-        {
-            case "fox_3ddf_skin_tension_dirty":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 140f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Roughness";
-                meshParameter.values = new float[4] { 3f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Color";
-                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.1f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "TensionRate";
-                meshParameter.values = new float[4] { 0f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "TensionShift";
-                meshParameter.values = new float[4] { 0.5f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "TensionController";
-                meshParameter.values = new float[4] { 0f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_skin_dirty":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 140f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Roughness";
-                meshParameter.values = new float[4] { 3f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Color";
-                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.1f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_basic_multimt_dirty":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 116f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "MatParamIndex_1";
-                meshParameter.values = new float[4] { 100f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "MatParamIndex_2";
-                meshParameter.values = new float[4] { 256f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "MatParamIndex_3";
-                meshParameter.values = new float[4] { 256f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "d75680ee296f":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 140f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_skin":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 116f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Roughness";
-                meshParameter.values = new float[4] { 5f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Color";
-                meshParameter.values = new float[4] { 0.8f, 0.8f, 0.8f, 0.3f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_eye":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 111f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "HeightScale";
-                meshParameter.values = new float[4] { 0.6f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddc_basic":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 100f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_hair":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 119f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Anistropic_Diffusion";
-                meshParameter.values = new float[4] { 16f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Anistropic_MainLightDir";
-                meshParameter.values = new float[4] { 0f, 1f, -1f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Roughness";
-                meshParameter.values = new float[4] { 4f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Color";
-                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.25f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "HairShiftScale";
-                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "URepeat_UV";
-                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "VRepeat_UV";
-                meshParameter.values = new float[4] { 1f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3ddf_incidence_nrmuv_dirty":
-                meshParameter.name = "MatParamIndex_0";
-                meshParameter.values = new float[4] { 139f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Roughness";
-                meshParameter.values = new float[4] { 1.5f, 0f, 0f, 0f };
-                meshParameters.Add(meshParameter);
-
-                meshParameter = new FoxMaterialParameter();
-                meshParameter.name = "Incidence_Color";
-                meshParameter.values = new float[4] { 1f, 1f, 1f, 0.15f };
-                meshParameters.Add(meshParameter);
-                break;
-
-            case "fox_3dndw_shadow":
-                break;
-        } //switch
-
-        return meshParameters;
-    } //GetMeshParameters
 
     private List<MeshFormat> GetMeshFormats(List<SkinnedMeshRenderer> meshes)
     {

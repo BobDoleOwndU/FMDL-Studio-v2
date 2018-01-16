@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Xml.Serialization;
 using UnityEngine;
 
 public static class Globals
 {
     public static string texturePath { get; private set; }
+    public static FoxMaterialList foxMaterialList = new FoxMaterialList();
 
     public static void WriteTexturePath(string path)
     {
@@ -50,4 +52,31 @@ public static class Globals
             } //using
         } //if
     } //ReadTexturePath
+
+    public static void ReadMaterialList()
+    {
+        if (File.Exists("materials.xml"))
+        {
+            XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
+
+            using (FileStream stream = new FileStream("materials.xml", FileMode.Open))
+            {
+                foxMaterialList = (FoxMaterialList)serializer.Deserialize(stream);
+                stream.Close();
+            } //using
+        } //if
+        else
+            Debug.Log("Could not find materials.xml");
+    } //ReadMaterialList
+
+    public static void WriteMaterialList()
+    {
+        XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
+
+        using (FileStream stream = new FileStream("materials.xml", FileMode.Create))
+        {
+            serializer.Serialize(stream, foxMaterialList);
+            stream.Close();
+        } //using
+    } //WriteMaterialList
 } //class
