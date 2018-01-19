@@ -114,7 +114,7 @@ public class Fmdl
     {
         public ushort unknown0;
         public ushort numEntries;
-        public List<ushort> entries;
+        public ushort[] entries;
     } //struct
 
     public struct Section0Block6Entry
@@ -739,10 +739,10 @@ public class Fmdl
 
                 s.unknown0 = reader.ReadUInt16();
                 s.numEntries = reader.ReadUInt16();
-                s.entries = new List<ushort>(0);
+                s.entries = new ushort[s.numEntries];
 
-                for (int j = 0; j < s.numEntries; j++)
-                    s.entries.Add(reader.ReadUInt16());
+                for (int j = 0; j < s.entries.Length; j++)
+                    s.entries[j] = reader.ReadUInt16();
 
                 reader.BaseStream.Position += 0x40 - s.numEntries * 2;
 
@@ -1313,7 +1313,6 @@ public class Fmdl
         GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
         GetMeshGroups(gameObject.transform, meshGroups, meshGroupEntries);
         meshFormats = GetMeshFormats(meshes);
-        bones.Sort((x, y) => x.gameObject.name.CompareTo(y.gameObject.name));
 
         for (int i = 0; i < gameObject.GetComponent<FoxModel>().definitions.Length; i++)
         {
@@ -1411,8 +1410,6 @@ public class Fmdl
             section0Block2Entries.Add(s);
         } //for
 
-        //section0Block5Entries = DebugBoneGroups(bones); //DEBUG!
-
         //Block 3 - Meshes
         for (int i = 0; i < meshes.Count; i++)
         {
@@ -1428,29 +1425,7 @@ public class Fmdl
                     break;
                 } //if
 
-            s.boneGroupId = (ushort)i;
-
-            /*for(int j = 0; j < section0Block5Entries.Count; j++)
-            {
-                bool containsAll = true;
-                List<int> boneIndices = GetBoneGroup(meshes[i], bones);
-
-                for(int h = 0; h < boneIndices.Count; h++)
-                {
-                    if (!section0Block5Entries[j].entries.Contains((ushort)boneIndices[h]))
-                    {
-                        containsAll = false;
-                        break;
-                    } //if
-                } //for
-
-                if(containsAll)
-                {
-                    s.boneGroupId = (ushort)j;
-                    break;
-                } //if
-            } //for*/
-
+            s.boneGroupId = (ushort)i; //Might have to change if bone groups actually matter.
             s.id = (ushort)i;
             s.numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
 
@@ -1502,7 +1477,7 @@ public class Fmdl
                 s.firstTextureId = 0;
             else
             {
-                if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId)
+                if (section0Block4Entries[i - 1].firstParameterId > section0Block4Entries[i - 1].firstTextureId)
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
                 else
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
@@ -1523,7 +1498,7 @@ public class Fmdl
 
                             if (i != 0)
                             {
-                                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
+                                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters > s.firstTextureId + s.numTextures)
                                     s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
                                 else
                                     s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
@@ -1551,11 +1526,11 @@ public class Fmdl
 
                 s.unknown0 = 4; //Most bone groups use 0x4. Dunno if it matters.
                 s.numEntries = (ushort)indices.Count;
-                s.entries = new List<ushort>(0);
+                s.entries = new ushort[indices.Count];
 
                 for (int j = 0; j < indices.Count; j++)
                 {
-                    s.entries.Add((ushort)indices[j]);
+                    s.entries[j] = (ushort)indices[j];
                 } //for
 
                 section0Block5Entries.Add(s);
@@ -2065,7 +2040,7 @@ public class Fmdl
                     o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
 
 
-                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                     {
                         if (meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex0] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]])
                         {
@@ -2074,7 +2049,7 @@ public class Fmdl
                         } //if
                     } //for
 
-                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                     {
                         if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
@@ -2084,7 +2059,7 @@ public class Fmdl
                     } //for
 
 
-                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                     {
                         if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex2] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
@@ -2093,7 +2068,7 @@ public class Fmdl
                         } //if
                     } //for
 
-                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
                     {
                         if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex3] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
@@ -2544,7 +2519,7 @@ public class Fmdl
                 writer.Write(section0Block5Entries[i].unknown0);
                 writer.Write(section0Block5Entries[i].numEntries);
 
-                for (int j = 0; j < section0Block5Entries[i].entries.Count; j++)
+                for (int j = 0; j < section0Block5Entries[i].entries.Length; j++)
                     writer.Write(section0Block5Entries[i].entries[j]);
 
                 writer.WriteZeroes(0x40 - 2 * section0Block5Entries[i].numEntries);
@@ -2995,18 +2970,9 @@ public class Fmdl
     {
         foreach (Transform t in transform)
         {
+            bones.Add(t);
+
             GetBones(t, bones);
-
-            ulong outUlong;
-
-            if (!UInt64.TryParse(t.gameObject.name, out outUlong))
-            {
-                bones.Add(t);
-            } //if
-            else
-            {
-                UnityEngine.Object.Destroy(t.gameObject);
-            } //else
         } //foreach
     } //GetBones
 
@@ -3457,216 +3423,6 @@ public class Fmdl
      * DEBUG/LOGGING FUNCTIONS
      * 
      ****************************************************************/
-    private List<Section0Block5Entry> DebugBoneGroups(List<Transform> bones)
-    {
-        List<Section0Block5Entry> section0Block5Entries = new List<Section0Block5Entry>(16);
-
-        for(int i = 0; i < 16; i++)
-        {
-            Section0Block5Entry s = new Section0Block5Entry();
-            List<string> names = new List<string>(0);
-
-            switch (i)
-            {
-                case 0:
-                    names.AddRange(new string[] { "SKL_003_NECK", "SKL_004_HEAD", "SKL_400_HEADROOT", "SKL_401_MOUTHROOT", "SKL_404_JAWS", "SKL_405_LPUL", "SKL_406_LPUR", "SKL_409_LPML", "SKL_410_LPMR", "SKL_411_LPNL", "SKL_413_LPNR", "SKL_415_LPUI", "SKL_420_THRT", "SKL_421_CHKL", "SKL_422_CHKR", "SKL_423_JAWL", "SKL_424_JAWR", "SKL_425_NOSE", "SKL_426_EBOL", "SKL_427_EBOR", "SKL_428_EBEL", "SKL_431_EYER", "SKL_432_EIUL", "SKL_434_EYLL", "SKL_436_MCKL", "SKL_530_CLVR_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for(int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-                    
-                    section0Block5Entries.Add(s);
-                    break;
-                case 1:
-                    names.AddRange(new string[] { "SKL_004_HEAD", "SKL_400_HEADROOT", "SKL_405_LPUL", "SKL_406_LPUR", "SKL_409_LPML", "SKL_410_LPMR", "SKL_411_LPNL", "SKL_413_LPNR", "SKL_415_LPUI", "SKL_422_CHKR", "SKL_425_NOSE", "SKL_426_EBOL", "SKL_428_EBEL", "SKL_430_EYEL", "SKL_630_BRARD_SIM", "SKL_631_BRARD_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 2:
-                    names.AddRange(new string[] { "SKL_003_NECK", "SKL_004_HEAD", "SKL_400_HEADROOT", "SKL_401_MOUTHROOT", "SKL_404_JAWS", "SKL_405_LPUL", "SKL_406_LPUR", "SKL_407_LPLL", "SKL_408_LPLR", "SKL_409_LPML", "SKL_410_LPMR", "SKL_411_LPNL", "SKL_412_LPCL", "SKL_413_LPNR", "SKL_414_LPCR", "SKL_416_LPLI", "SKL_417_MDBL", "SKL_418_MDBR", "SKL_420_THRT", "SKL_421_CHKL", "SKL_422_CHKR", "SKL_423_JAWL", "SKL_424_JAWR", "SKL_425_NOSE", "SKL_427_EBOR", "SKL_428_EBEL", "SKL_429_EBER", "SKL_430_EYEL", "SKL_433_EIUR", "SKL_435_EYLR", "SKL_436_MCKL", "SKL_437_MCKR" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 3:
-                    names.AddRange(new string[] { "SKL_003_NECK", "SKL_004_HEAD", "SKL_400_HEADROOT", "SKL_401_MOUTHROOT", "SKL_404_JAWS", "SKL_405_LPUL", "SKL_406_LPUR", "SKL_407_LPLL", "SKL_408_LPLR", "SKL_409_LPML", "SKL_410_LPMR", "SKL_411_LPNL", "SKL_412_LPCL", "SKL_413_LPNR", "SKL_414_LPCR", "SKL_416_LPLI", "SKL_417_MDBL", "SKL_418_MDBR", "SKL_420_THRT", "SKL_421_CHKL", "SKL_422_CHKR", "SKL_423_JAWL", "SKL_424_JAWR", "SKL_425_NOSE", "SKL_428_EBEL", "SKL_436_MCKL", "SKL_437_MCKR", "SKL_530_CLVR_HLP", "SKL_630_BRARD_SIM", "SKL_631_BRARD_SIM", "SKL_632_BRARD_SIM", "SKL_633_BRARD_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 4:
-                    names.AddRange(new string[] { "SKL_003_NECK", "SKL_004_HEAD", "SKL_400_HEADROOT", "SKL_404_JAWS", "SKL_413_LPNR", "SKL_419_TONE", "SKL_421_CHKL", "SKL_422_CHKR", "SKL_423_JAWL", "SKL_424_JAWR", "SKL_425_NOSE", "SKL_426_EBOL", "SKL_427_EBOR", "SKL_428_EBEL", "SKL_429_EBER", "SKL_431_EYER", "SKL_432_EIUL", "SKL_433_EIUR", "SKL_434_EYLL", "SKL_436_MCKL", "SKL_437_MCKR", "SKL_530_CLVR_HLP", "SKL_610_HAIR_SIM", "SKL_611_HAIR_SIM", "SKL_612_HAIR_SIM", "SKL_613_HAIR_SIM", "SKL_614_HAIR_SIM", "SKL_615_HAIR_SIM", "SKL_616_HAIR_SIM", "SKL_617_HAIR_SIM", "SKL_618_HAIR_SIM", "SKL_619_HAIR_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 5:
-                    names.AddRange(new string[] { "SKL_011_LUARM", "SKL_012_LFARM", "SKL_013_LHAND", "SKL_101_LF10", "SKL_102_LF11", "SKL_103_LF12", "SKL_104_LF21", "SKL_105_LF22", "SKL_106_LF23", "SKL_107_LF31", "SKL_108_LF32", "SKL_109_LF33", "SKL_110_LF40", "SKL_111_LF41", "SKL_112_LF42", "SKL_113_LF43", "SKL_114_LF51", "SKL_502_LHMRS_HLP", "SKL_503_LUARL_HLP", "SKL_504_LELBW_HLP", "SKL_505_LFARL_HLP", "SKL_506_LTNB_HLP", "SKL_507_LTOW_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 6:
-                    names.AddRange(new string[] { "SKL_002_CHEST", "SKL_010_LSHLD", "SKL_011_LUARM", "SKL_020_RSHLD", "SKL_021_RUARM", "SKL_500_LLRPZ_HLP", "SKL_502_LHMRS_HLP", "SKL_503_LUARL_HLP", "SKL_509_RLRPZ_HLP", "SKL_511_RHMRS_HLP", "SKL_512_RUARL_HLP", "SKL_530_CLVR_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 7:
-                    names.AddRange(new string[] { "SKL_013_LHAND", "SKL_021_RUARM", "SKL_022_RFARM", "SKL_023_RHAND", "SKL_107_LF31", "SKL_110_LF40", "SKL_111_LF41", "SKL_114_LF51", "SKL_115_LF52", "SKL_116_LF53", "SKL_201_RF10", "SKL_202_RF11", "SKL_203_RF12", "SKL_204_RF21", "SKL_205_RF22", "SKL_206_RF23", "SKL_207_RF31", "SKL_208_RF32", "SKL_209_RF33", "SKL_210_RF40", "SKL_211_RF41", "SKL_212_RF42", "SKL_213_RF43", "SKL_214_RF51", "SKL_215_RF52", "SKL_216_RF53", "SKL_511_RHMRS_HLP", "SKL_512_RUARL_HLP", "SKL_513_RELBW_HLP", "SKL_514_RFARL_HLP", "SKL_515_RTNB_HLP", "SKL_516_RTOW_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 8:
-                    names.AddRange(new string[] { "SKL_000_WAIST", "SKL_001_SPINE", "SKL_002_CHEST", "SKL_030_LTHIGH", "SKL_040_RTHIGH", "SKL_518_LBUD_HLP", "SKL_519_LMRF_HLP", "SKL_520_LPTL_HLP", "SKL_524_RBUD_HLP", "SKL_525_RMRF_HLP", "SKL_526_RPTL_HLP", "SKL_620_ITEM_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 9:
-                    names.AddRange(new string[] { "SKL_030_LTHIGH", "SKL_031_LLEG", "SKL_032_LFOOT", "SKL_033_LTOE", "SKL_040_RTHIGH", "SKL_041_RLEG", "SKL_042_RFOOT", "SKL_043_RTOE", "SKL_518_LBUD_HLP", "SKL_519_LMRF_HLP", "SKL_520_LPTL_HLP", "SKL_524_RBUD_HLP", "SKL_525_RMRF_HLP", "SKL_526_RPTL_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 10:
-                    names.AddRange(new string[] { "SKL_000_WAIST", "SKL_001_SPINE", "SKL_620_ITEM_SIM", "SKL_623_ITEM_SIM", "SKL_624_ITEM_SIM", "SKL_625_ITEM_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 11:
-                    names.AddRange(new string[] { "SKL_620_ITEM_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 12:
-                    names.AddRange(new string[] { "SKL_525_RMRF_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 13:
-                    names.AddRange(new string[] { "SKL_000_WAIST", "SKL_001_SPINE", "SKL_620_ITEM_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 14:
-                    names.AddRange(new string[] { "SKL_000_WAIST", "SKL_001_SPINE", "SKL_625_ITEM_SIM" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-                case 15:
-                    names.AddRange(new string[] { "SKL_000_WAIST", "SKL_001_SPINE", "SKL_002_CHEST", "SKL_003_NECK", "SKL_004_HEAD", "SKL_010_LSHLD", "SKL_020_RSHLD", "SKL_040_RTHIGH", "SKL_420_THRT", "SKL_500_LLRPZ_HLP", "SKL_502_LHMRS_HLP", "SKL_503_LUARL_HLP", "SKL_509_RLRPZ_HLP", "SKL_511_RHMRS_HLP", "SKL_512_RUARL_HLP", "SKL_524_RBUD_HLP", "SKL_525_RMRF_HLP", "SKL_530_CLVR_HLP" });
-
-                    s.unknown0 = 4;
-                    s.numEntries = (ushort)names.Count;
-                    s.entries = new List<ushort>(0);
-
-                    for (int j = 0; j < names.Count; j++)
-                        s.entries.Add((ushort)bones.IndexOf(bones.Find(x => x.gameObject.name == names[j])));
-
-                    section0Block5Entries.Add(s);
-                    break;
-            } //switch
-        } //for
-
-        return section0Block5Entries;
-    } //DebugBoneGroups
-
-
     [Conditional("DEBUG")]
     public void OutputSection0Block0Info()
     {
@@ -3723,18 +3479,18 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
-            UnityEngine.Debug.Log("Name: " + strings[section0Block4Entries[i].stringId]);
-            UnityEngine.Debug.Log("Material: " + strings[section0Block8Entries[section0Block4Entries[i].materialId].stringId]);
+            UnityEngine.Debug.Log("Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block4Entries[i].stringId]));
+            UnityEngine.Debug.Log("Material: " + Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[section0Block4Entries[i].materialId].stringId]));
 
             for (int j = section0Block4Entries[i].firstTextureId; j < section0Block4Entries[i].firstTextureId + section0Block4Entries[i].numTextures; j++)
             {
-                UnityEngine.Debug.Log("Texture Type: " + strings[section0Block7Entries[j].stringId]);
-                UnityEngine.Debug.Log("Texture: " + strings[section0Block6Entries[section0Block7Entries[j].referenceId].pathId] + strings[section0Block6Entries[section0Block7Entries[j].referenceId].stringId]);
+                UnityEngine.Debug.Log("Texture Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[j].referenceId]));
             } //for
 
             for (int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
             {
-                UnityEngine.Debug.Log("Parameter Type: " + strings[section0Block7Entries[j].stringId]);
+                UnityEngine.Debug.Log("Parameter Type: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]));
                 UnityEngine.Debug.Log(string.Format("Parameters: {{{0}, {1}, {2}, {3}}}", materialParameters[section0Block7Entries[j].referenceId].values[0], materialParameters[section0Block7Entries[j].referenceId].values[1], materialParameters[section0Block7Entries[j].referenceId].values[2], materialParameters[section0Block7Entries[j].referenceId].values[3]));
             } //for
         } //for
@@ -3743,33 +3499,16 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void OutputSection0Block5Info()
     {
-        using (FileStream stream = new FileStream("debug.txt", FileMode.Create))
+        for (int i = 0; i < section0Block5Entries.Count; i++)
         {
-            StreamWriter writer = new StreamWriter(stream);
-            writer.AutoFlush = true;
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
 
-            for (int i = 0; i < section0Block5Entries.Count; i++)
+            for (int j = 0; j < section0Block5Entries[i].entries.Length; j++)
             {
-                /*UnityEngine.Debug.Log("================================");
-                UnityEngine.Debug.Log("Entry No: " + i);*/
-                if (i != 0)
-                    writer.Write("\n");
-
-                writer.WriteLine("================================");
-                writer.WriteLine("Entry No: " + i);
-
-                for (int j = 0; j < section0Block5Entries[i].entries.Count; j++)
-                {
-                    //UnityEngine.Debug.Log(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block5Entries[i].entries[j]].stringId]));
-                    if(stringsIndex != -1)
-                        writer.Write($"\"{strings[section0Block0Entries[section0Block5Entries[i].entries[j]].stringId]}\", ");
-                    else
-                        writer.Write($"\"{Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block5Entries[i].entries[j]].stringId])}\", ");
-                } //for
+                UnityEngine.Debug.Log(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block5Entries[i].entries[j]].stringId]));
             } //for
-
-            stream.Close();
-        } //using
+        } //for
     } //OutputSection2Info
 
     [Conditional("DEBUG")]
@@ -3791,9 +3530,11 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
-            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + strings[section0Block7Entries[i].stringId]);
-            if(section0Block7Entries[i].referenceId < section0Block6Entries.Count)
-                UnityEngine.Debug.Log("Reference: " + strings[section0Block6Entries[section0Block7Entries[i].referenceId].stringId]);
+            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].stringId]));
+            if (section0Block7Entries[i].referenceId < section0Block15Entries.Count)
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[i].referenceId]));
+            else
+                UnityEngine.Debug.Log("Material Reference: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].referenceId]));
         } //for
     } //OutputSection2Info
 
