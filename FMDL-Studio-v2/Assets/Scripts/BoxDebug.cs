@@ -1,31 +1,26 @@
 ﻿using UnityEngine;
 
-namespace FmdlStudio
-{
-    public class BoxDebug : MonoBehaviour
-    {
-        // Use this for initialization
-        void DrawBox(Transform t)
+public class BoxDebug : MonoBehaviour {
+
+	// Use this for initialization
+	void DrawBox(Transform t) {
+		foreach(Transform child in t)
         {
-            foreach (Transform child in t)
+            if (child.GetComponent<SkinnedMeshRenderer>())
             {
-                if (child.GetComponent<SkinnedMeshRenderer>())
-                {
-                    Gizmos.DrawWireCube(child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.center, child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.size);
-                    DrawBox(child);
-                } //if
-            } //foreach
-        } //DrawBox
+                Gizmos.DrawWireCube(child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.center, child.GetComponent<SkinnedMeshRenderer>().sharedMesh.bounds.size);
+                DrawBox(child);
+            } //if
+        } //foreach
+	} //DrawBox
+	
+	// Update is called once per frame
+	void Update() {
+		
+	}
 
-        // Update is called once per frame
-        void Update()
-        {
-
-        }
-
-        void OnDrawGizmos()
-        {
-            DrawBox(transform);
-        } //OnDrawGizmos
-    }
+    void OnDrawGizmos()
+    {
+        DrawBox(transform);
+    } //OnDrawGizmos
 }

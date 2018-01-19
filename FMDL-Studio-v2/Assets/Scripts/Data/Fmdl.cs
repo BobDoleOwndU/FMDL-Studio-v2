@@ -1111,11 +1111,19 @@ public class Fmdl
         for (int i = 0; i < section0Block3Entries.Count; i++)
         {
             reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset;
+<<<<<<< HEAD
 
             Object o = new Object();
 
             o.vertices = new Vertex[section0Block3Entries[i].numVertices];
 
+=======
+            
+            Object o = new Object();
+
+            o.vertices = new Vertex[section0Block3Entries[i].numVertices];
+
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             for (int j = 0; j < o.vertices.Length; j++)
             {
                 o.vertices[j].x = reader.ReadSingle();
@@ -1136,12 +1144,21 @@ public class Fmdl
          *
          ****************************************************************/
         reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset;
+<<<<<<< HEAD
 
         for (int i = 0; i < objects.Count; i++)
         {
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
             //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
 
+=======
+
+        for (int i = 0; i < objects.Count; i++)
+        {
+            objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
+            //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
+
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
             {
                 long position = reader.BaseStream.Position;
@@ -1245,6 +1262,7 @@ public class Fmdl
                 objects[i].faces[j].vertex3Id = reader.ReadUInt16();
             } //for
         } //for
+<<<<<<< HEAD
 
         /****************************************************************
          *
@@ -1258,6 +1276,21 @@ public class Fmdl
             {
                 objects[i].lodFaces = new Face[section0Block10Entries[0].numLods][];
 
+=======
+
+        /****************************************************************
+         *
+         * LOD FACES
+         *
+         ****************************************************************/
+        {
+            int section0Block11Counter = 0;
+
+            for (int i = 0; i < objects.Count; i++)
+            {
+                objects[i].lodFaces = new Face[section0Block10Entries[0].numLods][];
+
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                 for (int j = 0; j < objects[i].lodFaces.Length; j++)
                 {
                     reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2 + section0Block11Entries[section0Block11Counter].firstFaceVertexId * 2;
@@ -1450,6 +1483,7 @@ public class Fmdl
 
             s.typeId = (ushort)strings.Count;
             strings.Add(materials[i].type);
+<<<<<<< HEAD
 
             section0Block8Entries.Add(s);
         } //for
@@ -1473,6 +1507,31 @@ public class Fmdl
             if (materialInstances[i].GetTexture("_BumpMap"))
                 s.numTextures++;
 
+=======
+
+            section0Block8Entries.Add(s);
+        } //for
+
+        //Block 4 - Material Instances
+        for (int i = 0; i < materialInstances.Count; i++)
+        {
+            Section0Block4Entry s = new Section0Block4Entry();
+
+            s.stringId = (ushort)strings.Count;
+
+            if (materialInstances[i].name.Contains(" (UnityEngine.Material)"))
+                materialInstances[i].name = materialInstances[i].name.Substring(0, materialInstances[i].name.IndexOf(" (UnityEngine.Material)"));
+
+            strings.Add(materialInstances[i].name);
+
+            s.numTextures = 0;
+
+            if (materialInstances[i].GetTexture("_MainTex"))
+                s.numTextures++;
+            if (materialInstances[i].GetTexture("_BumpMap"))
+                s.numTextures++;
+
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             if (i == 0)
                 s.firstTextureId = 0;
             else
@@ -1655,6 +1714,7 @@ public class Fmdl
                         break;
                     } //if
                 } //for
+<<<<<<< HEAD
 
                 if (add)
                 {
@@ -2523,6 +2583,789 @@ public class Fmdl
                     writer.Write(section0Block5Entries[i].entries[j]);
 
                 writer.WriteZeroes(0x40 - 2 * section0Block5Entries[i].numEntries);
+=======
+
+                if (add)
+                {
+                    s.stringId = (ushort)strings.Count;
+                    strings.Add(meshParameters[section0Block4Entries[i].materialId][j].name);
+                } //if
+
+                s.referenceId = (ushort)j;
+
+                section0Block7Entries.Add(s);
+            } //for
+        } //for
+
+        //Block 9 - Mesh Format Assignments
+        for (int i = 0; i < meshFormats.Count; i++)
+        {
+            Section0Block9Entry s = new Section0Block9Entry();
+
+            byte numMeshFormatEntries = 0;
+            byte numVertexFormatEntries = 0;
+
+            if (meshFormats[i].meshFormat0Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat0Size;
+            } //if
+
+            if (meshFormats[i].meshFormat1Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat1Size;
+            } //if
+
+            if (meshFormats[i].meshFormat2Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat2Size;
+            } //if
+
+            if (meshFormats[i].meshFormat3Size > 0)
+            {
+                numMeshFormatEntries++;
+                numVertexFormatEntries += meshFormats[i].meshFormat3Size;
+            } //if
+
+            s.numMeshFormatEntries = numMeshFormatEntries;
+            s.numVertexFormatEntries = numVertexFormatEntries;
+            s.unknown0 = 0x100;
+
+            if (i == 0)
+            {
+                s.firstMeshFormatId = 0;
+                s.firstVertexFormatId = 0;
+            } //if
+            else
+            {
+                s.firstMeshFormatId = (ushort)(section0Block9Entries[i - 1].firstMeshFormatId + section0Block9Entries[i - 1].numMeshFormatEntries);
+                s.firstVertexFormatId = (ushort)(section0Block9Entries[i - 1].firstVertexFormatId + section0Block9Entries[i - 1].numVertexFormatEntries);
+            } //else
+
+            section0Block9Entries.Add(s);
+        } //for
+
+        //Block A - Mesh Formats
+        for (int i = 0; i < meshFormats.Count; i++)
+        {
+            if (meshFormats[i].meshFormat0Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 0;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat0Size;
+                s.length = 0xC;
+                s.type = 0;
+                s.offset = meshFormats[i].zeroOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat1Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat1Size;
+                s.length = meshFormats[i].size;
+                s.type = 1;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat2Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat2Size;
+                s.length = meshFormats[i].size;
+                s.type = 2;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+
+            if (meshFormats[i].meshFormat3Size > 0)
+            {
+                Section0BlockAEntry s = new Section0BlockAEntry();
+                s.bufferOffsetId = 1;
+                s.numVertexFormatEntries = meshFormats[i].meshFormat3Size;
+                s.length = meshFormats[i].size;
+                s.type = 3;
+                s.offset = meshFormats[i].additionalOffset;
+                section0BlockAEntries.Add(s);
+            } //if
+        } //for
+
+        //Block B - Vertex Formats
+        for (int i = 0; i < meshFormats.Count; i++)
+        {
+            ushort offset = 0;
+
+            Section0BlockBEntry s = new Section0BlockBEntry();
+
+            s.usage = 0;
+            s.format = 1;
+            s.offset = offset;
+
+            section0BlockBEntries.Add(s);
+
+            if (meshFormats[i].normals)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 2;
+                s.format = 6;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+
+            if (meshFormats[i].tangents)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xE;
+                s.format = 6;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+
+            if (meshFormats[i].colour)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 3;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].weights0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 1;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].indices0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 7;
+                s.format = 9;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv0)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 8;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 9;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv2)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xA;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].uv3)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xB;
+                s.format = 7;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].weights1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xC;
+                s.format = 8;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 4;
+            } //if
+
+            if (meshFormats[i].indices1)
+            {
+                s = new Section0BlockBEntry();
+                s.usage = 0xD;
+                s.format = 4;
+                s.offset = offset;
+                section0BlockBEntries.Add(s);
+                offset += 8;
+            } //if
+        } //for
+
+        //Block C - Strings
+        for (int i = 0; i < strings.Count; i++)
+        {
+            Section0BlockCEntry s = new Section0BlockCEntry();
+            s.section1BlockId = 3;
+            s.length = (ushort)strings[i].Length;
+
+            if (i == 0)
+            {
+                s.offset = 0;
+            } //if
+            else
+            {
+                s.offset = section0BlockCEntries[i - 1].offset + section0BlockCEntries[i - 1].length + 1;
+            } //else
+
+            section0BlockCEntries.Add(s);
+        } //for
+
+        //Block D - Bounding Boxes
+        {
+            Section0BlockDEntry s = new Section0BlockDEntry();
+
+            foreach (Transform t in gameObject.transform)
+            {
+                if (t.gameObject.name == "[Root]")
+                {
+                    s.minX = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
+                    s.minY = t.gameObject.GetComponent<BoxCollider>().bounds.min.y;
+                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
+                    s.minW = 1f;
+                    s.maxX = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
+                    s.maxY = t.gameObject.GetComponent<BoxCollider>().bounds.max.y;
+                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
+                    s.maxW = 1f;
+                    section0BlockDEntries.Add(s);
+                    break;
+                } //if
+            } //foreach
+        } //code block
+
+        for (int i = 0; i < bones.Count; i++)
+        {
+            Section0BlockDEntry s = new Section0BlockDEntry();
+            s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
+            s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
+            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
+            s.minW = 1f;
+            s.maxX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
+            s.maxY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.y;
+            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
+            s.maxW = 1f;
+            section0BlockDEntries.Add(s);
+        } //for
+
+        //Block E - Buffer Offsets
+        for (int i = 0; i < 3; i++)
+        {
+            Section0BlockEEntry s = new Section0BlockEEntry();
+
+            if (i != 2)
+                s.unknown0 = 0;
+            else
+                s.unknown0 = 1;
+
+            s.length = 0;
+            s.offset = 0;
+
+            section0BlockEEntries.Add(s);
+        } //for
+
+        //Block 10 - LOD Info
+        {
+            Section0Block10Entry s = new Section0Block10Entry();
+            s.numLods = 1;
+            s.unknown0 = 1.0f;
+            s.unknown1 = 1.0f;
+            s.unknown2 = 1.0f;
+            section0Block10Entries.Add(s);
+        } //code block
+
+        //Block 11 - Face Indices
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            Section0Block11Entry s = new Section0Block11Entry();
+            s.firstFaceVertexId = 0;
+            s.numFaceVertices = (uint)meshes[i].sharedMesh.triangles.Length;
+            section0Block11Entries.Add(s);
+        } //for
+
+        //Block 12 - Unknown
+        {
+            Section0Block12Entry s = new Section0Block12Entry();
+            s.unknown0 = 0;
+            section0Block12Entries.Add(s);
+        } //code block
+
+        //Block 14 - Unknown
+        {
+            Section0Block14Entry s = new Section0Block14Entry();
+            s.unknown0 = 3.33850384f;
+            s.unknown1 = 0.8753322f;
+            s.unknown2 = 0.200000048f;
+            s.unknown3 = 5f;
+            s.unknown4 = 5;
+            s.unknown5 = 1;
+            section0Block14Entries.Add(s);
+        } //code block
+
+        //Objects
+        objects = new List<Object>(0);
+
+        for (int i = 0; i < meshes.Count; i++)
+        {
+            Object o = new Object();
+            o.vertices = new Vertex[meshes[i].sharedMesh.vertices.Length];
+            o.additionalVertexData = new AdditionalVertexData[meshes[i].sharedMesh.vertices.Length];
+            o.faces = new Face[meshes[i].sharedMesh.triangles.Length / 3];
+
+            for (int j = 0; j < o.vertices.Length; j++)
+            {
+                o.vertices[j].x = meshes[i].sharedMesh.vertices[j].z;
+                o.vertices[j].y = meshes[i].sharedMesh.vertices[j].y;
+                o.vertices[j].z = meshes[i].sharedMesh.vertices[j].x;
+                o.additionalVertexData[j].normalX = new Half(meshes[i].sharedMesh.normals[j].z);
+                o.additionalVertexData[j].normalY = new Half(meshes[i].sharedMesh.normals[j].y);
+                o.additionalVertexData[j].normalZ = new Half(meshes[i].sharedMesh.normals[j].x);
+                o.additionalVertexData[j].normalW = new Half(1f);
+
+                if (meshes[i].sharedMesh.tangents.Length > 0)
+                {
+                    o.additionalVertexData[j].tangentX = new Half(meshes[i].sharedMesh.tangents[j].z);
+                    o.additionalVertexData[j].tangentY = new Half(meshes[i].sharedMesh.tangents[j].y);
+                    o.additionalVertexData[j].tangentZ = new Half(meshes[i].sharedMesh.tangents[j].x);
+                    o.additionalVertexData[j].tangentW = new Half(meshes[i].sharedMesh.tangents[j].w);
+                } //if
+
+                //o.additionalVertexData[j].colourR = meshes[i].sharedMesh.colors[j].r;
+                //o.additionalVertexData[j].colourG = meshes[i].sharedMesh.colors[j].g;
+                //o.additionalVertexData[j].colourB = meshes[i].sharedMesh.colors[j].b;
+                //o.additionalVertexData[j].colourA = meshes[i].sharedMesh.colors[j].a;
+                
+                if (meshes[i].sharedMesh.boneWeights.Length > 0)
+                {
+                    o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
+                    o.additionalVertexData[j].boneWeightY = meshes[i].sharedMesh.boneWeights[j].weight1;
+                    o.additionalVertexData[j].boneWeightZ = meshes[i].sharedMesh.boneWeights[j].weight2;
+                    o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
+
+
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                    {
+                        if (meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex0] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]])
+                        {
+                            o.additionalVertexData[j].boneGroup0Id = (byte)h;
+                            break;
+                        } //if
+                    } //for
+
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                    {
+                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        {
+                            o.additionalVertexData[j].boneGroup1Id = (byte)h;
+                            break;
+                        } //if
+                    } //for
+
+
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                    {
+                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex2] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        {
+                            o.additionalVertexData[j].boneGroup2Id = (byte)h;
+                            break;
+                        } //if
+                    } //for
+
+                    for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Length; h++)
+                    {
+                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex3] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        {
+                            o.additionalVertexData[j].boneGroup3Id = (byte)h;
+                            break;
+                        } //if
+                    } //for
+                } //if
+
+                o.additionalVertexData[j].textureU = new Half(meshes[i].sharedMesh.uv[j].x);
+                o.additionalVertexData[j].textureV = new Half(-meshes[i].sharedMesh.uv[j].y);
+
+                if (meshes[i].sharedMesh.uv2.Length > 0)
+                {
+                    o.additionalVertexData[j].unknownU0 = new Half(meshes[i].sharedMesh.uv2[j].x);
+                    o.additionalVertexData[j].unknownV0 = new Half(meshes[i].sharedMesh.uv2[j].y);
+
+                    if (meshes[i].sharedMesh.uv3.Length > 0)
+                    {
+                        o.additionalVertexData[j].unknownU1 = new Half(meshes[i].sharedMesh.uv3[j].x);
+                        o.additionalVertexData[j].unknownV1 = new Half(meshes[i].sharedMesh.uv3[j].y);
+
+                        if (meshes[i].sharedMesh.uv4.Length > 0)
+                        {
+                            o.additionalVertexData[j].unknownU2 = new Half(meshes[i].sharedMesh.uv4[j].x);
+                            o.additionalVertexData[j].unknownV2 = new Half(meshes[i].sharedMesh.uv4[j].y);
+                        } //if
+                    } //if
+                } //if
+            } //for
+
+            for (int j = 0, h = 0; j < o.faces.Length; j++, h += 3)
+            {
+                o.faces[j].vertex1Id = (ushort)meshes[i].sharedMesh.triangles[h];
+                o.faces[j].vertex2Id = (ushort)meshes[i].sharedMesh.triangles[h + 1];
+                o.faces[j].vertex3Id = (ushort)meshes[i].sharedMesh.triangles[h + 2];
+            } //for
+
+            objects.Add(o);
+        } //for
+
+        //Section 0 Info
+        if (section0Block0Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0;
+            s.numEntries = (ushort)section0Block0Entries.Count;
+            s.offset = 0;
+            bonesIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 1;
+        } //if
+
+        if (section0Block1Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 1;
+            s.numEntries = (ushort)section0Block1Entries.Count;
+            s.offset = 0;
+            meshGroupsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 2;
+        } //if
+
+        if (section0Block2Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 2;
+            s.numEntries = (ushort)section0Block2Entries.Count;
+            s.offset = 0;
+            meshGroupAssignmentIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 4;
+        } //if
+
+        if (section0Block3Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 3;
+            s.numEntries = (ushort)section0Block3Entries.Count;
+            s.offset = 0;
+            meshInfoIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 8;
+        } //if
+
+        if (section0Block4Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 4;
+            s.numEntries = (ushort)section0Block4Entries.Count;
+            s.offset = 0;
+            materialInstancesIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 16;
+        } //if
+
+        if (section0Block5Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 5;
+            s.numEntries = (ushort)section0Block5Entries.Count;
+            s.offset = 0;
+            boneGroupsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 32;
+        } //if
+
+        if (section0Block6Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 6;
+            s.numEntries = (ushort)section0Block6Entries.Count;
+            s.offset = 0;
+            texturePathsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 64;
+        } //if
+
+        if (section0Block7Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 7;
+            s.numEntries = (ushort)section0Block7Entries.Count;
+            s.offset = 0;
+            textureTypesIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 128;
+        } //if
+
+        if (section0Block8Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 8;
+            s.numEntries = (ushort)section0Block8Entries.Count;
+            s.offset = 0;
+            materialsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 256;
+        } //if
+
+        if (section0Block9Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 9;
+            s.numEntries = (ushort)section0Block9Entries.Count;
+            s.offset = 0;
+            meshFormatAssignmentIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 512;
+        } //if
+
+        if (section0BlockAEntries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0xA;
+            s.numEntries = (ushort)section0BlockAEntries.Count;
+            s.offset = 0;
+            meshFormatsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 1024;
+        } //if
+
+        if (section0BlockBEntries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0xB;
+            s.numEntries = (ushort)section0BlockBEntries.Count;
+            s.offset = 0;
+            vertexFormatsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 2048;
+        } //if
+
+        if (section0BlockCEntries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0xC;
+            s.numEntries = (ushort)section0BlockCEntries.Count;
+            s.offset = 0;
+            stringsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 4096;
+        } //if
+
+        if (section0BlockDEntries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0xD;
+            s.numEntries = (ushort)section0BlockDEntries.Count;
+            s.offset = 0;
+            boundingBoxesIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 8192;
+        } //if
+
+        if (section0BlockEEntries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0xE;
+            s.numEntries = (ushort)section0BlockEEntries.Count;
+            s.offset = 0;
+            bufferOffsetsIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 16384;
+        } //if
+
+        if (section0Block10Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0x10;
+            s.numEntries = (ushort)section0Block10Entries.Count;
+            s.offset = 0;
+            lodInfoIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 65536;
+        } //if
+
+        if (section0Block11Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0x11;
+            s.numEntries = (ushort)section0Block11Entries.Count;
+            s.offset = 0;
+            faceIndicesIndex = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 131072;
+        } //if
+
+        if (section0Block12Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0x12;
+            s.numEntries = (ushort)section0Block12Entries.Count;
+            s.offset = 0;
+            type12Index = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 262144;
+        } //if
+
+        if (section0Block14Entries.Count > 0)
+        {
+            Section0Info s = new Section0Info();
+            s.id = 0x14;
+            s.numEntries = (ushort)section0Block14Entries.Count;
+            s.offset = 0;
+            type14Index = section0Info.Count;
+            section0Info.Add(s);
+            section0BlockFlags += 1048576;
+        } //if
+
+        numSection0Blocks = (uint)section0Info.Count;
+
+        //Section 1 Info
+        if (meshParameters.Count > 0)
+        {
+            Section1Info s = new Section1Info();
+            s.id = 0;
+            s.offset = 0;
+            s.length = 0;
+            section1MaterialParametersIndex = section1Info.Count;
+            section1Info.Add(s);
+            section1BlockFlags += 1;
+        } //if
+
+        if (objects.Count > 0)
+        {
+            Section1Info s = new Section1Info();
+            s.id = 2;
+            s.offset = 0;
+            s.length = 0;
+            section1MeshDataIndex = section1Info.Count;
+            section1Info.Add(s);
+            section1BlockFlags += 4;
+        } //if
+
+        if (strings.Count > 0)
+        {
+            Section1Info s = new Section1Info();
+            s.id = 3;
+            s.offset = 0;
+            s.length = 0;
+            section1StringsIndex = section1Info.Count;
+            section1Info.Add(s);
+            section1BlockFlags += 8;
+        } //if
+
+        numSection1Blocks = (uint)section1Info.Count;
+
+        //Time to Write!
+        //Header
+        writer.Write(signature);
+        writer.Write(versionNum);
+        writer.Write(blocksOffset);
+        writer.Write(section0BlockFlags);
+        writer.Write(section1BlockFlags);
+        writer.Write(numSection0Blocks);
+        writer.Write(numSection1Blocks);
+        writer.Write(section0Offset);
+        writer.Write(section0Length);
+        writer.Write(section1Offset);
+        writer.Write(section1Length);
+        writer.WriteZeroes(8);
+
+        //Section 0 Info
+        for (int i = 0; i < section0Info.Count; i++)
+        {
+            writer.Write(section0Info[i].id);
+            writer.Write(section0Info[i].numEntries);
+            writer.Write(section0Info[i].offset);
+        } //for
+
+        //Section 1 Info
+        for (int i = 0; i < section1Info.Count; i++)
+        {
+            writer.Write(section1Info[i].id);
+            writer.Write(section1Info[i].offset);
+            writer.Write(section1Info[i].length);
+        } //for
+
+        if (writer.BaseStream.Position % 0x10 != 0)
+            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+
+        //write the section 0 offset.
+        section0Offset = (uint)writer.BaseStream.Position;
+        writer.BaseStream.Position = 0x28;
+        writer.Write(section0Offset);
+        writer.BaseStream.Position = section0Offset;
+
+        if (bonesIndex != -1)
+        {
+            section0Info[bonesIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * bonesIndex;
+            writer.Write(section0Info[bonesIndex].offset);
+            writer.BaseStream.Position = section0Info[bonesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block0Entries.Count; i++)
+            {
+                writer.Write(section0Block0Entries[i].stringId);
+                writer.Write(section0Block0Entries[i].parentId);
+                writer.Write(section0Block0Entries[i].boundingBoxId);
+                writer.Write(section0Block0Entries[i].unknown0);
+                writer.WriteZeroes(8);
+                writer.Write(section0Block0Entries[i].localPositionX);
+                writer.Write(section0Block0Entries[i].localPositionY);
+                writer.Write(section0Block0Entries[i].localPositionZ);
+                writer.Write(section0Block0Entries[i].localPositionW);
+                writer.Write(section0Block0Entries[i].worldPositionX);
+                writer.Write(section0Block0Entries[i].worldPositionY);
+                writer.Write(section0Block0Entries[i].worldPositionZ);
+                writer.Write(section0Block0Entries[i].worldPositionW);
+            } //for
+        } //if
+
+        if (meshGroupsIndex != -1)
+        {
+            section0Info[meshGroupsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * meshGroupsIndex;
+            writer.Write(section0Info[meshGroupsIndex].offset);
+            writer.BaseStream.Position = section0Info[meshGroupsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block1Entries.Count; i++)
+            {
+                writer.Write(section0Block1Entries[i].stringId);
+                writer.Write(section0Block1Entries[i].invisibilityFlag);
+                writer.Write(section0Block1Entries[i].parentId);
+                writer.Write(section0Block1Entries[i].unknown0);
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             } //for
 
             //aligning will make it easier to check sections.
@@ -2530,6 +3373,7 @@ public class Fmdl
                 writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
         } //if
 
+<<<<<<< HEAD
         if (texturePathsIndex != -1)
         {
             section0Info[texturePathsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
@@ -2584,6 +3428,442 @@ public class Fmdl
                 writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
         } //if
 
+        if (meshFormatAssignmentIndex != -1)
+        {
+            section0Info[meshFormatAssignmentIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * meshFormatAssignmentIndex;
+            writer.Write(section0Info[meshFormatAssignmentIndex].offset);
+            writer.BaseStream.Position = section0Info[meshFormatAssignmentIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block9Entries.Count; i++)
+            {
+                writer.Write(section0Block9Entries[i].numMeshFormatEntries);
+                writer.Write(section0Block9Entries[i].numVertexFormatEntries);
+                writer.Write(section0Block9Entries[i].unknown0);
+                writer.Write(section0Block9Entries[i].firstMeshFormatId);
+                writer.Write(section0Block9Entries[i].firstVertexFormatId);
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+        if (meshFormatsIndex != -1)
+        {
+            section0Info[meshFormatsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * meshFormatsIndex;
+            writer.Write(section0Info[meshFormatsIndex].offset);
+            writer.BaseStream.Position = section0Info[meshFormatsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockAEntries.Count; i++)
+            {
+                writer.Write(section0BlockAEntries[i].bufferOffsetId);
+                writer.Write(section0BlockAEntries[i].numVertexFormatEntries);
+                writer.Write(section0BlockAEntries[i].length);
+                writer.Write(section0BlockAEntries[i].type);
+                writer.Write(section0BlockAEntries[i].offset);
+=======
+        if (meshGroupAssignmentIndex != -1)
+        {
+            section0Info[meshGroupAssignmentIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * meshGroupAssignmentIndex;
+            writer.Write(section0Info[meshGroupAssignmentIndex].offset);
+            writer.BaseStream.Position = section0Info[meshGroupAssignmentIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block2Entries.Count; i++)
+            {
+                writer.WriteZeroes(4);
+                writer.Write(section0Block2Entries[i].meshGroupId);
+                writer.Write(section0Block2Entries[i].numObjects);
+                writer.Write(section0Block2Entries[i].firstObjectId);
+                writer.Write(section0Block2Entries[i].id);
+                writer.WriteZeroes(4);
+                writer.Write(section0Block2Entries[i].firstFaceIndexId);
+                writer.WriteZeroes(0xE);
+            } //for
+        } //if
+
+        if (meshInfoIndex != -1)
+        {
+            section0Info[meshInfoIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * meshInfoIndex;
+            writer.Write(section0Info[meshInfoIndex].offset);
+            writer.BaseStream.Position = section0Info[meshInfoIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block3Entries.Count; i++)
+            {
+                writer.Write(section0Block3Entries[i].unknown0);
+                writer.Write(section0Block3Entries[i].noShadowFlag);
+                writer.WriteZeroes(2);
+                writer.Write(section0Block3Entries[i].materialInstanceId);
+                writer.Write(section0Block3Entries[i].boneGroupId);
+                writer.Write(section0Block3Entries[i].id);
+                writer.Write(section0Block3Entries[i].numVertices);
+                writer.WriteZeroes(4);
+                writer.Write(section0Block3Entries[i].firstFaceVertexId);
+                writer.Write(section0Block3Entries[i].numFaceVertices);
+                writer.Write(section0Block3Entries[i].firstFaceIndexId);
+                writer.WriteZeroes(0x10);
+            } //for
+        } //if
+
+        if (materialInstancesIndex != -1)
+        {
+            section0Info[materialInstancesIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * materialInstancesIndex;
+            writer.Write(section0Info[materialInstancesIndex].offset);
+            writer.BaseStream.Position = section0Info[materialInstancesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block4Entries.Count; i++)
+            {
+                writer.Write(section0Block4Entries[i].stringId);
+                writer.WriteZeroes(2);
+                writer.Write(section0Block4Entries[i].materialId);
+                writer.Write(section0Block4Entries[i].numTextures);
+                writer.Write(section0Block4Entries[i].numParameters);
+                writer.Write(section0Block4Entries[i].firstTextureId);
+                writer.Write(section0Block4Entries[i].firstParameterId);
+                writer.WriteZeroes(4);
+            } //for
+        } //if
+
+        if (boneGroupsIndex != -1)
+        {
+            section0Info[boneGroupsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * boneGroupsIndex;
+            writer.Write(section0Info[boneGroupsIndex].offset);
+            writer.BaseStream.Position = section0Info[boneGroupsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block5Entries.Count; i++)
+            {
+                writer.Write(section0Block5Entries[i].unknown0);
+                writer.Write(section0Block5Entries[i].numEntries);
+
+                for (int j = 0; j < section0Block5Entries[i].entries.Length; j++)
+                    writer.Write(section0Block5Entries[i].entries[j]);
+
+                writer.WriteZeroes(0x40 - 2 * section0Block5Entries[i].numEntries);
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+        if (texturePathsIndex != -1)
+        {
+            section0Info[texturePathsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * texturePathsIndex;
+            writer.Write(section0Info[texturePathsIndex].offset);
+            writer.BaseStream.Position = section0Info[texturePathsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block6Entries.Count; i++)
+            {
+                writer.Write(section0Block6Entries[i].stringId);
+                writer.Write(section0Block6Entries[i].pathId);
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+<<<<<<< HEAD
+        if (vertexFormatsIndex != -1)
+        {
+            section0Info[vertexFormatsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * vertexFormatsIndex;
+            writer.Write(section0Info[vertexFormatsIndex].offset);
+            writer.BaseStream.Position = section0Info[vertexFormatsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockBEntries.Count; i++)
+            {
+                writer.Write(section0BlockBEntries[i].usage);
+                writer.Write(section0BlockBEntries[i].format);
+                writer.Write(section0BlockBEntries[i].offset);
+=======
+        if (textureTypesIndex != -1)
+        {
+            section0Info[textureTypesIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * textureTypesIndex;
+            writer.Write(section0Info[textureTypesIndex].offset);
+            writer.BaseStream.Position = section0Info[textureTypesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block7Entries.Count; i++)
+            {
+                writer.Write(section0Block7Entries[i].stringId);
+                writer.Write(section0Block7Entries[i].referenceId);
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+<<<<<<< HEAD
+        if (stringsIndex != -1)
+        {
+            section0Info[stringsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * stringsIndex;
+            writer.Write(section0Info[stringsIndex].offset);
+            writer.BaseStream.Position = section0Info[stringsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockCEntries.Count; i++)
+            {
+                writer.Write(section0BlockCEntries[i].section1BlockId);
+                writer.Write(section0BlockCEntries[i].length);
+                writer.Write(section0BlockCEntries[i].offset);
+=======
+        if (materialsIndex != -1)
+        {
+            section0Info[materialsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * materialsIndex;
+            writer.Write(section0Info[materialsIndex].offset);
+            writer.BaseStream.Position = section0Info[materialsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block8Entries.Count; i++)
+            {
+                writer.Write(section0Block8Entries[i].stringId);
+                writer.Write(section0Block8Entries[i].typeId);
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+<<<<<<< HEAD
+        if (boundingBoxesIndex != -1)
+        {
+            section0Info[boundingBoxesIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * boundingBoxesIndex;
+            writer.Write(section0Info[boundingBoxesIndex].offset);
+            writer.BaseStream.Position = section0Info[boundingBoxesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockDEntries.Count; i++)
+            {
+                writer.Write(section0BlockDEntries[i].maxX);
+                writer.Write(section0BlockDEntries[i].maxY);
+                writer.Write(section0BlockDEntries[i].maxZ);
+                writer.Write(section0BlockDEntries[i].maxW);
+                writer.Write(section0BlockDEntries[i].minX);
+                writer.Write(section0BlockDEntries[i].minY);
+                writer.Write(section0BlockDEntries[i].minZ);
+                writer.Write(section0BlockDEntries[i].minW);
+            } //for
+        } //if
+
+        if (bufferOffsetsIndex != -1)
+        {
+            section0Info[bufferOffsetsIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * bufferOffsetsIndex;
+            writer.Write(section0Info[bufferOffsetsIndex].offset);
+            writer.BaseStream.Position = section0Info[bufferOffsetsIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0BlockEEntries.Count; i++)
+            {
+                writer.Write(section0BlockEEntries[i].unknown0);
+                writer.Write(section0BlockEEntries[i].length);
+                writer.Write(section0BlockEEntries[i].offset);
+                writer.WriteZeroes(4);
+            } //for
+        } //if
+
+        if (lodInfoIndex != -1)
+        {
+            section0Info[lodInfoIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * lodInfoIndex;
+            writer.Write(section0Info[lodInfoIndex].offset);
+            writer.BaseStream.Position = section0Info[lodInfoIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block10Entries.Count; i++)
+            {
+                writer.Write(section0Block10Entries[i].numLods);
+                writer.Write(section0Block10Entries[i].unknown0);
+                writer.Write(section0Block10Entries[i].unknown1);
+                writer.Write(section0Block10Entries[i].unknown2);
+            } //for
+        } //if
+
+        if (faceIndicesIndex != -1)
+        {
+            section0Info[faceIndicesIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * faceIndicesIndex;
+            writer.Write(section0Info[faceIndicesIndex].offset);
+            writer.BaseStream.Position = section0Info[faceIndicesIndex].offset + section0Offset;
+
+            for (int i = 0; i < section0Block11Entries.Count; i++)
+            {
+                writer.Write(section0Block11Entries[i].firstFaceVertexId);
+                writer.Write(section0Block11Entries[i].numFaceVertices);
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+        if (type12Index != -1)
+        {
+            section0Info[type12Index].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * type12Index;
+            writer.Write(section0Info[type12Index].offset);
+            writer.BaseStream.Position = section0Info[type12Index].offset + section0Offset;
+
+            for (int i = 0; i < section0Block12Entries.Count; i++)
+            {
+                writer.Write(section0Block12Entries[i].unknown0);
+            } //for
+        } //if
+
+        if (type14Index != -1)
+        {
+            section0Info[type14Index].offset = (uint)(writer.BaseStream.Position - section0Offset);
+            writer.BaseStream.Position = 0x44 + 0x8 * type14Index;
+            writer.Write(section0Info[type14Index].offset);
+            writer.BaseStream.Position = section0Info[type14Index].offset + section0Offset;
+
+            for (int i = 0; i < section0Block14Entries.Count; i++)
+            {
+                writer.WriteZeroes(4);
+                writer.Write(section0Block14Entries[i].unknown0);
+                writer.Write(section0Block14Entries[i].unknown1);
+                writer.Write(section0Block14Entries[i].unknown2);
+                writer.Write(section0Block14Entries[i].unknown3);
+                writer.WriteZeroes(8);
+                writer.Write(section0Block14Entries[i].unknown4);
+                writer.Write(section0Block14Entries[i].unknown5);
+                writer.WriteZeroes(0x5C);
+            } //for
+
+            //aligning will make it easier to check sections.
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //if
+
+        //write section 0's length and section 1's offset.
+        section0Length = (uint)(writer.BaseStream.Position - section0Offset);
+        section1Offset = (uint)writer.BaseStream.Position;
+        writer.BaseStream.Position = 0x2C;
+        writer.Write(section0Length);
+        writer.Write(section1Offset);
+        writer.BaseStream.Position = section1Offset;
+
+        //Section 1 Block 1
+        if (section1MaterialParametersIndex != -1)
+        {
+            section1Info[section1MaterialParametersIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
+
+            for (int i = 0; i < meshParameters.Count; i++)
+                for (int j = 0; j < meshParameters[i].Count; j++)
+                    for (int h = 0; h < meshParameters[i][j].values.Length; h++)
+                        writer.Write(meshParameters[i][j].values[h]);
+
+            section1Info[section1MaterialParametersIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MaterialParametersIndex].offset);
+
+            writer.BaseStream.Position = 0x44 + 0x8 * numSection0Blocks;
+            writer.Write(section1Info[section1MaterialParametersIndex].offset);
+            writer.Write(section1Info[section1MaterialParametersIndex].length);
+            writer.BaseStream.Position = section1Offset + section1Info[section1MaterialParametersIndex].offset + section1Info[section1MaterialParametersIndex].length;
+        } //if
+
+        //Section 1 Block 2
+        if (section1MeshDataIndex != -1)
+        {
+            section1Info[section1MeshDataIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
+            section0BlockEEntries[0].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
+
+            //Positions
+            for (int i = 0; i < objects.Count; i++)
+            {
+                for (int j = 0; j < objects[i].vertices.Length; j++)
+                {
+                    writer.Write(objects[i].vertices[j].x);
+                    writer.Write(objects[i].vertices[j].y);
+                    writer.Write(objects[i].vertices[j].z);
+                } //for
+
+                if (writer.BaseStream.Position % 0x10 != 0)
+                    writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+            } //for
+
+            section0BlockEEntries[0].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[0].offset);
+
+            section0BlockEEntries[1].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
+
+            //Additional Vertex Data.
+            for (int i = 0; i < objects.Count; i++)
+            {
+                for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
+                    for (int h = section0Block9Entries[i].firstVertexFormatId; h < section0Block9Entries[i].firstVertexFormatId + section0Block9Entries[i].numVertexFormatEntries; h++)
+                        switch (section0BlockBEntries[h].usage)
+                        {
+                            case 0: //vertex positions.
+                                break;
+                            case 1: //bone weights.
+                                writer.Write((byte)Math.Round(objects[i].additionalVertexData[j].boneWeightX * 255f));
+                                writer.Write((byte)Math.Round(objects[i].additionalVertexData[j].boneWeightY * 255f));
+                                writer.Write((byte)Math.Round(objects[i].additionalVertexData[j].boneWeightZ * 255f));
+                                writer.Write((byte)Math.Round(objects[i].additionalVertexData[j].boneWeightW * 255f));
+                                break;
+                            case 2: //normals.
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalX));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalY));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalZ));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].normalW));
+                                break;
+                            case 3: //diffuse.
+                                writer.Write(objects[i].additionalVertexData[j].colourR);
+                                writer.Write(objects[i].additionalVertexData[j].colourG);
+                                writer.Write(objects[i].additionalVertexData[j].colourB);
+                                writer.Write(objects[i].additionalVertexData[j].colourA);
+                                break;
+                            case 7: //bone indices.
+                                writer.Write(objects[i].additionalVertexData[j].boneGroup0Id);
+                                writer.Write(objects[i].additionalVertexData[j].boneGroup1Id);
+                                writer.Write(objects[i].additionalVertexData[j].boneGroup2Id);
+                                writer.Write(objects[i].additionalVertexData[j].boneGroup3Id);
+                                break;
+                            case 8: //UV.
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].textureU));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].textureV));
+                                break;
+                            case 9: //UV 2?
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU0));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV0));
+                                break;
+                            case 10: //UV 3?
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU1));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV1));
+                                break;
+                            case 11: //UV 4?
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownU2));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].unknownV2));
+                                break;
+                            case 12: //bone weights 2?
+                                writer.Write(objects[i].additionalVertexData[j].unknownWeight0);
+                                writer.Write(objects[i].additionalVertexData[j].unknownWeight1);
+                                writer.Write(objects[i].additionalVertexData[j].unknownWeight2);
+                                writer.Write(objects[i].additionalVertexData[j].unknownWeight3);
+                                break;
+                            case 13: //bone indices 2?
+                                writer.Write(objects[i].additionalVertexData[j].unknownId0);
+                                writer.Write(objects[i].additionalVertexData[j].unknownId1);
+                                writer.Write(objects[i].additionalVertexData[j].unknownId2);
+                                writer.Write(objects[i].additionalVertexData[j].unknownId3);
+                                break;
+                            case 14: //tangent.
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentX));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentY));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentZ));
+                                writer.Write(Half.GetBytes(objects[i].additionalVertexData[j].tangentW));
+                                break;
+                        } //switch
+=======
         if (meshFormatAssignmentIndex != -1)
         {
             section0Info[meshFormatAssignmentIndex].offset = (uint)(writer.BaseStream.Position - section0Offset);
@@ -2813,10 +4093,26 @@ public class Fmdl
                     writer.Write(objects[i].vertices[j].y);
                     writer.Write(objects[i].vertices[j].z);
                 } //for
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
 
                 if (writer.BaseStream.Position % 0x10 != 0)
                     writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
             } //for
+<<<<<<< HEAD
+
+            section0BlockEEntries[1].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[1].offset);
+
+            section0BlockEEntries[2].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
+
+            for (int i = 0; i < objects.Count; i++)
+                for (int j = 0; j < objects[i].faces.Length; j++)
+                {
+                    writer.Write(objects[i].faces[j].vertex1Id);
+                    writer.Write(objects[i].faces[j].vertex2Id);
+                    writer.Write(objects[i].faces[j].vertex3Id);
+                } //for
+
+=======
 
             section0BlockEEntries[0].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[0].offset);
 
@@ -2899,14 +4195,15 @@ public class Fmdl
 
             section0BlockEEntries[2].offset = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
 
-            for (int i = 0; i < objects.Count; i++)
-                for (int j = 0; j < objects[i].faces.Length; j++)
+            for(int i = 0; i < objects.Count; i++)
+                for(int j = 0; j < objects[i].faces.Length; j++)
                 {
                     writer.Write(objects[i].faces[j].vertex1Id);
                     writer.Write(objects[i].faces[j].vertex2Id);
                     writer.Write(objects[i].faces[j].vertex3Id);
                 } //for
 
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             section0BlockEEntries[2].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset - section0BlockEEntries[2].offset);
             section1Info[section1MeshDataIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MeshDataIndex].offset);
 
@@ -2915,7 +4212,11 @@ public class Fmdl
             writer.Write(section1Info[section1MeshDataIndex].offset);
             writer.Write(section1Info[section1MeshDataIndex].length);
 
+<<<<<<< HEAD
             for (int i = 0; i < section0BlockEEntries.Count; i++)
+=======
+            for(int i = 0; i < section0BlockEEntries.Count; i++)
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             {
                 writer.BaseStream.Position = section0Offset + section0Info[bufferOffsetsIndex].offset + 0x10 * i + 0x4;
                 writer.Write(section0BlockEEntries[i].length);
@@ -2926,11 +4227,19 @@ public class Fmdl
         } //if
 
         //Section 1 Block 3
+<<<<<<< HEAD
         if (section1StringsIndex != -1)
         {
             section1Info[section1StringsIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
 
             for (int i = 0; i < strings.Count; i++)
+=======
+        if(section1StringsIndex != -1)
+        {
+            section1Info[section1StringsIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
+
+            for(int i = 0; i < strings.Count; i++)
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             {
                 byte[] arr = Encoding.ASCII.GetBytes(Hashing.DenormalizeFilePath(strings[i]));
 
@@ -3527,6 +4836,7 @@ public class Fmdl
     public void OutputSection0Block7Info()
     {
         for (int i = 0; i < section0Block7Entries.Count; i++)
+<<<<<<< HEAD
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
@@ -3557,6 +4867,38 @@ public class Fmdl
         {
             UnityEngine.Debug.Log("================================");
             UnityEngine.Debug.Log("Entry No: " + i);
+=======
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Texture Type/Material Parameter: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].stringId]));
+            if (section0Block7Entries[i].referenceId < section0Block15Entries.Count)
+                UnityEngine.Debug.Log("Texture: " + Hashing.TryGetPathName(section0Block15Entries[section0Block7Entries[i].referenceId]));
+            else
+                UnityEngine.Debug.Log("Material Reference: " + Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[i].referenceId]));
+        } //for
+    } //OutputSection2Info
+
+    [Conditional("DEBUG")]
+    public void OutputSection0Block8Info()
+    {
+        for (int i = 0; i < section0Block8Entries.Count; i++)
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+            UnityEngine.Debug.Log("Material: " + (Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[i].stringId])));
+            UnityEngine.Debug.Log("Type: " + (Hashing.TryGetStringName(section0Block16Entries[section0Block8Entries[i].typeId])));
+        } //for
+    } //OutputSection2Info
+
+    [Conditional("DEBUG")]
+    public void OutputSection0BlockDInfo()
+    {
+        for (int i = 0; i < section0BlockDEntries.Count; i++)
+        {
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry No: " + i);
+>>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             UnityEngine.Debug.Log("Max Value: " + "X: " + section0BlockDEntries[i].maxX + " Y: " + section0BlockDEntries[i].maxY + " Z: " + section0BlockDEntries[i].maxZ + " W: " + section0BlockDEntries[i].maxW);
             UnityEngine.Debug.Log("Min Value: " + "X: " + section0BlockDEntries[i].minX + " Y: " + section0BlockDEntries[i].minY + " Z: " + section0BlockDEntries[i].minZ + " W: " + section0BlockDEntries[i].minW);
         } //for
