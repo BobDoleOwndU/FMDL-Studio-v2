@@ -50,7 +50,7 @@ public class FmdlStudioWindow : EditorWindow
         }
         else
             Debug.Log("No objects selected.");
-    } //ImportFMDLOption
+    } //ExportFMDLOption
 
     [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]
     public static void SetTextureFolder()
@@ -59,40 +59,11 @@ public class FmdlStudioWindow : EditorWindow
 
         if (!string.IsNullOrEmpty(windowPath))
         {
-<<<<<<< HEAD
-            if (Selection.activeGameObject != null)
-            {
-                BoundingBoxGenerator.GenerateBoundingBoxes(Selection.activeGameObject.transform);
-            } //if
-            else
-                Debug.Log("No objects selected.");
-        } //ImportFMDLOption
-    } //class
-
-    public static class PublicFmdlMethods
-    {
-        public static void PublicExportFMDLOption(string filepath)
-        {
-            if (Selection.activeGameObject != null)
-            {
-                if (!string.IsNullOrWhiteSpace(filepath))
-                {
-                    FmdlExporter.FMDLWrite(filepath);
-                }
-                else
-                    UnityEngine.Debug.Log("No path selected");
-            }
-            else
-                UnityEngine.Debug.Log("No objects selected");
-        }
-    }
-}
-=======
             Globals.WriteTexturePath(windowPath);
         } //if
         else
             Debug.Log("No folder selected.");
-    } //ImportFMDLOption
+    } //SetTextureFolder
 
     [MenuItem("FMDL Studio/Generate Bounding Boxes", false, 101)]
     public static void GenerateBoundingBoxes()
@@ -103,6 +74,5 @@ public class FmdlStudioWindow : EditorWindow
         } //if
         else
             Debug.Log("No objects selected.");
-    } //ImportFMDLOption
+    } //GenerateBoundingBoxes
 } //class
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace

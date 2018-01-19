@@ -4,31 +4,39 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class FoxModel : MonoBehaviour
 {
-    public FoxMeshDefinition[] definitions;
+    public FoxMeshDefinition[] meshDefinitions;
+    public FoxMaterialDefinition[] materialDefinitions;
 
     private void Start()
     {
-        if (definitions == null)
+        if (meshDefinitions == null)
         {
-            List<Mesh> meshes = GetMeshes(transform);
+            List<Mesh> meshes = new List<Mesh>(0);
+            List<Material> materials = new List<Material>(0);
 
-            definitions = new FoxMeshDefinition[meshes.Count];
+            GetMeshes(transform, meshes, materials);
+
+            meshDefinitions = new FoxMeshDefinition[meshes.Count];
+            materialDefinitions = new FoxMaterialDefinition[materials.Count];
 
             for(int i = 0; i < meshes.Count; i++)
             {
-                definitions[i] = new FoxMeshDefinition();
-                definitions[i].mesh = meshes[i];
-                definitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
-                definitions[i].material = "fox_3ddf_skin_dirty";
-                definitions[i].materialType = "fox3DDF_Skin_Dirty_LNM";
+                meshDefinitions[i] = new FoxMeshDefinition();
+                meshDefinitions[i].mesh = meshes[i];
+                meshDefinitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
+            } //for
+
+            for(int i = 0; i < materials.Count; i++)
+            {
+                materialDefinitions[i] = new FoxMaterialDefinition();
+                materialDefinitions[i].materialInstance = materials[i];
+                materialDefinitions[i].materialName = "fox_3ddf_skin_tension_dirty";
             } //for
         } //if
     } //Start
 
-    private List<Mesh> GetMeshes(Transform transform)
+    private void GetMeshes(Transform transform, List<Mesh> meshes, List<Material> materials)
     {
-        List<Mesh> meshes = new List<Mesh>(0);
-
         foreach (Transform t in transform)
         {
             if (t.GetComponent<MeshRenderer>())
@@ -39,14 +47,17 @@ public class FoxModel : MonoBehaviour
 
                 SkinnedMeshRenderer skinnedRenderer = t.gameObject.AddComponent<SkinnedMeshRenderer>();
                 skinnedRenderer.sharedMesh = mesh;
-                skinnedRenderer.material = material;
+                skinnedRenderer.sharedMaterial = material;
             } //if
 
             if (t.GetComponent<SkinnedMeshRenderer>())
+            {
                 meshes.Add(t.GetComponent<SkinnedMeshRenderer>().sharedMesh);
-        } //foreach
 
-        return meshes;
+                if (materials.IndexOf(t.GetComponent<SkinnedMeshRenderer>().sharedMaterial) == -1)
+                    materials.Add(t.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
+            } //if
+        } //foreach
     } //GetMeshes
 } //class
 
@@ -55,6 +66,11 @@ public class FoxMeshDefinition
 {
     public Mesh mesh;
     public string meshGroup;
-    public string material;
-    public string materialType;
 } //class
+
+[System.Serializable]
+public class FoxMaterialDefinition
+{
+    public Material materialInstance;
+    public string materialName;
+} //cass
