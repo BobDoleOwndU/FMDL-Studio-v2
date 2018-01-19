@@ -2,15 +2,14 @@
 {
 	Properties
 	{
+		_Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
 		_MainTex("Albedo", 2D) = "white" {}
-		Color("Color", Color) = (1.0, 1.0, 1.0, 1.0)
-		LayerColor("Secondary Color", Color) = (1.0, 1.0, 1.0, 1.0)
-		Layer_Tex_SRGB("Secondary Albedo", 2D) = "white" {}
-		LayerMask_Tex_LIN("Secondary Albedo Mask", 2D) = "black" {}
-		NormalMap_Tex_NRM("Normal Map", 2D) = "bump" {}
-		Metalness("Metalness", Range(0,1)) = 0
-		SpecularMap_Tex_LIN("Roughness", 2D) = "white" {}
-		Translucent_Tex_LIN("Transmissive - placeholder", 2D) = "white" {}
+		_LayerColor("Secondary Color", Color) = (1.0, 1.0, 1.0, 1.0)
+		_LayerTex("Secondary Albedo", 2D) = "white" {}
+		_LayerMask("Secondary Albedo Mask", 2D) = "black" {}
+		_BumpMap("Normal Map", 2D) = "bump" {}
+		_Metalness("Metalness", Range(0,1)) = 0
+		_SRM("Roughness", 2D) = "white" {}
 	}
 
 	SubShader
@@ -18,8 +17,7 @@
 		Tags{ "Queue" = "AlphaTest" "IgnoreProjector" = "True" "RenderType" = "Opaque" }
 		LOD 200
 
-		// Alpha blending
-		Blend SrcAlpha OneMinusSrcAlpha     
+		Blend SrcAlpha OneMinusSrcAlpha     // Alpha blending
 
 		// paste in forward rendering passes from Transparent/Diffuse
 		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
@@ -36,50 +34,43 @@
 		#pragma surface surf Standard fullforwardshadows alpha:premul
 		#pragma target 3.0
 
-		//Normal textures; Translucent_Tex_LIN is still temporary
 		sampler2D _MainTex;
-		sampler2D NormalMap_Tex_NRM;
-		sampler2D SpecularMap_Tex_LIN;
-		sampler2D Translucent_Tex_LIN;
-
-		//Secondary textures for camos and other materials using a lerp-derived albedo
-		sampler2D Layer_Tex_SRGB;
-		sampler2D LayerMask_Tex_LIN;
+		sampler2D _LayerTex;
+		sampler2D _LayerMask;
+		sampler2D _BumpMap;
+		sampler2D _SRM;
 
 		struct Input 
 		{
-			float2 uv_Main;
+			float2 uv_MainTex;
 		};
 
-		half Metalness;
-		fixed4 Color;
-		fixed4 LayerColor;
+		half _Metalness;
+		fixed4 _Color;
+		fixed4 _LayerColor;
 
 		void surf(Input IN, inout SurfaceOutputStandard o)
 		{
-			//Albedo
-			fixed4 mainTex = tex2D(_MainTex, IN.uv_Main);
-			Color.a = 1.0f;
-			fixed4 mainTinted = mainTex * Color;
-			fixed4 layerTex = tex2D(Layer_Tex_SRGB, IN.uv_Main);
-			LayerColor.a = 1.0f;
-			fixed4 layerTinted = layerTex * LayerColor;
-			fixed4 layerMask = tex2D(LayerMask_Tex_LIN, IN.uv_Main);
-			fixed4 finalColor = lerp(mainTinted, layerTinted, layerMask);
-			o.Albedo = finalColor.rgb;
-			o.Alpha = finalColor.a;
-
-			//Specular
-			o.Metallic = Metalness;
-			o.Smoothness = 1.0f - tex2D(SpecularMap_Tex_LIN, IN.uv_Main).g;
-
-			//Normal
-			fixed4 finalNormal = tex2D(NormalMap_Tex_NRM, IN.uv_Main);
-			finalNormal.r = finalNormal.a;
-			finalNormal.g = 1.0f - finalNormal.g;
-			finalNormal.b = 1.0f;
-			finalNormal.a = 1.0f;
-			o.Normal = UnpackNormal(finalNormal);
+			fixed4 mainTex = tex2D(_MainTex, IN.uv_MainTex);
+			_Color.a = 1.0f;
+			fixed4 mainTinted = mainTex * _Color;
+			fixed4 layerTex = tex2D(_LayerTex, IN.uv_MainTex);
+			_LayerColor.a = 1.0f;
+			fixed4 layerTinted = layerTex * _LayerColor;
+			fixed4 layerMask = tex2D(_LayerMask, IN.uv_MainTex);
+			fixed4 c = lerp(mainTinted, layerTinted, layerMask);
+			o.Albedo = c.rgb;
+			//o.Albedo = 1.0f;
+			o.Metallic = _Metalness;
+			o.Smoothness = 1.0f - tex2D(_SRM, IN.uv_MainTex).g;
+			o.Alpha = c.a;
+			fixed4 fixedNormal = tex2D(_BumpMap, IN.uv_MainTex);
+			fixedNormal.r = fixedNormal.a;
+			fixedNormal.g = 1.0f - fixedNormal.g;
+			fixedNormal.b = 1.0f;
+			fixedNormal.a = 1.0f;
+			o.Normal = UnpackNormal(fixedNormal);
+			//o.Emission = c.a;
 		}
 		ENDCG
 	}

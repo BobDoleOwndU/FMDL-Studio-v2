@@ -60,175 +60,83 @@ namespace FmdlStudio
 
             for (int i = 0; i < fmdl.section0Block4Entries.Count; i++)
             {
+                materials[i].material = new Material(Shader.Find("FoxShaders/Base"));
+                //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
+                //materials[i].material = new Material(Shader.Find("Standard"));
+
                 if (fmdl.stringsIndex != -1)
                 {
                     materials[i].material.name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
                     materials[i].materialName = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
                     materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
-                }
+
+                    for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
+                    {
+                        string textureName = "";
+                        int extensionLocation;
+
+                        textureName = fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].pathId] + fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].stringId];
+                        //materials[i].textureType = fmdl.strings[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId];
+
+                        extensionLocation = textureName.IndexOf('.');
+                        textureName = textureName.Substring(0, extensionLocation);
+
+                        if (File.Exists(Globals.texturePath + "\\" + textureName + ".dds"))
+                        {
+                            Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
+                            texture.name = textureName + ".dds";
+
+                            if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex_SRGB")
+                                materials[i].material.mainTexture = texture;
+                            else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
+                                materials[i].material.SetTexture("_BumpMap", texture);
+                            else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
+                                materials[i].material.SetTexture("_SRM", texture);
+                            else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
+                                materials[i].material.SetTexture("_LayerTex", texture);
+                            else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
+                                materials[i].material.SetTexture("_LayerMask", texture);
+                            //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
+                        } //if
+                        else
+                        {
+                            UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
+                        } //else
+                    } //for
+                } //if
                 else
                 {
                     materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
                     materials[i].materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
                     materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
-                }
 
-                if (materials[i].materialType == "fox3DDF_Eye_LNM" || materials[i].materialType == "fox3DDF_Eye_LNM_VR")
-                    materials[i].material = new Material(Shader.Find("FoxShaders/Base"));
-                else
-                    materials[i].material = new Material(Shader.Find("FoxShaders/Eye"));
-
-                if (fmdl.stringsIndex != -1)
-                {
-                    if (materials[i].material.shader.name == "FoxShaders/Eye")
+                    if (fmdl.texturePathsIndex != -1)
                     {
                         for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                         {
-                            string textureName = "";
-                            int extensionLocation;
-
-                            textureName = fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].pathId] + fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].stringId];
-                            //materials[i].textureType = fmdl.strings[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId];
-
-                            extensionLocation = textureName.IndexOf('.');
-                            textureName = textureName.Substring(0, extensionLocation);
-
-                            if (File.Exists(Globals.texturePath + "\\" + textureName + ".dds"))
+                            if (File.Exists(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds"))
                             {
-                                Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
-                                texture.name = textureName + ".dds";
+                                Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
+                                texture.name = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds";
+                                //materials[i].textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId]);
 
-                                if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex_SRGB")
-                                    materials[i].material.SetTexture("Base_Tex_SRGB", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
-                                    materials[i].material.SetTexture("NormalMap_Tex_NRM", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
-                                    materials[i].material.SetTexture("SpecularMap_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Translucent_Tex_LIN")
-                                    materials[i].material.SetTexture("Translucent_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "ViewReflection_Tex_LIN")
-                                    materials[i].material.SetTexture("ViewReflection_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LensHeight_Tex_LIN")
-                                    materials[i].material.SetTexture("LensHeight_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex2_SRGB")
-                                    materials[i].material.SetTexture("Base_Tex2_SRGB", texture);
-
-                                //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
+                                if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex_SRGB")
+                                    materials[i].material.mainTexture = texture;
+                                else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
+                                    materials[i].material.SetTexture("_BumpMap", texture);
+                                else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
+                                    materials[i].material.SetTexture("_SRM", texture);
+                                else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
+                                    materials[i].material.SetTexture("_LayerTex", texture);
+                                else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
+                                    materials[i].material.SetTexture("_LayerMask", texture);
                             } //if
                             else
                             {
-                                UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
+                                UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
                             } //else
                         } //for
                     } //if
-                    else
-                    {
-                        for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
-                        {
-                            string textureName = "";
-                            int extensionLocation;
-
-                            textureName = fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].pathId] + fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].stringId];
-                            //materials[i].textureType = fmdl.strings[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId];
-
-                            extensionLocation = textureName.IndexOf('.');
-                            textureName = textureName.Substring(0, extensionLocation);
-
-                            if (File.Exists(Globals.texturePath + "\\" + textureName + ".dds"))
-                            {
-                                Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
-                                texture.name = textureName + ".dds";
-
-                                if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex_SRGB")
-                                    materials[i].material.SetTexture("Base_Tex_SRGB", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
-                                    materials[i].material.SetTexture("NormalMap_Tex_NRM", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
-                                    materials[i].material.SetTexture("SpecularMap_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Translucent_Tex_LIN")
-                                    materials[i].material.SetTexture("Translucent_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
-                                    materials[i].material.SetTexture("LayerMask_Tex_LIN", texture);
-                                else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
-                                    materials[i].material.SetTexture("Layer_Tex_SRGB", texture);
-
-                                //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
-                            } //if
-                            else
-                            {
-                                UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
-                            } //else
-                        } //for
-                    } //else
-                } //if
-                else
-                {
-                    if (materials[i].material.shader.name == "FoxShaders/Eye")
-                    {
-                        if (fmdl.texturePathsIndex != -1)
-                        {
-                            for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
-                            {
-                                if (File.Exists(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds"))
-                                {
-                                    Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
-                                    texture.name = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds";
-                                    //materials[i].textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId]);
-
-                                    if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex_SRGB")
-                                        materials[i].material.mainTexture = texture;
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
-                                        materials[i].material.SetTexture("NormalMap_Tex_NRM", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
-                                        materials[i].material.SetTexture("SpecularMap_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Translucent_Tex_LIN")
-                                        materials[i].material.SetTexture("Translucent_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "ViewReflection_Tex_LIN")
-                                        materials[i].material.SetTexture("ViewReflection_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LensHeight_Tex_LIN")
-                                        materials[i].material.SetTexture("LensHeight_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex2_SRGB")
-                                        materials[i].material.SetTexture("Base_Tex2_SRGB", texture);
-                                } //if
-                                else
-                                {
-                                    UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
-                                } //else
-                            } //for
-                        } //if
-                    } //if
-                    else
-                    {
-                        if (fmdl.texturePathsIndex != -1)
-                        {
-                            for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
-                            {
-                                if (File.Exists(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds"))
-                                {
-                                    Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
-                                    texture.name = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds";
-                                    //materials[i].textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId]);
-
-                                    if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex_SRGB")
-                                        materials[i].material.mainTexture = texture;
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
-                                        materials[i].material.SetTexture("NormalMap_Tex_NRM", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
-                                        materials[i].material.SetTexture("SpecularMap_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Translucent_Tex_LIN")
-                                        materials[i].material.SetTexture("Translucent_Tex_LIN", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
-                                        materials[i].material.SetTexture("Layer_Tex_SRGB", texture);
-                                    else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
-                                        materials[i].material.SetTexture("LayerMask_Tex_LIN", texture);
-                                } //if
-                                else
-                                {
-                                    UnityEngine.Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
-                                } //else
-                            } //for
-                        } //if
-                    } //else
                 } //else
             } //for
 
@@ -357,21 +265,10 @@ namespace FmdlStudio
 
                 //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
                 meshRenderer.sharedMaterial.SetTextureScale("_MainTex", new Vector2(1, -1));
-                meshRenderer.sharedMaterial.SetTextureScale("NormalMap_Tex_NRM", new Vector2(1, -1));
-                meshRenderer.sharedMaterial.SetTextureScale("SpecularMap_Tex_LIN", new Vector2(1, -1));
-                meshRenderer.sharedMaterial.SetTextureScale("Translucent_Tex_LIN", new Vector2(1, -1));
-
-                if (meshRenderer.sharedMaterial.shader.name == "FoxShaders/Eye")
-                {
-                    meshRenderer.sharedMaterial.SetTextureScale("ViewReflection_Tex_LIN", new Vector2(1, -1));
-                    meshRenderer.sharedMaterial.SetTextureScale("LensHeight_Tex_LIN", new Vector2(1, -1));
-                    meshRenderer.sharedMaterial.SetTextureScale("Base_Tex2_SRGB", new Vector2(1, -1));
-                } //if
-                else if (meshRenderer.sharedMaterial.shader.name == "FoxShaders/Base")
-                {
-                    meshRenderer.sharedMaterial.SetTextureScale("Layer_Tex_SRGB", new Vector2(1, -1));
-                    meshRenderer.sharedMaterial.SetTextureScale("LayerMask_Tex_LIN", new Vector2(1, -1));
-                } //else if
+                meshRenderer.sharedMaterial.SetTextureScale("_BumpMap", new Vector2(1, -1));
+                meshRenderer.sharedMaterial.SetTextureScale("_SRM", new Vector2(1, -1));
+                meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
+                meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
 
                 foxMeshDefinition.material = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialName;
                 foxMeshDefinition.materialType = materials[fmdl.section0Block3Entries[i].materialInstanceId].materialType;

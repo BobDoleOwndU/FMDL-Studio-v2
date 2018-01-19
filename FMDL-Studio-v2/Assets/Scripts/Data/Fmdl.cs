@@ -1497,21 +1497,7 @@ namespace FmdlStudio
 
                 if (materialInstances[i].GetTexture("_MainTex"))
                     s.numTextures++;
-                if (materialInstances[i].GetTexture("NormalMap_Tex_NRM"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("SpecularMap_Tex_LIN"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("Translucent_Tex_LIN"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("Layer_Tex_SRGB"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("LayerMask_Tex_LIN"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("ViewReflection_Tex_LIN"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("LensHeight_Tex_LIN"))
-                    s.numTextures++;
-                if (materialInstances[i].GetTexture("Base_Tex2_SRGB"))
+                if (materialInstances[i].GetTexture("_BumpMap"))
                     s.numTextures++;
 
                 if (i == 0)
@@ -1647,13 +1633,13 @@ namespace FmdlStudio
                     section0Block7Entries.Add(s);
                 } //if
 
-                if (materialInstances[i].GetTexture("NormalMap_Tex_NRM"))
+                if (materialInstances[i].GetTexture("_BumpMap"))
                 {
                     Section0Block7Entry s = new Section0Block7Entry();
 
                     for (int j = 0; j < textures.Count; j++)
                     {
-                        if (materialInstances[i].GetTexture("NormalMap_Tex_NRM") == textures[j])
+                        if (materialInstances[i].GetTexture("_BumpMap") == textures[j])
                         {
                             s.referenceId = (ushort)j;
                             break;
@@ -1680,250 +1666,6 @@ namespace FmdlStudio
 
                     section0Block7Entries.Add(s);
                 } //if
-
-                if (materialInstances[i].GetTexture("SpecularMap_Tex_LIN"))
-                {
-                    Section0Block7Entry s = new Section0Block7Entry();
-
-                    for (int j = 0; j < textures.Count; j++)
-                    {
-                        if (materialInstances[i].GetTexture("SpecularMap_Tex_LIN") == textures[j])
-                        {
-                            s.referenceId = (ushort)j;
-                            break;
-                        } //if
-                    } //for
-
-                    bool add = true;
-
-                    for (int j = 0; j < strings.Count; j++)
-                    {
-                        if (strings[j] == "SpecularMap_Tex_LIN")
-                        {
-                            s.stringId = (ushort)j;
-                            add = false;
-                            break;
-                        } //if
-                    } //for
-
-                    if (add)
-                    {
-                        s.stringId = (ushort)strings.Count;
-                        strings.Add("SpecularMap_Tex_LIN");
-                    } //if
-
-                    section0Block7Entries.Add(s);
-                } //if
-
-                if (materialInstances[i].GetTexture("Translucent_Tex_LIN"))
-                {
-                    Section0Block7Entry s = new Section0Block7Entry();
-
-                    for (int j = 0; j < textures.Count; j++)
-                    {
-                        if (materialInstances[i].GetTexture("Translucent_Tex_LIN") == textures[j])
-                        {
-                            s.referenceId = (ushort)j;
-                            break;
-                        } //if
-                    } //for
-
-                    bool add = true;
-
-                    for (int j = 0; j < strings.Count; j++)
-                    {
-                        if (strings[j] == "Translucent_Tex_LIN")
-                        {
-                            s.stringId = (ushort)j;
-                            add = false;
-                            break;
-                        } //if
-                    } //for
-
-                    if (add)
-                    {
-                        s.stringId = (ushort)strings.Count;
-                        strings.Add("Translucent_Tex_LIN");
-                    } //if
-
-                    section0Block7Entries.Add(s);
-                } //if
-
-                if (materialInstances[i].shader.name == "FoxShaders/Base")
-                {
-                    if (materialInstances[i].GetTexture("Layer_Tex_SRGB"))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
-
-                        for (int j = 0; j < textures.Count; j++)
-                        {
-                            if (materialInstances[i].GetTexture("Layer_Tex_SRGB") == textures[j])
-                            {
-                                s.referenceId = (ushort)j;
-                                break;
-                            } //if
-                        } //for
-
-                        bool add = true;
-
-                        for (int j = 0; j < strings.Count; j++)
-                        {
-                            if (strings[j] == "Layer_Tex_SRGB")
-                            {
-                                s.stringId = (ushort)j;
-                                add = false;
-                                break;
-                            } //if
-                        } //for
-
-                        if (add)
-                        {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add("Layer_Tex_SRGB");
-                        } //if
-
-                        section0Block7Entries.Add(s);
-                    } //if
-
-                    if (materialInstances[i].GetTexture("LayerMask_Tex_LIN"))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
-
-                        for (int j = 0; j < textures.Count; j++)
-                        {
-                            if (materialInstances[i].GetTexture("LayerMask_Tex_LIN") == textures[j])
-                            {
-                                s.referenceId = (ushort)j;
-                                break;
-                            } //if
-                        } //for
-
-                        bool add = true;
-
-                        for (int j = 0; j < strings.Count; j++)
-                        {
-                            if (strings[j] == "LayerMask_Tex_LIN")
-                            {
-                                s.stringId = (ushort)j;
-                                add = false;
-                                break;
-                            } //if
-                        } //for
-
-                        if (add)
-                        {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add("LayerMask_Tex_LIN");
-                        } //if
-
-                        section0Block7Entries.Add(s);
-                    } //if
-                } //if
-
-                if (materialInstances[i].shader.name == "FoxShaders/Eye")
-                {
-                    if (materialInstances[i].GetTexture("ViewReflection_Tex_LIN"))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
-
-                        for (int j = 0; j < textures.Count; j++)
-                        {
-                            if (materialInstances[i].GetTexture("ViewReflection_Tex_LIN") == textures[j])
-                            {
-                                s.referenceId = (ushort)j;
-                                break;
-                            } //if
-                        } //for
-
-                        bool add = true;
-
-                        for (int j = 0; j < strings.Count; j++)
-                        {
-                            if (strings[j] == "ViewReflection_Tex_LIN")
-                            {
-                                s.stringId = (ushort)j;
-                                add = false;
-                                break;
-                            } //if
-                        } //for
-
-                        if (add)
-                        {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add("ViewReflection_Tex_LIN");
-                        } //if
-
-                        section0Block7Entries.Add(s);
-                    } //if
-
-                    if (materialInstances[i].GetTexture("LensHeight_Tex_LIN"))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
-
-                        for (int j = 0; j < textures.Count; j++)
-                        {
-                            if (materialInstances[i].GetTexture("LensHeight_Tex_LIN") == textures[j])
-                            {
-                                s.referenceId = (ushort)j;
-                                break;
-                            } //if
-                        } //for
-
-                        bool add = true;
-
-                        for (int j = 0; j < strings.Count; j++)
-                        {
-                            if (strings[j] == "LensHeight_Tex_LIN")
-                            {
-                                s.stringId = (ushort)j;
-                                add = false;
-                                break;
-                            } //if
-                        } //for
-
-                        if (add)
-                        {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add("LensHeight_Tex_LIN");
-                        } //if
-
-                        section0Block7Entries.Add(s);
-                    } //if
-
-                    if (materialInstances[i].GetTexture("Base_Tex2_SRGB"))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
-
-                        for (int j = 0; j < textures.Count; j++)
-                        {
-                            if (materialInstances[i].GetTexture("Base_Tex2_SRGB") == textures[j])
-                            {
-                                s.referenceId = (ushort)j;
-                                break;
-                            } //if
-                        } //for
-
-                        bool add = true;
-
-                        for (int j = 0; j < strings.Count; j++)
-                        {
-                            if (strings[j] == "Base_Tex2_SRGB")
-                            {
-                                s.stringId = (ushort)j;
-                                add = false;
-                                break;
-                            } //if
-                        } //for
-
-                        if (add)
-                        {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add("Base_Tex2_SRGB");
-                        } //if
-
-                        section0Block7Entries.Add(s);
-                    } //if
-                }
 
                 for (int j = 0; j < meshParameters[section0Block4Entries[i].materialId].Count; j++)
                 {
