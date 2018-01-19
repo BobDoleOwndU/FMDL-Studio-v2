@@ -1488,9 +1488,9 @@ public class Fmdl
 
             s.numTextures = 0;
 
-            if (materialInstances[i].GetTexture("_MainTex"))
+            if (materialInstances[i].GetTexture("Base_Tex_SRGB"))
                 s.numTextures++;
-            if (materialInstances[i].GetTexture("_BumpMap"))
+            if (materialInstances[i].GetTexture("NormalMap_Tex_NRM"))
                 s.numTextures++;
 
             if (i == 0)
@@ -3016,26 +3016,26 @@ public class Fmdl
                 {
                     materialInstances.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB"))
                     {
                         for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture == textures[i])
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB") == textures[i])
                                 add = false;
 
                         if (add)
                             textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture);
                     } //if
 
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap"))
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM"))
                     {
                         add = true;
 
                         for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") == textures[i])
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM") == textures[i])
                                 add = false;
 
                         if (add)
-                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap"));
+                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM"));
                     } //if
                 } //if
             } //if
@@ -3475,15 +3475,29 @@ public class Fmdl
     {
         for (int i = 0; i < section0Block0Entries.Count; i++)
         {
-            Console.WriteLine("================================");
-            Console.WriteLine("Entry ID: " + i);
-            Console.WriteLine("Bone Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[i].stringId]));
-            Console.Write("Parent Bone: ");
+            UnityEngine.Debug.Log("================================");
+            UnityEngine.Debug.Log("Entry ID: " + i);
 
-            if (section0Block0Entries[i].parentId != 0xFFFF)
-                Console.WriteLine(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block0Entries[i].parentId].stringId]));
+            if (stringsIndex == -1)
+            {
+                UnityEngine.Debug.Log("Bone Name: " + Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[i].stringId]));
+                Console.Write("Parent Bone: ");
+
+                if (section0Block0Entries[i].parentId != 0xFFFF)
+                    UnityEngine.Debug.Log(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[section0Block0Entries[i].parentId].stringId]));
+                else
+                    UnityEngine.Debug.Log("Root");
+            } //if
             else
-                Console.WriteLine("Root");
+            {
+                UnityEngine.Debug.Log("Bone Name: " + strings[section0Block0Entries[i].stringId]);
+                Console.Write("Parent Bone: ");
+
+                if (section0Block0Entries[i].parentId != 0xFFFF)
+                    UnityEngine.Debug.Log(strings[section0Block0Entries[i].parentId]);
+                else
+                    UnityEngine.Debug.Log("Root");
+            } //else
         } //for
     } //OutputSection0Block0Info
 

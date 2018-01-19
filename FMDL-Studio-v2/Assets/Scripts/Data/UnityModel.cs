@@ -61,7 +61,10 @@ public class UnityModel
 
         for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
-            materials[i].material = new Material(Shader.Find("FoxShaders/Base"));
+            if (fmdl.stringsIndex != -1)
+                materials[i].material = new Material(Shader.Find($"FoxShaders/{fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]}"));
+            else
+                materials[i].material = new Material(Shader.Find($"FoxShaders/{Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId])}"));
             //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
             //materials[i].material = new Material(Shader.Find("Standard"));
 
@@ -75,6 +78,7 @@ public class UnityModel
                 for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                 {
                     string textureName = "";
+                    string textureType = fmdl.strings[fmdl.section0Block7Entries[j].stringId];
                     int extensionLocation;
 
                     textureName = fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].pathId] + fmdl.strings[fmdl.section0Block6Entries[fmdl.section0Block7Entries[j].referenceId].stringId];
@@ -88,17 +92,7 @@ public class UnityModel
                         Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
                         texture.name = textureName + ".dds";
 
-                        if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Base_Tex_SRGB")
-                            materials[i].material.mainTexture = texture;
-                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "NormalMap_Tex_NRM")
-                            materials[i].material.SetTexture("_BumpMap", texture);
-                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "SpecularMap_Tex_LIN")
-                            materials[i].material.SetTexture("_SRM", texture);
-                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "Layer_Tex_SRGB")
-                            materials[i].material.SetTexture("_LayerTex", texture);
-                        else if (fmdl.strings[fmdl.section0Block7Entries[j].stringId] == "LayerMask_Tex_LIN")
-                            materials[i].material.SetTexture("_LayerMask", texture);
-                        //_MainTex = Diffuse. _BumpMap = Normal Map. _Color = Main Colour. _SpecColor = Specular Map. _Shininess.
+                        materials[i].material.SetTexture(textureType, texture);
                     } //if
                     else
                     {
@@ -121,26 +115,19 @@ public class UnityModel
                 {
                     for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                     {
-                        if (File.Exists(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds"))
-                        {
-                            Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
-                            texture.name = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds";
-                            //materials[i].textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[fmdl.section0Block4Entries[i].firstTextureId].stringId]);
+                        string textureName = Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]);
+                        string textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]);
 
-                            if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Base_Tex_SRGB")
-                                materials[i].material.mainTexture = texture;
-                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "NormalMap_Tex_NRM")
-                                materials[i].material.SetTexture("_BumpMap", texture);
-                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "SpecularMap_Tex_LIN")
-                                materials[i].material.SetTexture("_SRM", texture);
-                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "Layer_Tex_SRGB")
-                                materials[i].material.SetTexture("_LayerTex", texture);
-                            else if (Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]) == "LayerMask_Tex_LIN")
-                                materials[i].material.SetTexture("_LayerMask", texture);
+                        if (File.Exists(Globals.texturePath + "\\" + textureName + ".dds"))
+                        {
+                            Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
+                            texture.name = textureName + ".dds";
+
+                            materials[i].material.SetTexture(textureType, texture);
                         } //if
                         else
                         {
-                            Debug.Log("Could not find: " + Globals.texturePath + "\\" + Hashing.TryGetPathName(fmdl.section0Block15Entries[fmdl.section0Block7Entries[j].referenceId]) + ".dds");
+                            Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
                         } //else
                     } //for
                 } //if
@@ -275,11 +262,43 @@ public class UnityModel
             meshRenderer.sharedMaterial = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
 
             //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
-            meshRenderer.sharedMaterial.SetTextureScale("_MainTex", new Vector2(1, -1));
-            meshRenderer.sharedMaterial.SetTextureScale("_BumpMap", new Vector2(1, -1));
-            meshRenderer.sharedMaterial.SetTextureScale("_SRM", new Vector2(1, -1));
-            meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
-            meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
+            if(meshRenderer.sharedMaterial.HasProperty("Base_Tex_SRGB"))
+                meshRenderer.sharedMaterial.SetTextureScale("Base_Tex_SRGB", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("NormalMap_Tex_NRM"))
+                meshRenderer.sharedMaterial.SetTextureScale("NormalMap_Tex_NRM", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("SpecularMap_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("SpecularMap_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("Layer_Tex_SRGB"))
+                meshRenderer.sharedMaterial.SetTextureScale("Layer_Tex_SRGB", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("LayerMask_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("LayerMask_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("SubNormalMap_Tex_NRM"))
+                meshRenderer.sharedMaterial.SetTextureScale("SubNormalMap_Tex_NRM", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("Translucent_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("Translucent_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("ViewReflection_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("ViewReflection_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("LensHeight_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("LensHeight_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("Base_Tex2_SRGB"))
+                meshRenderer.sharedMaterial.SetTextureScale("Base_Tex2_SRGB", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("MetalicLayer_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("MetalicLayer_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("MetalicBacteria_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("MetalicBacteria_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("TensionSubNormalMap_Tex_NRM"))
+                meshRenderer.sharedMaterial.SetTextureScale("TensionSubNormalMap_Tex_NRM", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("TensionSubNormalMap_Tex_NRM"))
+                meshRenderer.sharedMaterial.SetTextureScale("TensionSubNormalMap_Tex_NRM", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("MatParamMap_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("MatParamMap_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("Dirty_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("Dirty_Tex_LIN", new Vector2(1, -1));
+            if (meshRenderer.sharedMaterial.HasProperty("Mask_Tex_LIN"))
+                meshRenderer.sharedMaterial.SetTextureScale("Mask_Tex_LIN", new Vector2(1, -1));
+
+            //meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
+            //meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;

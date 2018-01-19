@@ -963,18 +963,18 @@ public static class FBXConverter
                     materialsToMeshes.Add(new Tuple<int, int>(materialId, modelId - 1));
 
                     //Diffuse
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture != null)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.HasProperty("Base_Tex_SRGB"))
                     {
                         int foundTextureId = -1;
 
                         for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture == textures[i].Item2)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB") == textures[i].Item2)
                                 foundTextureId = textures[i].Item1;
 
                         if (foundTextureId == -1)
                         {
                             videos.Add(videoId);
-                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture));
+                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB")));
                             videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
                             texturesToMaterials.Add(new Tuple<int, int, string>(textureId, materialId, "DiffuseColor"));
                             videoId++;
@@ -985,18 +985,18 @@ public static class FBXConverter
                     } //if
 
                     //Normal
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") != null)
+                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.HasProperty("NormalMap_Tex_NRM"))
                     {
                         int foundTextureId = -1;
 
                         for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") == textures[i].Item2)
+                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM") == textures[i].Item2)
                                 foundTextureId = textures[i].Item1;
 
                         if (foundTextureId == -1)
                         {
                             videos.Add(videoId);
-                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap")));
+                            textures.Add(new Tuple<int, Texture>(textureId, t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM")));
                             videosToTextures.Add(new Tuple<int, int>(videoId, textureId));
                             texturesToMaterials.Add(new Tuple<int, int, string>(textureId, materialId, "Bump"));
                             videoId++;
