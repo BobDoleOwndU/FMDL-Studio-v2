@@ -59,11 +59,7 @@ public static class FBXConverter
         fbx.Append("\n\nObjects:  {");
 
         //Bone Nodes
-<<<<<<< HEAD
         for (int i = 0; i < bones.Count; i++)
-=======
-        for(int i = 0; i < bones.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             fbx.AppendFormat("\n\tNodeAttribute: {0}, \"NodeAttribute::\", \"LimbNode\" {{", nodesToBones[i].Item1);
             fbx.Append("\n\t\tTypeFlags: \"Skeleton\"");
@@ -163,7 +159,7 @@ public static class FBXConverter
             fbx.AppendFormat("\n\t\t\tUV: *{0} {{", meshes[i].Item2.sharedMesh.uv.Length * 2);
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.uv.Length; j++)
-                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, -meshes[i].Item2.sharedMesh.uv[j].y);
+                fbx.AppendFormat("{0},{1},", meshes[i].Item2.sharedMesh.uv[j].x, meshes[i].Item2.sharedMesh.uv[j].y);
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
@@ -369,11 +365,7 @@ public static class FBXConverter
         fbx.Append("\n\t\tType: \"BindPose\"");
         fbx.Append("\n\t\tVersion: 100");
         fbx.AppendFormat("\n\t\tNbPoseNodes: {0}", geometry.Count);
-<<<<<<< HEAD
         for (int i = 0; i < geometry.Count; i++)
-=======
-        for(int i = 0; i < geometry.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             fbx.Append("\n\t\tPoseNode:  {");
             fbx.AppendFormat("\n\t\t\tNode: {0}", geometry[i]);
@@ -399,21 +391,12 @@ public static class FBXConverter
             fbx.Append("\n\t\t}");
             fbx.Append("\n\t}");
         } //for
-<<<<<<< HEAD
 
         //Deformers
         for (int i = 0; i < deformers.Count; i++)
         {
             HashSet<int> usedBones = GetUsedBones(meshes[i].Item2);
 
-=======
-
-        //Deformers
-        for(int i = 0; i < deformers.Count; i++)
-        {
-            HashSet<int> usedBones = GetUsedBones(meshes[i].Item2);
-
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             fbx.AppendFormat("\n\tDeformer: {0}, \"Deformer::\", \"Skin\" {{", deformers[i]);
             fbx.Append("\n\t\tVersion: 100");
             fbx.Append("\n\t\tLink_DeformAcuracy: 50");
@@ -427,11 +410,7 @@ public static class FBXConverter
                 subDeformersToDeformers.Add(new Tuple<int, int>(modelId, deformers[i]));
                 bonesToSubDeformers.Add(new Tuple<int, int>(bones[j].Item1, modelId));
 
-<<<<<<< HEAD
                 for (int h = 0; h < meshes[i].Item2.sharedMesh.boneWeights.Length; h++)
-=======
-                for(int h = 0; h < meshes[i].Item2.sharedMesh.boneWeights.Length; h++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                 {
                     if (meshes[i].Item2.sharedMesh.boneWeights[h].boneIndex0 == j)
                     {
@@ -454,21 +433,13 @@ public static class FBXConverter
                         weights.Add(meshes[i].Item2.sharedMesh.boneWeights[h].weight3);
                     } //if
                 } //for ends
-<<<<<<< HEAD
 
-=======
-                
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                 fbx.AppendFormat("\n\tDeformer: {0}, \"SubDeformer::\", \"Cluster\" {{", modelId);
                 fbx.Append("\n\t\tVersion: 100");
                 fbx.Append("\n\t\tUserData: \"\", \"\"");
                 fbx.AppendFormat("\n\t\tIndexes: *{0} {{", indices.Count);
                 fbx.Append("\n\t\t\ta: ");
-<<<<<<< HEAD
                 for (int h = 0; h < indices.Count; h++)
-=======
-                for(int h = 0; h < indices.Count; h++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                     fbx.AppendFormat("{0},", indices[h]);
                 fbx.Length--;
                 fbx.Append("\n\t\t}");
@@ -491,11 +462,7 @@ public static class FBXConverter
         } //for
 
         //Texture Videos
-<<<<<<< HEAD
         for (int i = 0; i < videos.Count; i++)
-=======
-        for(int i = 0; i < videos.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             fbx.AppendFormat("\n\tVideo: {0}, \"Video::{1}\", \"Clip\" {{", videos[i], textures[i].Item2.name);
             fbx.Append("\n\t\tType: \"Clip\"");
@@ -509,11 +476,7 @@ public static class FBXConverter
         } //for
 
         //Textures
-<<<<<<< HEAD
         for (int i = 0; i < textures.Count; i++)
-=======
-        for(int i = 0; i < textures.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             fbx.AppendFormat("\n\tTexture: {0}, \"Texture::{1}\", \"\" {{", textures[i].Item1, textures[i].Item2.name);
             fbx.Append("\n\t\tType: \"TextureVideoClip\"");
@@ -552,26 +515,16 @@ public static class FBXConverter
                 name1 = objects.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
             else if (meshes.Find(x => x.Item1 == objectConnections[i].Item1) != null)
                 name1 = meshes.Find(x => x.Item1 == objectConnections[i].Item1).Item2.name;
-<<<<<<< HEAD
             else if (i < bones.Count)
                 if (meshes.Find(x => x.Item1 == bones[i].Item1) != null)
                     name1 = bones.Find(x => x.Item1 == objectConnections[i].Item1).Item2.gameObject.name;
-=======
-            else if(i < bones.Count)
-                if (meshes.Find(x => x.Item1 == bones[i].Item1) != null)
-                name1 = bones.Find(x => x.Item1 == objectConnections[i].Item1).Item2.gameObject.name;
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
 
             fbx.AppendFormat("\n\n\t;Model::{0}, Model::{1}", name1, name2);
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", objectConnections[i].Item1, objectConnections[i].Item2);
         } //for
 
         //Bone Node to Bone Connections
-<<<<<<< HEAD
         for (int i = 0; i < nodesToBones.Count; i++)
-=======
-        for(int i = 0; i < nodesToBones.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             string name1 = bones.Find(x => x.Item1 == nodesToBones[i].Item2).Item2.gameObject.name;
 
@@ -967,11 +920,7 @@ public static class FBXConverter
     {
         GetMeshes(transform);
 
-<<<<<<< HEAD
         foreach (Transform t in meshes[0].Item2.bones)
-=======
-        foreach(Transform t in meshes[0].Item2.bones)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             bones.Add(new Tuple<int, Transform>(modelId, t));
             modelId++;
@@ -994,7 +943,6 @@ public static class FBXConverter
                 meshes.Add(new Tuple<int, SkinnedMeshRenderer>(modelId, t.gameObject.GetComponent<SkinnedMeshRenderer>()));
                 geometry.Add(geometryId);
                 geometryToMeshes.Add(new Tuple<int, int>(geometryId, modelId));
-<<<<<<< HEAD
 
                 modelId++;
 
@@ -1003,16 +951,6 @@ public static class FBXConverter
 
                 geometryId++;
 
-=======
-
-                modelId++;
-
-                deformers.Add(modelId);
-                deformersToGeometry.Add(new Tuple<int, int>(modelId, geometryId));
-
-                geometryId++;
-                
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                 int foundMaterialId = -1;
 
                 for (int i = 0; i < materials.Count; i++)
@@ -1045,7 +983,6 @@ public static class FBXConverter
                         else
                             texturesToMaterials.Add(new Tuple<int, int, string>(foundTextureId, materialId, "DiffuseColor"));
                     } //if
-<<<<<<< HEAD
 
                     //Normal
                     if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.HasProperty("NormalMap_Tex_NRM"))
@@ -1056,18 +993,6 @@ public static class FBXConverter
                             if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM") == textures[i].Item2)
                                 foundTextureId = textures[i].Item1;
 
-=======
-
-                    //Normal
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") != null)
-                    {
-                        int foundTextureId = -1;
-
-                        for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("_BumpMap") == textures[i].Item2)
-                                foundTextureId = textures[i].Item1;
-
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
                         if (foundTextureId == -1)
                         {
                             videos.Add(videoId);
@@ -1094,19 +1019,11 @@ public static class FBXConverter
 
     private static void GetGameObjects(Transform transform)
     {
-<<<<<<< HEAD
         foreach (Transform t in transform)
         {
             bool add = true;
 
             for (int i = 0; i < meshes.Count; i++)
-=======
-        foreach(Transform t in transform)
-        {
-            bool add = true;
-
-            for(int i = 0; i < meshes.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
             {
                 if (t.name == meshes[i].Item2.name)
                     add = false;
@@ -1130,11 +1047,7 @@ public static class FBXConverter
 
     private static void GetBoneConnections()
     {
-<<<<<<< HEAD
         for (int i = 0; i < bones.Count; i++)
-=======
-        for(int i = 0; i < bones.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             for (int j = 1; j < bones.Count; j++)
                 if (bones[j].Item2.parent.gameObject.name == bones[i].Item2.gameObject.name)
@@ -1144,11 +1057,7 @@ public static class FBXConverter
 
     private static void GetGameObjectConnections()
     {
-<<<<<<< HEAD
         for (int i = 0; i < objects.Count; i++)
-=======
-        for(int i = 0; i < objects.Count; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             for (int j = 0; j < objects.Count; j++)
                 if (objects[j].Item2.transform.parent != null)
@@ -1169,11 +1078,7 @@ public static class FBXConverter
     {
         HashSet<int> usedBones = new HashSet<int>();
 
-<<<<<<< HEAD
         for (int i = 0; i < skinnedMeshRenderer.sharedMesh.boneWeights.Length; i++)
-=======
-        for(int i = 0; i < skinnedMeshRenderer.sharedMesh.boneWeights.Length; i++)
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
         {
             if (skinnedMeshRenderer.sharedMesh.boneWeights[i].weight0 > 0)
                 usedBones.Add(skinnedMeshRenderer.sharedMesh.boneWeights[i].boneIndex0);
@@ -1214,8 +1119,4 @@ public static class FBXConverter
         videosToTextures.Clear();
         texturesToMaterials.Clear();
     } //Clear
-<<<<<<< HEAD
 } //class
-=======
-} //class
->>>>>>> parent of 3bf9b3e... Implemented FmdlStudio namespace
