@@ -33,17 +33,17 @@ Shader "FoxShaders/tpp3DDF_CurtainShadowPictures_NC_LNM"
 
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		AlphaToMask On
+		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
 
 		Pass
 		{
-			ZWrite Off
+			ZWrite On
 			ColorMask 0
 		}
 
 		CGPROGRAM
 
-		#pragma surface surf Standard fullforwardshadows alpha
+		#pragma surface surf Standard fullforwardshadows alpha:premul
 		#pragma target 3.0
 
 		sampler2D Base_Tex_SRGB;
