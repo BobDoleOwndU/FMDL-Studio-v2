@@ -17,17 +17,17 @@ Shader "FoxShaders/fox3DDF_Blin_2MT_LNM_VR"
 
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
+		AlphaToMask On
 
 		Pass
 		{
-			ZWrite On
+			ZWrite Off
 			ColorMask 0
 		}
 
 		CGPROGRAM
 
-		#pragma surface surf Standard fullforwardshadows alpha:premul
+		#pragma surface surf Standard fullforwardshadows alpha
 		#pragma target 3.0
 
 		sampler2D Base_Tex_SRGB;
