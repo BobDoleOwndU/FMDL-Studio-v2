@@ -27,12 +27,12 @@ Shader "FoxShaders/fox3DDF_Blin_LayerSRGBBl_2SubNorm_LNM"
 		
 	Subshader
 	{
-		Tags{ "Queue" = "AlphaTest" "Ignore Projector" = "True" "RenderType" = "Opaque" }
+		Tags{ "Queue" = "Geometry" "Ignore Projector" = "True" "RenderType" = "Opaque" }
 		LOD 200
 
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
+		AlphaToMask On
 
 		Pass
 		{
@@ -42,7 +42,7 @@ Shader "FoxShaders/fox3DDF_Blin_LayerSRGBBl_2SubNorm_LNM"
 
 		CGPROGRAM
 
-		#pragma surface surf Standard fullforwardshadows alpha:premul
+		#pragma surface surf Standard fullforwardshadows alpha
 		#pragma target 3.0
 
 		sampler2D Base_Tex_SRGB;

@@ -26,12 +26,12 @@ Shader "FoxShaders/tpp3DDF_MetalicBacteria_Eye_LNM_VR"
 		
 	Subshader
 	{
-		Tags{ "Queue" = "AlphaTest" "Ignore Projector" = "True" "RenderType" = "Opaque" }
+		Tags{ "Queue" = "Geometry" "Ignore Projector" = "True" "RenderType" = "Opaque" }
 		LOD 200
 
 		Blend SrcAlpha OneMinusSrcAlpha
 
-		UsePass "Legacy Shaders/Transparent/Cutout/Diffuse/FORWARD"
+		AlphaToMask On
 
 		Pass
 		{
@@ -41,7 +41,7 @@ Shader "FoxShaders/tpp3DDF_MetalicBacteria_Eye_LNM_VR"
 
 		CGPROGRAM
 
-		#pragma surface surf Standard fullforwardshadows alpha:premul
+		#pragma surface surf Standard fullforwardshadows alpha
 		#pragma target 3.0
 
 		sampler2D Base_Tex_SRGB;
