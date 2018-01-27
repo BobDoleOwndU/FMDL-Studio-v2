@@ -10,7 +10,7 @@ public class FoxMaterial
         [XmlElement]
         public string name;
 
-        [XmlElement]
+        [XmlArray]
         public float[] values = new float[4];
     } //class
 

@@ -99,7 +99,10 @@ public class UnityModel
                         Debug.Log("Could not find: " + Globals.texturePath + "\\" + textureName + ".dds");
                     } //else
                 } //for
-                
+
+                for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
+                    materials[i].material.SetVector(fmdl.strings[fmdl.section0Block7Entries[j].stringId], new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
+
                 foxMaterialDefintion.materialInstance = materials[i].material;
                 foxMaterialDefintion.materialName = materials[i].materialName;
                 foxModel.materialDefinitions[i] = foxMaterialDefintion;
@@ -131,6 +134,9 @@ public class UnityModel
                         } //else
                     } //for
                 } //if
+
+                for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
+                    materials[i].material.SetVector(Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]), new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
 
                 foxMaterialDefintion.materialInstance = materials[i].material;
                 foxMaterialDefintion.materialName = materials[i].materialName;
