@@ -5,19 +5,16 @@ using UnityEngine;
 public class FoxModel : MonoBehaviour
 {
     public FoxMeshDefinition[] meshDefinitions;
-    public FoxMaterialDefinition[] materialDefinitions;
 
     private void Start()
     {
         if (meshDefinitions == null)
         {
             List<Mesh> meshes = new List<Mesh>(0);
-            List<Material> materials = new List<Material>(0);
 
-            GetMeshes(transform, meshes, materials);
+            GetMeshes(transform, meshes);
 
             meshDefinitions = new FoxMeshDefinition[meshes.Count];
-            materialDefinitions = new FoxMaterialDefinition[materials.Count];
 
             for(int i = 0; i < meshes.Count; i++)
             {
@@ -25,17 +22,10 @@ public class FoxModel : MonoBehaviour
                 meshDefinitions[i].mesh = meshes[i];
                 meshDefinitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
             } //for
-
-            for(int i = 0; i < materials.Count; i++)
-            {
-                materialDefinitions[i] = new FoxMaterialDefinition();
-                materialDefinitions[i].materialInstance = materials[i];
-                materialDefinitions[i].materialName = "fox_3ddf_skin_tension_dirty";
-            } //for
         } //if
     } //Start
 
-    private void GetMeshes(Transform transform, List<Mesh> meshes, List<Material> materials)
+    private void GetMeshes(Transform transform, List<Mesh> meshes)
     {
         foreach (Transform t in transform)
         {
@@ -51,12 +41,7 @@ public class FoxModel : MonoBehaviour
             } //if
 
             if (t.GetComponent<SkinnedMeshRenderer>())
-            {
                 meshes.Add(t.GetComponent<SkinnedMeshRenderer>().sharedMesh);
-
-                if (materials.IndexOf(t.GetComponent<SkinnedMeshRenderer>().sharedMaterial) == -1)
-                    materials.Add(t.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
-            } //if
         } //foreach
     } //GetMeshes
 } //class
@@ -67,10 +52,3 @@ public class FoxMeshDefinition
     public Mesh mesh;
     public string meshGroup;
 } //class
-
-[System.Serializable]
-public class FoxMaterialDefinition
-{
-    public Material materialInstance;
-    public string materialName;
-} //cass

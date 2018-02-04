@@ -5,6 +5,7 @@ using System.Text;
 using static System.Half;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 public class Fmdl
 {
@@ -1466,24 +1467,38 @@ public class Fmdl
 
             s.numTextures = 0;
 
-            if (materialInstances[i].GetTexture("Base_Tex_SRGB"))
-                s.numTextures++;
-            if (materialInstances[i].GetTexture("NormalMap_Tex_NRM"))
-                s.numTextures++;
+            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    if (materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
+                        s.numTextures++;
 
             if (i == 0)
                 s.firstTextureId = 0;
             else
             {
-                if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId)
+                if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId && section0Block4Entries[i - 1].numParameters > 0)
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
                 else
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
             } //else
 
-            string materialName = gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName;
+            //string materialName = gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName;
 
-            for (int j = 0; j < section0Block8Entries.Count; j++)
+            s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.type == materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1)));
+            //UnityEngine.Debug.Log(materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/')));
+            s.numParameters = (byte)materials[s.materialId].materialParameters.Count;
+
+            if (i != 0)
+            {
+                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
+                    s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                else
+                    s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
+            } //if
+            else
+                s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
+
+            /*for (int j = 0; j < section0Block8Entries.Count; j++)
             {
                 if (materialName == strings[section0Block8Entries[j].stringId])
                 {
@@ -1503,7 +1518,7 @@ public class Fmdl
 
                     break;
                 } //if
-            } //for
+            } //for*/
 
             section0Block4Entries.Add(s);
         } //for
@@ -1563,73 +1578,26 @@ public class Fmdl
         //Block 7 - Texture Type/Material Parameter Assignments
         for (int i = 0; i < materialInstances.Count; i++)
         {
-            if (materialInstances[i].GetTexture("Base_Tex_SRGB"))
-            {
-                Section0Block7Entry s = new Section0Block7Entry();
-
-                for (int j = 0; j < textures.Count; j++)
-                {
-                    if (materialInstances[i].GetTexture("Base_Tex_SRGB") == textures[j])
+            for(int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                if(ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    if(materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
                     {
-                        s.referenceId = (ushort)j;
-                        break;
+                        Section0Block7Entry s = new Section0Block7Entry();
+
+                        s.referenceId = (ushort)textures.IndexOf(materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)));
+
+                        int stringIndex = strings.IndexOf(ShaderUtil.GetPropertyName(materialInstances[i].shader, j));
+
+                        if (stringIndex == -1)
+                        {
+                            s.stringId = (ushort)strings.Count;
+                            strings.Add(ShaderUtil.GetPropertyName(materialInstances[i].shader, j));
+                        } //if
+                        else
+                            s.stringId = (ushort)stringIndex;
+
+                        section0Block7Entries.Add(s);
                     } //if
-                } //for
-
-                bool add = true;
-
-                for (int j = 0; j < strings.Count; j++)
-                {
-                    if (strings[j] == "Base_Tex_SRGB")
-                    {
-                        s.stringId = (ushort)j;
-                        add = false;
-                        break;
-                    } //if
-                } //for
-
-                if (add)
-                {
-                    s.stringId = (ushort)strings.Count;
-                    strings.Add("Base_Tex_SRGB");
-                } //if
-
-                section0Block7Entries.Add(s);
-            } //if
-
-            if (materialInstances[i].GetTexture("NormalMap_Tex_NRM"))
-            {
-                Section0Block7Entry s = new Section0Block7Entry();
-
-                for (int j = 0; j < textures.Count; j++)
-                {
-                    if (materialInstances[i].GetTexture("NormalMap_Tex_NRM") == textures[j])
-                    {
-                        s.referenceId = (ushort)j;
-                        break;
-                    } //if
-                } //for
-
-                bool add = true;
-
-                for (int j = 0; j < strings.Count; j++)
-                {
-                    if (strings[j] == "NormalMap_Tex_NRM")
-                    {
-                        s.stringId = (ushort)j;
-                        add = false;
-                        break;
-                    } //if
-                } //for
-
-                if (add)
-                {
-                    s.stringId = (ushort)strings.Count;
-                    strings.Add("NormalMap_Tex_NRM");
-                } //if
-
-                section0Block7Entries.Add(s);
-            } //if
 
             for (int j = 0; j < materials[section0Block4Entries[i].materialId].materialParameters.Count; j++)
             {
@@ -1647,9 +1615,7 @@ public class Fmdl
                 s.stringId = (ushort)stringIndex;
 
                 for (int h = 0; h < section0Block4Entries[i].materialId; h++)
-                {
                     numPrecedingParameters += materials[h].materialParameters.Count;
-                } //for
 
                 s.referenceId = (ushort)(numPrecedingParameters + j);
 
@@ -2780,7 +2746,7 @@ public class Fmdl
 
             for (int i = 0; i < materials.Count; i++)
                 for (int j = 0; j < materials[i].materialParameters.Count; j++)
-                    for (int h = 0; h < materials[i].materialParameters[h].values.Length; h++)
+                    for (int h = 0; h < materials[i].materialParameters[j].values.Length; h++)
                         writer.Write(materials[i].materialParameters[j].values[h]);
 
             section1Info[section1MaterialParametersIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MaterialParametersIndex].offset);
@@ -2985,37 +2951,17 @@ public class Fmdl
             {
                 meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
 
-                bool add = true;
+                Material m = t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial;
 
-                for (int i = 0; i < materialInstances.Count; i++)
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial == materialInstances[i])
-                        add = false;
-
-                if (add)
+                if (!materialInstances.Contains(m))
                 {
                     materialInstances.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB"))
-                    {
-                        for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("Base_Tex_SRGB") == textures[i])
-                                add = false;
-
-                        if (add)
-                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.mainTexture);
-                    } //if
-
-                    if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM"))
-                    {
-                        add = true;
-
-                        for (int i = 0; i < textures.Count; i++)
-                            if (t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM") == textures[i])
-                                add = false;
-
-                        if (add)
-                            textures.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial.GetTexture("NormalMap_Tex_NRM"));
-                    } //if
+                    for (int i = 0; i < ShaderUtil.GetPropertyCount(m.shader); i++)
+                        if (ShaderUtil.GetPropertyType(m.shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                            if (m.GetTexture(ShaderUtil.GetPropertyName(m.shader, i)))
+                                if (!textures.Contains(m.GetTexture(ShaderUtil.GetPropertyName(m.shader, i))))
+                                    textures.Add(m.GetTexture(ShaderUtil.GetPropertyName(m.shader, i)));
                 } //if
             } //if
 
@@ -3131,15 +3077,16 @@ public class Fmdl
                     f.name = Globals.foxMaterialList.foxMaterials[index].name;
                     f.type = Globals.foxMaterialList.foxMaterials[index].type;
 
-                    for(int j = 0; j < UnityEditor.ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                    for(int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
                     {
-                        if(UnityEditor.ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == UnityEditor.ShaderUtil.ShaderPropertyType.Vector)
+                        if(ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
                         {
                             FoxMaterial.FoxMaterialParameter p = new FoxMaterial.FoxMaterialParameter();
-                            p.name = UnityEditor.ShaderUtil.GetPropertyName(materialInstances[i].shader, j);
+                            p.name = ShaderUtil.GetPropertyName(materialInstances[i].shader, j);
                             Vector4 values = materialInstances[i].GetVector(p.name);
 
                             p.values = new float[4] { values.x, values.y, values.z, values.w };
+                            f.materialParameters.Add(p);
                         } //if
                     } //for
 

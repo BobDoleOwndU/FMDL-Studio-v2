@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 public class UnityModel
@@ -44,7 +45,6 @@ public class UnityModel
 
         FoxModel foxModel = fmdlGameObject.AddComponent<FoxModel>();
         foxModel.meshDefinitions = new FoxMeshDefinition[fmdl.objects.Count];
-        foxModel.materialDefinitions = new FoxMaterialDefinition[fmdl.section0Block4Entries.Count];
 
         UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
 
@@ -70,7 +70,6 @@ public class UnityModel
 
             if (fmdl.stringsIndex != -1)
             {
-                FoxMaterialDefinition foxMaterialDefintion = new FoxMaterialDefinition();
                 materials[i].material.name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
                 materials[i].materialName = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
                 materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
@@ -102,14 +101,9 @@ public class UnityModel
 
                 for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
                     materials[i].material.SetVector(fmdl.strings[fmdl.section0Block7Entries[j].stringId], new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
-
-                foxMaterialDefintion.materialInstance = materials[i].material;
-                foxMaterialDefintion.materialName = materials[i].materialName;
-                foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //if
             else
             {
-                FoxMaterialDefinition foxMaterialDefintion = new FoxMaterialDefinition();
                 materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
                 materials[i].materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
                 materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
@@ -137,11 +131,12 @@ public class UnityModel
 
                 for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
                     materials[i].material.SetVector(Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]), new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
-
-                foxMaterialDefintion.materialInstance = materials[i].material;
-                foxMaterialDefintion.materialName = materials[i].materialName;
-                foxModel.materialDefinitions[i] = foxMaterialDefintion;
             } //else
+            
+            //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
+            for (int j = 0; j < ShaderUtil.GetPropertyCount(materials[i].material.shader); j++)
+                if (ShaderUtil.GetPropertyType(materials[i].material.shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    materials[i].material.SetTextureScale(ShaderUtil.GetPropertyName(materials[i].material.shader, j), new Vector2(1, -1));
         } //for
 
         for(int i = 0; i < bounds.Length; i++)
@@ -266,45 +261,6 @@ public class UnityModel
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
             meshRenderer.sharedMaterial = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
-
-            //have to apply a flip here because Texture2D.LoadRawData is bugged and loads dds images upside down.
-            if(meshRenderer.sharedMaterial.HasProperty("Base_Tex_SRGB"))
-                meshRenderer.sharedMaterial.SetTextureScale("Base_Tex_SRGB", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("NormalMap_Tex_NRM"))
-                meshRenderer.sharedMaterial.SetTextureScale("NormalMap_Tex_NRM", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("SpecularMap_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("SpecularMap_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("Layer_Tex_SRGB"))
-                meshRenderer.sharedMaterial.SetTextureScale("Layer_Tex_SRGB", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("LayerMask_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("LayerMask_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("SubNormalMap_Tex_NRM"))
-                meshRenderer.sharedMaterial.SetTextureScale("SubNormalMap_Tex_NRM", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("Translucent_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("Translucent_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("ViewReflection_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("ViewReflection_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("LensHeight_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("LensHeight_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("Base_Tex2_SRGB"))
-                meshRenderer.sharedMaterial.SetTextureScale("Base_Tex2_SRGB", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("MetalicLayer_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("MetalicLayer_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("MetalicBacteria_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("MetalicBacteria_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("TensionSubNormalMap_Tex_NRM"))
-                meshRenderer.sharedMaterial.SetTextureScale("TensionSubNormalMap_Tex_NRM", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("TensionSubNormalMap_Tex_NRM"))
-                meshRenderer.sharedMaterial.SetTextureScale("TensionSubNormalMap_Tex_NRM", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("MatParamMap_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("MatParamMap_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("Dirty_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("Dirty_Tex_LIN", new Vector2(1, -1));
-            if (meshRenderer.sharedMaterial.HasProperty("Mask_Tex_LIN"))
-                meshRenderer.sharedMaterial.SetTextureScale("Mask_Tex_LIN", new Vector2(1, -1));
-
-            //meshRenderer.sharedMaterial.SetTextureScale("_LayerTex", new Vector2(1, -1));
-            //meshRenderer.sharedMaterial.SetTextureScale("_LayerMask", new Vector2(1, -1));
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;
