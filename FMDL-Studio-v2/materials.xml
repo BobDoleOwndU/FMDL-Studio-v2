@@ -2,91 +2,133 @@
 <FoxMaterialList xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <foxMaterials>
     <FoxMaterial>
-      <name>fox_3ddf_skin_dirty</name>
-      <type>fox3DDF_Skin_Dirty_LNM</type>
+      <name>fox_3ddf_skin_tension_dirty</name>
+      <type>fox3DDF_Skin_Tension_Dirty</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_dirty</name>
+          <name>MatParamIndex_0</name>
           <values>
-            <float>110</float>
+            <float>140</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_dirty</name>
+          <name>Incidence_Roughness</name>
           <values>
-            <float>4</float>
+            <float>3</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_dirty</name>
+          <name>Incidence_Color</name>
           <values>
             <float>1</float>
             <float>1</float>
             <float>1</float>
-            <float>0.25</float>
+            <float>0.1</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionRate</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionShift</name>
+          <values>
+            <float>0.5</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionController</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
           </values>
         </FoxMaterialParameter>
       </materialParameters>
     </FoxMaterial>
     <FoxMaterial>
-      <name>fox_3ddf_skin_tension_dirty</name>
-      <type>fox3DDF_Skin_Tension_Dirty_LNM</type>
+      <name>fox_3ddf_skin_dirty</name>
+      <type>fox3DDF_Skin_Dirty</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>MatParamIndex_0</name>
           <values>
-            <float>110</float>
+            <float>140</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>Incidence_Roughness</name>
           <values>
-            <float>4</float>
+            <float>3</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>Incidence_Color</name>
           <values>
             <float>1</float>
             <float>1</float>
             <float>1</float>
-            <float>0.25</float>
+            <float>0.1</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_basic_multimt_dirty</name>
+      <type>fox3DDF_Blin_2MT_Dirty_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>116</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>MatParamIndex_1</name>
           <values>
-            <float>0</float>
+            <float>100</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>MatParamIndex_2</name>
           <values>
-            <float>0</float>
+            <float>256</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin_tension_dirty</name>
+          <name>MatParamIndex_3</name>
           <values>
-            <float>0</float>
+            <float>256</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -99,24 +141,9 @@
       <type>fox3DDF_Dirty_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_dirty</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>107</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>d75680ee296f</name>
-      <type>tpp3DDC_RustDirty_NrmUV_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>d75680ee296f</name>
-          <values>
-            <float>116</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -129,7 +156,7 @@
       <type>fox3DDF_Blin_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_basic</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>116</float>
             <float>0</float>
@@ -140,40 +167,55 @@
       </materialParameters>
     </FoxMaterial>
     <FoxMaterial>
-      <name>fox_3ddf_basic_multimt_dirty</name>
-      <type>fox3DDF_Blin_2MT_Dirty_LNM</type>
+      <name>fox_3ddf_incidence_nrmuv_dirty</name>
+      <type>fox3DDF_Incidence_NrmUV_Dirty_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_basic_multimt_dirty</name>
+          <name>MatParamIndex_0</name>
           <values>
-            <float>104</float>
+            <float>105</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_basic_multimt_dirty</name>
+          <name>Incidence_Roughness</name>
           <values>
-            <float>100</float>
+            <float>6</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_basic_multimt_dirty</name>
+          <name>Incidence_Color</name>
           <values>
-            <float>256</float>
+            <float>1</float>
+            <float>1</float>
+            <float>1</float>
+            <float>0.25</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_eye</name>
+      <type>fox3DDF_Eye_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>111</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_basic_multimt_dirty</name>
+          <name>HeightScale</name>
           <values>
-            <float>256</float>
+            <float>0.6</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -182,58 +224,13 @@
       </materialParameters>
     </FoxMaterial>
     <FoxMaterial>
-      <name>fox_3ddf_cloth_dirty</name>
-      <type>fox3DDF_Cloth_Dirty_LNM</type>
+      <name>fox_3ddc_basic</name>
+      <type>fox3DDC_Blin_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>100</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
-          <values>
-            <float>4</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
-          <values>
-            <float>1</float>
-            <float>1</float>
-            <float>1</float>
-            <float>0.15</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
-          <values>
-            <float>80</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
-          <values>
-            <float>80</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_cloth_dirty</name>
-          <values>
-            <float>0.5</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -246,7 +243,7 @@
       <type>fox3DDF_Skin_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>110</float>
             <float>0</float>
@@ -255,7 +252,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin</name>
+          <name>Incidence_Roughness</name>
           <values>
             <float>4</float>
             <float>0</float>
@@ -264,272 +261,12 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_skin</name>
+          <name>Incidence_Color</name>
           <values>
             <float>1</float>
             <float>1</float>
             <float>1</float>
             <float>0.25</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>fox_3dndw_shadow</name>
-      <type>fox3DNDW_Shadow</type>
-      <materialParameters />
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>fox_3ddf_eye</name>
-      <type>fox3DDF_Eye_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_eye</name>
-          <values>
-            <float>111</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_eye</name>
-          <values>
-            <float>0.6</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>tpp_3ddf_MetalicBacteria</name>
-      <type>tpp3DDF_MetalicBacteriaInnerNormal_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>105</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>4</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>1</float>
-            <float>1</float>
-            <float>1</float>
-            <float>0.25</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>1</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>1</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>-0</float>
-            <float>12.29</float>
-            <float>-10</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>2</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>fox_3ddf_incidence_nrmuv_dirty</name>
-      <type>fox3DDF_Incidence_NrmUV_Dirty</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_incidence_nrmuv_dirty</name>
-          <values>
-            <float>100</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_incidence_nrmuv_dirty</name>
-          <values>
-            <float>4</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>fox_3ddf_incidence_nrmuv_dirty</name>
-          <values>
-            <float>0.930239</float>
-            <float>0.933768</float>
-            <float>0.930232</float>
-            <float>0.35</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>b00cd353322</name>
-      <type>fox3DDF_Skin_LayerMul_NrmUV_Dirty_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>b00cd353322</name>
-          <values>
-            <float>100</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>b00cd353322</name>
-          <values>
-            <float>4</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>b00cd353322</name>
-          <values>
-            <float>1</float>
-            <float>1</float>
-            <float>1</float>
-            <float>0.25</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>fox_3ddc_basic</name>
-      <type>fox3DDC_Blin_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>fox_3ddc_basic</name>
-          <values>
-            <float>100</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
           </values>
         </FoxMaterialParameter>
       </materialParameters>
@@ -539,7 +276,7 @@
       <type>fox3DDF_Hair</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>129</float>
             <float>0</float>
@@ -548,7 +285,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>Anistropic_Diffusion</name>
           <values>
             <float>16</float>
             <float>0</float>
@@ -557,7 +294,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>Anistropic_MainLightDir</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -566,7 +303,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>Incidence_Roughness</name>
           <values>
             <float>2</float>
             <float>0</float>
@@ -575,7 +312,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>Incidence_Color</name>
           <values>
             <float>1</float>
             <float>1</float>
@@ -584,7 +321,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>HairShiftScale</name>
           <values>
             <float>0.5</float>
             <float>0</float>
@@ -593,7 +330,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>URepeat_UV</name>
           <values>
             <float>5</float>
             <float>0</float>
@@ -602,96 +339,9 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_hair</name>
+          <name>VRepeat_UV</name>
           <values>
             <float>5</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-      </materialParameters>
-    </FoxMaterial>
-    <FoxMaterial>
-      <name>4e43c4c7cdbb</name>
-      <type>fox3DDF_Blin_Incidence_LayerBl_Tension_3MT_Dirty_LNM</type>
-      <materialParameters>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>109</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>130</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>116</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>256</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>5</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>0.856</float>
-            <float>0.856</float>
-            <float>0.856</float>
-            <float>0.25</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>4e43c4c7cdbb</name>
-          <values>
-            <float>0</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -704,7 +354,7 @@
       <type>fox3DDF_Incidence_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3ddf_incidence</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>100</float>
             <float>0</float>
@@ -713,7 +363,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_incidence</name>
+          <name>Incidence_Roughness</name>
           <values>
             <float>4</float>
             <float>0</float>
@@ -722,7 +372,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3ddf_incidence</name>
+          <name>Incidence_Color</name>
           <values>
             <float>1</float>
             <float>1</float>
@@ -737,7 +387,7 @@
       <type>fox3DFW_Glass_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>fox_3dfw_glass</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>154</float>
             <float>0</float>
@@ -746,7 +396,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3dfw_glass</name>
+          <name>ReflectionColor</name>
           <values>
             <float>0.171234</float>
             <float>0.206766</float>
@@ -755,7 +405,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3dfw_glass</name>
+          <name>GlassColor</name>
           <values>
             <float>0.1</float>
             <float>0.1</float>
@@ -764,7 +414,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>fox_3dfw_glass</name>
+          <name>GlassRoughness</name>
           <values>
             <float>0.341</float>
             <float>0</float>
@@ -775,20 +425,65 @@
       </materialParameters>
     </FoxMaterial>
     <FoxMaterial>
-      <name>c8ca52ddf4e1</name>
-      <type>tpp3DDC_MetalicBacteria_DirtyNrmUV_LNM</type>
+      <name>tpp_3ddf_MetalicBacteria</name>
+      <type>tpp3DDF_MetalicBacteriaInnerNormal_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MatParamIndex_0</name>
           <values>
-            <float>100</float>
+            <float>107</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>Incidence_Roughness</name>
+          <values>
+            <float>4</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>Incidence_Color</name>
+          <values>
+            <float>0.522</float>
+            <float>0.529</float>
+            <float>0.475</float>
+            <float>0.25</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionRate</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionShift</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>TensionController</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>EdgeRoughness</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -797,7 +492,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>EdgeTrans</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -806,25 +501,16 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MimeticCenter</name>
           <values>
-            <float>-0</float>
-            <float>16.8</float>
-            <float>0.5</float>
+            <float>0</float>
+            <float>10</float>
+            <float>-10</float>
             <float>0</float>
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
-          <values>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-            <float>0</float>
-          </values>
-        </FoxMaterialParameter>
-        <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -833,7 +519,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -842,7 +528,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>InnerMimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -851,7 +537,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>InnerMimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -860,7 +546,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MimeticRateAlphaRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -869,9 +555,18 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>c8ca52ddf4e1</name>
+          <name>MimeticRateAlphaRadiusMax</name>
           <values>
-            <float>-2</float>
+            <float>2</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>MimeticAlphaOffseet</name>
+          <values>
+            <float>0</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>
@@ -884,7 +579,7 @@
       <type>tpp3DDF_MetalicBacteria_Eye_LNM</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>111</float>
             <float>0</float>
@@ -893,7 +588,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>HeightScale</name>
           <values>
             <float>0.6</float>
             <float>0</float>
@@ -902,7 +597,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>EdgeRoughness</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -911,7 +606,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>EdgeTrans</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -920,7 +615,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticCenter</name>
           <values>
             <float>-0</float>
             <float>16.8</float>
@@ -929,7 +624,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -938,7 +633,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -947,7 +642,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>InnerMimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -956,7 +651,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>InnerMimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -965,7 +660,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticRateAlphaRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -974,7 +669,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticRateAlphaRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -983,7 +678,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteria_eye</name>
+          <name>MimeticAlphaOffseet</name>
           <values>
             <float>-2</float>
             <float>0</float>
@@ -994,11 +689,16 @@
       </materialParameters>
     </FoxMaterial>
     <FoxMaterial>
+      <name>fox_3dndw_shadow</name>
+      <type>fox3DNDW_Shadow</type>
+      <materialParameters />
+    </FoxMaterial>
+    <FoxMaterial>
       <name>tpp_3ddf_MetalicBacteriaHair</name>
       <type>tpp3DDF_MetalicBacteriaHair</type>
       <materialParameters>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MatParamIndex_0</name>
           <values>
             <float>129</float>
             <float>0</float>
@@ -1007,7 +707,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>Anistropic_Diffusion</name>
           <values>
             <float>16</float>
             <float>0</float>
@@ -1016,7 +716,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>Anistropic_MainLightDir</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1025,7 +725,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>Incidence_Roughness</name>
           <values>
             <float>4</float>
             <float>0</float>
@@ -1034,7 +734,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>Incidence_Color</name>
           <values>
             <float>0.976</float>
             <float>1</float>
@@ -1043,7 +743,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>EdgeRoughness</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -1052,7 +752,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>EdgeTrans</name>
           <values>
             <float>1</float>
             <float>0</float>
@@ -1061,7 +761,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticCenter</name>
           <values>
             <float>-0</float>
             <float>16.8</float>
@@ -1070,7 +770,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1079,7 +779,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1088,7 +788,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>InnerMimeticRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1097,7 +797,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>InnerMimeticRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1106,7 +806,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticRateAlphaRadiusMin</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1115,7 +815,7 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticRateAlphaRadiusMax</name>
           <values>
             <float>0</float>
             <float>0</float>
@@ -1124,9 +824,197 @@
           </values>
         </FoxMaterialParameter>
         <FoxMaterialParameter>
-          <name>tpp_3ddf_MetalicBacteriaHair</name>
+          <name>MimeticAlphaOffseet</name>
           <values>
             <float>-2</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_cloth_dirty</name>
+      <type>fox3DDF_Cloth_Dirty_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>138</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>Incidence_Roughness</name>
+          <values>
+            <float>3</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>Incidence_Color</name>
+          <values>
+            <float>0.975</float>
+            <float>1</float>
+            <float>0.975</float>
+            <float>0.15</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>URepeat_UV</name>
+          <values>
+            <float>25</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>VRepeat_UV</name>
+          <values>
+            <float>25</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>SubNormal_Blend</name>
+          <values>
+            <float>0.25</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_basic_multimt</name>
+      <type>fox3DDF_Blin_4MT</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>131</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_1</name>
+          <values>
+            <float>123</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_2</name>
+          <values>
+            <float>135</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_3</name>
+          <values>
+            <float>115</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_layer_dirty</name>
+      <type>fox3DDF_Blin_LayerMul_Dirty_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>100</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>URepeat_UV</name>
+          <values>
+            <float>5</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>VRepeat_UV</name>
+          <values>
+            <float>5</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>UShift_UV</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+        <FoxMaterialParameter>
+          <name>VShift_UV</name>
+          <values>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3ddf_basic_nrmuv</name>
+      <type>fox3DDF_Blin_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>102</float>
+            <float>0</float>
+            <float>0</float>
+            <float>0</float>
+          </values>
+        </FoxMaterialParameter>
+      </materialParameters>
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>fox_3dfw_constant_ndr</name>
+      <type>fox3DFW_Constant_NDR</type>
+      <materialParameters />
+    </FoxMaterial>
+    <FoxMaterial>
+      <name>d75680ee296f</name>
+      <type>tpp3DDC_RustDirty_NrmUV_LNM</type>
+      <materialParameters>
+        <FoxMaterialParameter>
+          <name>MatParamIndex_0</name>
+          <values>
+            <float>140</float>
             <float>0</float>
             <float>0</float>
             <float>0</float>

@@ -4,7 +4,8 @@ using UnityEditor;
 public class MaterialEditorWindow : EditorWindow
 {
     private Vector2 scrollPos;
-    
+    private int selected = 0;
+
     [MenuItem("FMDL Studio/Edit Materials", false, 200)]
     static void Init()
     {
@@ -18,47 +19,92 @@ public class MaterialEditorWindow : EditorWindow
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos, false, true);
 
         if (GUILayout.Button("Add New Material"))
-            Globals.foxMaterialList.foxMaterials.Add(new FoxMaterial());
+        {
+            FoxMaterial f = new FoxMaterial();
+            f.name = "New Material";
+
+            Globals.foxMaterialList.foxMaterials.Add(f);
+        } //if
+
         if (GUILayout.Button("Save"))
             Globals.WriteMaterialList();
 
+        if (GUILayout.Button("Apply Material to Selected Mesh"))
+            ApplyMaterialToMesh();
+
+        string[] matNames = new string[Globals.foxMaterialList.foxMaterials.Count];
+
         for (int i = 0; i < Globals.foxMaterialList.foxMaterials.Count; i++)
+            matNames[i] = Globals.foxMaterialList.foxMaterials[i].name;
+        
+        selected = EditorGUILayout.Popup(selected, matNames);
+
+        GUILayout.BeginHorizontal();
+        Globals.foxMaterialList.foxMaterials[selected].name = EditorGUILayout.TextField("Name", Globals.foxMaterialList.foxMaterials[selected].name);
+        if (GUILayout.Button("Remove"))
         {
-            GUILayout.Label("Material " + i, EditorStyles.boldLabel);
+            Globals.foxMaterialList.foxMaterials.Remove(Globals.foxMaterialList.foxMaterials[selected]);
+            selected = 0;
+        } //if
+        GUILayout.EndHorizontal();
 
-            GUILayout.BeginVertical();
+        Globals.foxMaterialList.foxMaterials[selected].type = EditorGUILayout.TextField("Type", Globals.foxMaterialList.foxMaterials[selected].type);
 
+        if (GUILayout.Button("Add New Parameter"))
+            Globals.foxMaterialList.foxMaterials[selected].materialParameters.Add(new FoxMaterial.FoxMaterialParameter());
+
+        for (int i = 0; i < Globals.foxMaterialList.foxMaterials[selected].materialParameters.Count; i++)
+        {
             GUILayout.BeginHorizontal();
-            Globals.foxMaterialList.foxMaterials[i].name = EditorGUILayout.TextField("Name", Globals.foxMaterialList.foxMaterials[i].name);
+            Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name = EditorGUILayout.TextField("Parameter Name", Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name);
             if (GUILayout.Button("Remove"))
             {
-                Globals.foxMaterialList.foxMaterials.Remove(Globals.foxMaterialList.foxMaterials[i]);
+                Globals.foxMaterialList.foxMaterials[selected].materialParameters.Remove(Globals.foxMaterialList.foxMaterials[selected].materialParameters[i]);
                 break;
             } //if
             GUILayout.EndHorizontal();
 
-            Globals.foxMaterialList.foxMaterials[i].type = EditorGUILayout.TextField("Type", Globals.foxMaterialList.foxMaterials[i].type);
-
-            if (GUILayout.Button("Add New Parameter"))
-                Globals.foxMaterialList.foxMaterials[i].materialParameters.Add(new FoxMaterial.FoxMaterialParameter());
-
-            for (int j = 0; j < Globals.foxMaterialList.foxMaterials[i].materialParameters.Count; j++)
-            {
-                GUILayout.BeginHorizontal();
-                Globals.foxMaterialList.foxMaterials[i].materialParameters[j].name = EditorGUILayout.TextField("Parameter Name", Globals.foxMaterialList.foxMaterials[i].materialParameters[j].name);
-                if (GUILayout.Button("Remove"))
-                {
-                    Globals.foxMaterialList.foxMaterials[i].materialParameters.Remove(Globals.foxMaterialList.foxMaterials[i].materialParameters[j]);
-                    break;
-                } //if
-                GUILayout.EndHorizontal();
-
-                for (int h = 0; h < Globals.foxMaterialList.foxMaterials[i].materialParameters[j].values.Length; h++)
-                    Globals.foxMaterialList.foxMaterials[i].materialParameters[j].values[h] = EditorGUILayout.FloatField("Parameter " + h, Globals.foxMaterialList.foxMaterials[i].materialParameters[j].values[h]);
-            } //for
-
-            GUILayout.EndVertical();
+            for (int j = 0; j < Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values.Length; j++)
+                Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values[j] = EditorGUILayout.FloatField("Parameter " + j, Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values[j]);
         } //for
+
         EditorGUILayout.EndScrollView();
     } //OnGUI
+
+    private void ApplyMaterialToMesh()
+    {
+        GameObject g = Selection.activeGameObject;
+
+        if (g != null)
+        {
+            if(g.GetComponent<MeshRenderer>())
+            {
+                MeshRenderer renderer = g.GetComponent<MeshRenderer>();
+                Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
+
+                foreach(FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
+                {
+                    m.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
+                } //foreach
+
+                renderer.sharedMaterial = m;
+            } //if
+            else if(g.GetComponent<SkinnedMeshRenderer>())
+            {
+                SkinnedMeshRenderer renderer = g.GetComponent<SkinnedMeshRenderer>();
+                Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
+
+                foreach (FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
+                {
+                    m.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
+                } //foreach
+
+                renderer.sharedMaterial = m;
+            } //if
+            else
+                Debug.Log("Game object does not contain a MeshRenderer or SkinnedMeshRenderer.");
+        } //if
+        else
+            Debug.Log("No game object selected.");
+    } //ApplyMaterialToMesh
 } //class

@@ -3255,7 +3255,7 @@ public class Fmdl
 
                     FoxMaterial.FoxMaterialParameter parameter = new FoxMaterial.FoxMaterialParameter();
 
-                    parameter.name = name;
+                    parameter.name = paramName;
 
                     for (int h = 0; h < materialParameters[section0Block7Entries[j].referenceId].values.Length; h++)
                         parameter.values[h] = materialParameters[section0Block7Entries[j].referenceId].values[h];
