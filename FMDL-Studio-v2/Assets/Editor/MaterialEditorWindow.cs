@@ -39,6 +39,7 @@ public class MaterialEditorWindow : EditorWindow
         
         selected = EditorGUILayout.Popup(selected, matNames);
 
+        EditorGUILayout.LabelField(Globals.foxMaterialList.foxMaterials[selected].name, EditorStyles.boldLabel);
         GUILayout.BeginHorizontal();
         Globals.foxMaterialList.foxMaterials[selected].name = EditorGUILayout.TextField("Name", Globals.foxMaterialList.foxMaterials[selected].name);
         if (GUILayout.Button("Remove"))
@@ -55,6 +56,7 @@ public class MaterialEditorWindow : EditorWindow
 
         for (int i = 0; i < Globals.foxMaterialList.foxMaterials[selected].materialParameters.Count; i++)
         {
+            EditorGUILayout.LabelField(Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name, EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
             Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name = EditorGUILayout.TextField("Parameter Name", Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name);
             if (GUILayout.Button("Remove"))
@@ -64,8 +66,7 @@ public class MaterialEditorWindow : EditorWindow
             } //if
             GUILayout.EndHorizontal();
 
-            for (int j = 0; j < Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values.Length; j++)
-                Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values[j] = EditorGUILayout.FloatField("Parameter " + j, Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values[j]);
+            Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values = EditorGUILayout.Vector4Field("Values", Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values);
         } //for
 
         EditorGUILayout.EndScrollView();
@@ -81,6 +82,7 @@ public class MaterialEditorWindow : EditorWindow
             {
                 MeshRenderer renderer = g.GetComponent<MeshRenderer>();
                 Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
+                m.name = renderer.sharedMaterial.name;
 
                 foreach(FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
                 {
@@ -93,6 +95,7 @@ public class MaterialEditorWindow : EditorWindow
             {
                 SkinnedMeshRenderer renderer = g.GetComponent<SkinnedMeshRenderer>();
                 Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
+                m.name = renderer.sharedMaterial.name;
 
                 foreach (FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
                 {

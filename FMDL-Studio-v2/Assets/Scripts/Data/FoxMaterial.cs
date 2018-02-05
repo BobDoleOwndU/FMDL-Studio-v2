@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
+using UnityEngine;
 
 [XmlType("FoxMaterial")]
 public class FoxMaterial
@@ -10,8 +11,8 @@ public class FoxMaterial
         [XmlElement]
         public string name;
 
-        [XmlArray]
-        public float[] values = new float[4];
+        [XmlElement]
+        public Vector4 values;
     } //class
 
     [XmlElement]

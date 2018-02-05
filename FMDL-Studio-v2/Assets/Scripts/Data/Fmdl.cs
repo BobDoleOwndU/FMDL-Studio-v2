@@ -1498,28 +1498,6 @@ public class Fmdl
             else
                 s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
 
-            /*for (int j = 0; j < section0Block8Entries.Count; j++)
-            {
-                if (materialName == strings[section0Block8Entries[j].stringId])
-                {
-                    s.materialId = (ushort)j;
-                    //s.numParameters = (byte)Globals.foxMaterialList.foxMaterials.Find(x => x.name == materialName).materialParameters.Count;
-                    s.numParameters = (byte)materials[j].materialParameters.Count;
-
-                    if (i != 0)
-                    {
-                        if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
-                            s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
-                        else
-                            s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
-                    } //if
-                    else
-                        s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
-
-                    break;
-                } //if
-            } //for*/
-
             section0Block4Entries.Add(s);
         } //for
 
@@ -1547,30 +1525,23 @@ public class Fmdl
         {
             Section0Block6Entry s = new Section0Block6Entry();
 
-            string fileName = textures[i].name.Replace('$', '/');
-
+            string fileName = AssetDatabase.GetAssetPath(textures[i]);
             string name = Path.GetFileNameWithoutExtension(fileName) + ".tga";
+
             s.stringId = (ushort)strings.Count;
             strings.Add(name);
 
-            string path = Path.GetDirectoryName(fileName) + "/";
-            bool add = true;
+            string path = $"/{Path.GetDirectoryName(fileName)}/";
 
-            for (int j = 0; j < strings.Count; j++)
-            {
-                if (path == strings[j])
-                {
-                    add = false;
-                    s.pathId = (ushort)j;
-                    break;
-                } //if
-            } //for
+            int stringIndex = strings.IndexOf(path);
 
-            if (add)
+            if (stringIndex != -1)
+                s.pathId = (ushort)stringIndex;
+            else
             {
                 s.pathId = (ushort)strings.Count;
                 strings.Add(path);
-            } //if
+            } //else
 
             section0Block6Entries.Add(s);
         } //for
@@ -2746,7 +2717,7 @@ public class Fmdl
 
             for (int i = 0; i < materials.Count; i++)
                 for (int j = 0; j < materials[i].materialParameters.Count; j++)
-                    for (int h = 0; h < materials[i].materialParameters[j].values.Length; h++)
+                    for (int h = 0; h < 4; h++)
                         writer.Write(materials[i].materialParameters[j].values[h]);
 
             section1Info[section1MaterialParametersIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MaterialParametersIndex].offset);
@@ -3083,9 +3054,7 @@ public class Fmdl
                         {
                             FoxMaterial.FoxMaterialParameter p = new FoxMaterial.FoxMaterialParameter();
                             p.name = ShaderUtil.GetPropertyName(materialInstances[i].shader, j);
-                            Vector4 values = materialInstances[i].GetVector(p.name);
-
-                            p.values = new float[4] { values.x, values.y, values.z, values.w };
+                            p.values = materialInstances[i].GetVector(p.name);
                             f.materialParameters.Add(p);
                         } //if
                     } //for
