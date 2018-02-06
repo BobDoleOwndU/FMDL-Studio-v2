@@ -47,7 +47,7 @@ public static class FBXConverter
         StringBuilder fbx = new StringBuilder();
         StringBuilder header = new StringBuilder();
 
-        Utils.GetNumObjects(gameObject.transform, ref numModelObjects);
+        GetNumObjects(gameObject.transform, ref numModelObjects);
 
         objects.Add(new Tuple<int, GameObject>(1000000000, gameObject));
 
@@ -105,6 +105,34 @@ public static class FBXConverter
             fbx.Length--;
             fbx.Append("\n\t\t\t}");
             fbx.AppendFormat("\n\t\t\tNormalsW: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length; j++)
+                fbx.Append("1,");
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t}");
+
+            //Binormals
+            fbx.Append("\n\t\tLayerElementBinormal: 0 {");
+            fbx.Append("\n\t\t\tVersion: 102");
+            fbx.Append("\n\t\t\tName: \"Binormals\"");
+            fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+            fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+            fbx.AppendFormat("\n\t\t\tBinormals: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length * 3);
+            fbx.Append("\n\t\t\t\ta: ");
+            for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length / 3; j++)
+            {
+                Vector3 binormal0 = Vector3.Cross(meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3]], new Vector3(meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3]].z));
+                Vector3 binormal1 = Vector3.Cross(meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]], new Vector3(meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 2]].z));
+                Vector3 binormal2 = Vector3.Cross(meshes[i].Item2.sharedMesh.normals[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]], new Vector3(meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].x, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].y, meshes[i].Item2.sharedMesh.tangents[meshes[i].Item2.sharedMesh.triangles[j * 3 + 1]].z));
+
+                fbx.AppendFormat("{0},{1},{2},", binormal0.x, binormal0.y, -binormal0.z);
+                fbx.AppendFormat("{0},{1},{2},", binormal1.x, binormal1.y, -binormal1.z);
+                fbx.AppendFormat("{0},{1},{2},", binormal2.x, binormal2.y, -binormal2.z);
+            } //for
+            fbx.Length--;
+            fbx.Append("\n\t\t\t}");
+            fbx.AppendFormat("\n\t\t\tBinormalsW: *{0} {{", meshes[i].Item2.sharedMesh.triangles.Length);
             fbx.Append("\n\t\t\t\ta: ");
             for (int j = 0; j < meshes[i].Item2.sharedMesh.triangles.Length; j++)
                 fbx.Append("1,");
@@ -255,6 +283,10 @@ public static class FBXConverter
             fbx.Append("\n\t\t\tVersion: 100");
             fbx.Append("\n\t\t\tLayerElement:  {");
             fbx.Append("\n\t\t\t\tType: \"LayerElementNormal\"");
+            fbx.Append("\n\t\t\t\tTypedIndex: 0");
+            fbx.Append("\n\t\t\t}");
+            fbx.Append("\n\t\t\tLayerElement:  {");
+            fbx.Append("\n\t\t\t\tType: \"LayerElementBinormal\"");
             fbx.Append("\n\t\t\t\tTypedIndex: 0");
             fbx.Append("\n\t\t\t}");
             fbx.Append("\n\t\t\tLayerElement:  {");
@@ -1018,6 +1050,16 @@ public static class FBXConverter
             } //if
         } //foreach
     } //GetMeshes ends
+
+    private static void GetNumObjects(Transform transform, ref int count)
+    {
+        foreach (Transform t in transform)
+        {
+            count++;
+            GetNumObjects(t, ref count);
+        } //foreach
+    } //GetNumObjects
+
 
     private static void GetGameObjects(Transform transform)
     {

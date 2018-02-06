@@ -3042,15 +3042,15 @@ public class Fmdl
 
             if (index != -1)
             {
-                if(!materials.Contains(materials.Find(x => x.name == Globals.foxMaterialList.foxMaterials[index].name)))
+                if (!materials.Contains(materials.Find(x => x.name == Globals.foxMaterialList.foxMaterials[index].name)))
                 {
                     FoxMaterial f = new FoxMaterial();
                     f.name = Globals.foxMaterialList.foxMaterials[index].name;
                     f.type = Globals.foxMaterialList.foxMaterials[index].type;
 
-                    for(int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                    for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
                     {
-                        if(ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
+                        if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
                         {
                             FoxMaterial.FoxMaterialParameter p = new FoxMaterial.FoxMaterialParameter();
                             p.name = ShaderUtil.GetPropertyName(materialInstances[i].shader, j);
@@ -3063,7 +3063,10 @@ public class Fmdl
                 } //if
             } //if
             else
+            {
+                UnityEngine.Debug.Log(shaderName);
                 throw new Exception("Material not in material list!");
+            } //else
         } //for
 
         /*for (int i = 0; i < foxModel.materialDefinitions.Length; i++)

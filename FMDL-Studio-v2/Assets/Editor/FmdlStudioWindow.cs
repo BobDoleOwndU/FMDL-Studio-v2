@@ -43,7 +43,7 @@ public class FmdlStudioWindow : EditorWindow
             if (!string.IsNullOrWhiteSpace(windowPath))
             {
                 FmdlExporter.FMDLWrite(windowPath);
-                UnityEngine.Debug.Log("Fmdl Exported to: " + windowPath);
+                Debug.Log("Fmdl Exported to: " + windowPath);
             } //if
             else
                 Debug.Log("No path selected.");
@@ -75,4 +75,15 @@ public class FmdlStudioWindow : EditorWindow
         else
             Debug.Log("No objects selected.");
     } //GenerateBoundingBoxes
+
+    [MenuItem("FMDL Studio/Fix Tangents", false, 102)]
+    public static void FixTangents()
+    {
+        if (Selection.activeGameObject != null)
+        {
+            Utils.FixTangents(Selection.activeGameObject.transform);
+        } //if
+        else
+            Debug.Log("No objects selected.");
+    } //FixTangents
 } //class

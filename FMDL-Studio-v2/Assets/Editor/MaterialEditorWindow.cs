@@ -81,15 +81,11 @@ public class MaterialEditorWindow : EditorWindow
             if(g.GetComponent<MeshRenderer>())
             {
                 MeshRenderer renderer = g.GetComponent<MeshRenderer>();
-                Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
-                m.name = renderer.sharedMaterial.name;
+                renderer.sharedMaterial.shader = Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}");
+                //m.name = renderer.sharedMaterial.name;
 
                 foreach(FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
-                {
-                    m.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
-                } //foreach
-
-                renderer.sharedMaterial = m;
+                    renderer.sharedMaterial.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
             } //if
             else if(g.GetComponent<SkinnedMeshRenderer>())
             {
