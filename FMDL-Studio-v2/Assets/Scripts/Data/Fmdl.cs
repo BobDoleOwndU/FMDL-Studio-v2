@@ -454,11 +454,11 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
-        if (File.Exists("fmdl_dictionary.txt"))
-            Hashing.ReadStringDictionary("fmdl_dictionary.txt");
+        if (File.Exists("Assets/fmdl_dictionary.txt"))
+            Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
 
-        if (File.Exists("qar_dictionary.txt"))
-            Hashing.ReadPathDictionary("qar_dictionary.txt");
+        if (File.Exists("Assets/qar_dictionary.txt"))
+            Hashing.ReadPathDictionary("Assets/qar_dictionary.txt");
 
         BinaryReader reader = new BinaryReader(stream, Encoding.Default);
 

@@ -55,11 +55,11 @@ public static class Globals
 
     public static void ReadMaterialList()
     {
-        if (File.Exists("materials.xml"))
+        if (File.Exists("Assets/materials.xml"))
         {
             XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
 
-            using (FileStream stream = new FileStream("materials.xml", FileMode.Open))
+            using (FileStream stream = new FileStream("Assets/materials.xml", FileMode.Open))
             {
                 foxMaterialList = (FoxMaterialList)serializer.Deserialize(stream);
                 stream.Close();
@@ -73,7 +73,7 @@ public static class Globals
     {
         XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
 
-        using (FileStream stream = new FileStream("materials.xml", FileMode.Create))
+        using (FileStream stream = new FileStream("Assets/materials.xml", FileMode.Create))
         {
             serializer.Serialize(stream, foxMaterialList);
             stream.Close();
