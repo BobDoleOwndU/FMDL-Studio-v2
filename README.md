@@ -1,5 +1,5 @@
 # FMDL Studio v2
-Fox Engine model importer (and planned exporter) for Unity.
+Fox Engine model importer and exporter for Unity.
 
 ## Usage
 See the [GitHub Wiki](https://github.com/BobDoleOwndU/FMDL-Studio-v2/wiki) for information on setting up and using Fmdl Studio v2.
