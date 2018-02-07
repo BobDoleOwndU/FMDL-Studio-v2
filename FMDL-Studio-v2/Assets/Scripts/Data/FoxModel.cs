@@ -49,6 +49,11 @@ public class FoxModel : MonoBehaviour
 [System.Serializable]
 public class FoxMeshDefinition
 {
+    public enum Alpha { NoAlpha = 0, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0 }
+    public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, Shadow2 = 0x40 }
+
     public Mesh mesh;
     public string meshGroup;
+    public Alpha alpha = Alpha.NoAlpha;
+    public Shadow shadow = Shadow.Shadow;
 } //class

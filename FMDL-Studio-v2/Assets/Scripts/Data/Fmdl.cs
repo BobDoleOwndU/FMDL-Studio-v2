@@ -90,8 +90,8 @@ public class Fmdl
 
     public struct Section0Block3Entry
     {
-        public byte unknown0;
-        public byte noShadowFlag;
+        public byte alphaEnum;
+        public byte shadowEnum;
         public ushort materialInstanceId;
         public ushort boneGroupId;
         public ushort id;
@@ -680,8 +680,8 @@ public class Fmdl
             {
                 Section0Block3Entry s = new Section0Block3Entry();
 
-                s.unknown0 = reader.ReadByte();
-                s.noShadowFlag = reader.ReadByte();
+                s.alphaEnum = reader.ReadByte();
+                s.shadowEnum = reader.ReadByte();
                 reader.BaseStream.Position += 0x2;
                 s.materialInstanceId = reader.ReadUInt16();
                 s.boneGroupId = reader.ReadUInt16();
@@ -1411,10 +1411,11 @@ public class Fmdl
         //Block 3 - Meshes
         for (int i = 0; i < meshes.Count; i++)
         {
+            FoxModel foxModel = gameObject.GetComponent<FoxModel>();
             Section0Block3Entry s = new Section0Block3Entry();
 
-            s.unknown0 = 0;
-            s.noShadowFlag = 0;
+            s.alphaEnum = (byte)foxModel.meshDefinitions[i].alpha;
+            s.shadowEnum = (byte)foxModel.meshDefinitions[i].shadow;
 
             for (int j = 0; j < materialInstances.Count; j++)
                 if (meshes[i].sharedMaterial == materialInstances[j])
@@ -2398,8 +2399,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Block3Entries.Count; i++)
             {
-                writer.Write(section0Block3Entries[i].unknown0);
-                writer.Write(section0Block3Entries[i].noShadowFlag);
+                writer.Write(section0Block3Entries[i].alphaEnum);
+                writer.Write(section0Block3Entries[i].shadowEnum);
                 writer.WriteZeroes(2);
                 writer.Write(section0Block3Entries[i].materialInstanceId);
                 writer.Write(section0Block3Entries[i].boneGroupId);
@@ -3295,7 +3296,7 @@ public class Fmdl
         {
             Console.WriteLine("================================");
             Console.WriteLine("Entry No: " + i);
-            Console.WriteLine("Unknown 0: " + section0Block3Entries[i].unknown0);
+            Console.WriteLine("Unknown 0: " + section0Block3Entries[i].alphaEnum);
             Console.WriteLine("Material Id: " + section0Block3Entries[i].materialInstanceId);
             Console.WriteLine("Bone Group Id: " + section0Block3Entries[i].boneGroupId);
             Console.WriteLine("Id: " + section0Block3Entries[i].id);
