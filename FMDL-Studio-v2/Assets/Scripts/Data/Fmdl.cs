@@ -981,7 +981,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0x11 - LOD INFO
+         * SECTION 0 BLOCK 0x11 - FACE INDEX INFO
          *
          ****************************************************************/
         if (faceIndicesIndex != -1)
@@ -1010,7 +1010,7 @@ public class Fmdl
             //go to and get the section 0x12 entry info.
             reader.BaseStream.Position = section0Info[type12Index].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
+            for (int i = 0; i < section0Info[type12Index].numEntries; i++)
             {
                 Section0Block12Entry s = new Section0Block12Entry();
 
@@ -1030,7 +1030,7 @@ public class Fmdl
             //go to and get the section 0x14 entry info.
             reader.BaseStream.Position = section0Info[type14Index].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
+            for (int i = 0; i < section0Info[type14Index].numEntries; i++)
             {
                 Section0Block14Entry s = new Section0Block14Entry();
 
@@ -1550,9 +1550,9 @@ public class Fmdl
         //Block 7 - Texture Type/Material Parameter Assignments
         for (int i = 0; i < materialInstances.Count; i++)
         {
-            for(int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
-                if(ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
-                    if(materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
+            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    if (materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
                     {
                         Section0Block7Entry s = new Section0Block7Entry();
 
@@ -3035,7 +3035,7 @@ public class Fmdl
     {
         List<FoxMaterial> materials = new List<FoxMaterial>(0);
 
-        for(int i = 0; i < materialInstances.Count; i++)
+        for (int i = 0; i < materialInstances.Count; i++)
         {
             string shaderName = materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1);
 
@@ -3207,17 +3207,17 @@ public class Fmdl
                 type = strings[section0Block8Entries[section0Block4Entries[i].materialId].typeId];
             } //else
 
-            if(Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.name == name)) == -1)
+            if (Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.name == name)) == -1)
             {
                 FoxMaterial foxMaterial = new FoxMaterial();
                 foxMaterial.name = name;
                 foxMaterial.type = type;
 
-                for(int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
+                for (int j = section0Block4Entries[i].firstParameterId; j < section0Block4Entries[i].firstParameterId + section0Block4Entries[i].numParameters; j++)
                 {
                     string paramName;
 
-                    if(stringsIndex == -1)
+                    if (stringsIndex == -1)
                     {
                         paramName = Hashing.TryGetStringName(section0Block16Entries[section0Block7Entries[j].stringId]);
                     } //if

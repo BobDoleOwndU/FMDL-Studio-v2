@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [ExecuteInEditMode]
@@ -20,7 +21,11 @@ public class FoxModel : MonoBehaviour
             {
                 meshDefinitions[i] = new FoxMeshDefinition();
                 meshDefinitions[i].mesh = meshes[i];
-                meshDefinitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
+
+                if (Char.IsDigit(meshes[i].name[0]) && meshes[i].name.Contains("-"))
+                    meshDefinitions[i].meshGroup = meshes[i].name.Substring(meshes[i].name.IndexOf("-") + 2);
+                else
+                    meshDefinitions[i].meshGroup = meshes[i].name;
             } //for
         } //if
     } //Start
@@ -49,8 +54,8 @@ public class FoxModel : MonoBehaviour
 [System.Serializable]
 public class FoxMeshDefinition
 {
-    public enum Alpha { NoAlpha = 0, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0 }
-    public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, Shadow2 = 0x40 }
+    public enum Alpha { NoAlpha = 0, Glass = 0x10, Glass2 = 0x11, Glass3 = 0x30, Unknown = 0x20, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0 }
+    public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, Glass = 5, Shadow2 = 0x40 }
 
     public Mesh mesh;
     public string meshGroup;
