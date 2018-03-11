@@ -1300,6 +1300,9 @@ public class Fmdl
      */
     public void Write(GameObject gameObject, FileStream stream)
     {
+        const float TOTAL_TASKS = 20f;
+        EditorUtility.DisplayProgressBar("Test Bar", "Starting!", 0 / TOTAL_TASKS);
+
         Globals.ReadMaterialList();
 
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
@@ -1333,6 +1336,8 @@ public class Fmdl
         //Block 0 - Bones
         for (int i = 0; i < bones.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Bones: {i}/{bones.Count}", 0 / TOTAL_TASKS);
+
             Section0Block0Entry s = new Section0Block0Entry();
 
             s.stringId = (ushort)strings.Count;
@@ -1369,6 +1374,8 @@ public class Fmdl
         //Block 1 - Mesh Groups
         for (int i = 0; i < meshGroups.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Groups: {i}/{meshGroups.Count}", 1 / TOTAL_TASKS);
+
             Section0Block1Entry s = new Section0Block1Entry();
 
             s.stringId = (ushort)strings.Count;
@@ -1392,6 +1399,8 @@ public class Fmdl
         //Block 2 - Mesh Group Assignments
         for (int i = 0; i < meshGroupEntries.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Group Assignments: {i}/{meshGroupEntries.Count}", 2 / TOTAL_TASKS);
+
             Section0Block2Entry s = new Section0Block2Entry();
 
             s.meshGroupId = (ushort)meshGroupEntries[i].meshGroupIndex;
@@ -1411,6 +1420,8 @@ public class Fmdl
         //Block 3 - Meshes
         for (int i = 0; i < meshes.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Meshes: {i}/{meshes.Count}", 3 / TOTAL_TASKS);
+
             FoxModel foxModel = gameObject.GetComponent<FoxModel>();
             Section0Block3Entry s = new Section0Block3Entry();
 
@@ -1443,6 +1454,8 @@ public class Fmdl
         //Block 8 - Materials
         for (int i = 0; i < materials.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Materials: {i}/{materials.Count}", 4 / TOTAL_TASKS);
+
             Section0Block8Entry s = new Section0Block8Entry();
 
             s.stringId = (ushort)strings.Count;
@@ -1457,6 +1470,8 @@ public class Fmdl
         //Block 4 - Material Instances
         for (int i = 0; i < materialInstances.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Material Instances: {i}/{materialInstances.Count}", 5 / TOTAL_TASKS);
+
             Section0Block4Entry s = new Section0Block4Entry();
 
             s.stringId = (ushort)strings.Count;
@@ -1506,11 +1521,17 @@ public class Fmdl
         if (bones.Count > 0)
             for (int i = 0; i < meshes.Count; i++)
             {
+                EditorUtility.DisplayProgressBar("Test Bar", $"Bone Groups: {i}/{meshes.Count}", 6 / TOTAL_TASKS);
+
                 Section0Block5Entry s = new Section0Block5Entry();
                 List<int> indices = GetBoneGroup(meshes[i], bones);
 
                 s.unknown0 = 4; //Most bone groups use 0x4. Dunno if it matters.
                 s.numEntries = (ushort)indices.Count;
+
+                if (s.numEntries > 0x20)
+                    throw new Exception("Meshes cannot be weighted to more than 32 bones!");
+
                 s.entries = new List<ushort>(0);
 
                 for (int j = 0; j < indices.Count; j++)
@@ -1524,6 +1545,8 @@ public class Fmdl
         //Block 6 - Textures
         for (int i = 0; i < textures.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Textures: {i}/{textures.Count}", 7 / TOTAL_TASKS);
+
             Section0Block6Entry s = new Section0Block6Entry();
 
             string fileName = AssetDatabase.GetAssetPath(textures[i]);
@@ -1550,6 +1573,8 @@ public class Fmdl
         //Block 7 - Texture Type/Material Parameter Assignments
         for (int i = 0; i < materialInstances.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Texture Type/Material Parameter Assignments: {i}/{materialInstances.Count}", 8 / TOTAL_TASKS);
+
             for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
                 if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
                     if (materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
@@ -1598,6 +1623,8 @@ public class Fmdl
         //Block 9 - Mesh Format Assignments
         for (int i = 0; i < meshFormats.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Format Assignments: {i}/{meshFormats.Count}", 9 / TOTAL_TASKS);
+
             Section0Block9Entry s = new Section0Block9Entry();
 
             byte numMeshFormatEntries = 0;
@@ -1648,6 +1675,8 @@ public class Fmdl
         //Block A - Mesh Formats
         for (int i = 0; i < meshFormats.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"meshFormats: {i}/{meshFormats.Count}", 10 / TOTAL_TASKS);
+
             if (meshFormats[i].meshFormat0Size > 0)
             {
                 Section0BlockAEntry s = new Section0BlockAEntry();
@@ -1696,6 +1725,7 @@ public class Fmdl
         //Block B - Vertex Formats
         for (int i = 0; i < meshFormats.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Vertex Formats: {i}/{meshFormats.Count}", 11 / TOTAL_TASKS);
             ushort offset = 0;
 
             Section0BlockBEntry s = new Section0BlockBEntry();
@@ -1820,6 +1850,8 @@ public class Fmdl
         //Block C - Strings
         for (int i = 0; i < strings.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Strings: {i}/{strings.Count}", 12 / TOTAL_TASKS);
+
             Section0BlockCEntry s = new Section0BlockCEntry();
             s.section1BlockId = 3;
             s.length = (ushort)strings[i].Length;
@@ -1838,6 +1870,8 @@ public class Fmdl
 
         //Block D - Bounding Boxes
         {
+            EditorUtility.DisplayProgressBar("Test Bar", "Bounding Boxes...", 13 / TOTAL_TASKS);
+
             Section0BlockDEntry s = new Section0BlockDEntry();
 
             foreach (Transform t in gameObject.transform)
@@ -1875,6 +1909,8 @@ public class Fmdl
         //Block E - Buffer Offsets
         for (int i = 0; i < 3; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Buffer Offsets: {i}/3", 14 / TOTAL_TASKS);
+
             Section0BlockEEntry s = new Section0BlockEEntry();
 
             if (i != 2)
@@ -1890,6 +1926,8 @@ public class Fmdl
 
         //Block 10 - LOD Info
         {
+            EditorUtility.DisplayProgressBar("Test Bar", "LOD Info: 0/1", 15 / TOTAL_TASKS);
+
             Section0Block10Entry s = new Section0Block10Entry();
             s.numLods = 1;
             s.unknown0 = 1.0f;
@@ -1901,6 +1939,8 @@ public class Fmdl
         //Block 11 - Face Indices
         for (int i = 0; i < meshes.Count; i++)
         {
+            EditorUtility.DisplayProgressBar("Test Bar", $"Face Indices: {i}/{meshes.Count}", 16 / TOTAL_TASKS);
+
             Section0Block11Entry s = new Section0Block11Entry();
             s.firstFaceVertexId = 0;
             s.numFaceVertices = (uint)meshes[i].sharedMesh.triangles.Length;
@@ -1909,6 +1949,8 @@ public class Fmdl
 
         //Block 12 - Unknown
         {
+            EditorUtility.DisplayProgressBar("Test Bar", "Block 12: 0/1", 17 / TOTAL_TASKS);
+
             Section0Block12Entry s = new Section0Block12Entry();
             s.unknown0 = 0;
             section0Block12Entries.Add(s);
@@ -1916,6 +1958,8 @@ public class Fmdl
 
         //Block 14 - Unknown
         {
+            EditorUtility.DisplayProgressBar("Test Bar", "Block 14: 0/1", 18 / TOTAL_TASKS);
+
             Section0Block14Entry s = new Section0Block14Entry();
             s.unknown0 = 3.33850384f;
             s.unknown1 = 0.8753322f;
@@ -1929,29 +1973,49 @@ public class Fmdl
         //Objects
         objects = new List<Object>(0);
 
-        for (int i = 0; i < meshes.Count; i++)
-        {
-            Object o = new Object();
-            o.vertices = new Vertex[meshes[i].sharedMesh.vertices.Length];
-            o.additionalVertexData = new AdditionalVertexData[meshes[i].sharedMesh.vertices.Length];
-            o.faces = new Face[meshes[i].sharedMesh.triangles.Length / 3];
+        int meshCount = meshes.Count;
+        int vertCount;
+        int faceCount;
 
-            for (int j = 0; j < o.vertices.Length; j++)
+        for (int i = 0; i < meshCount; i++)
+        {
+            Mesh m = meshes[i].sharedMesh;
+            Vector3[] vertices = m.vertices;
+            Vector3[] normals = m.normals;
+            Vector4[] tangents = m.tangents;
+            BoneWeight[] weights = m.boneWeights;
+            Vector2[] uv = m.uv;
+            Vector2[] uv2 = m.uv2;
+            Vector2[] uv3 = m.uv3;
+            Vector2[] uv4 = m.uv4;
+            int[] triangles = m.triangles;
+
+            Object o = new Object();
+            o.vertices = new Vertex[vertices.Length];
+            o.additionalVertexData = new AdditionalVertexData[vertices.Length];
+            o.faces = new Face[triangles.Length / 3];
+
+            vertCount = o.vertices.Length;
+            faceCount = o.faces.Length;
+
+            for (int j = 0; j < vertCount; j++)
             {
-                o.vertices[j].x = meshes[i].sharedMesh.vertices[j].z;
-                o.vertices[j].y = meshes[i].sharedMesh.vertices[j].y;
-                o.vertices[j].z = meshes[i].sharedMesh.vertices[j].x;
-                o.additionalVertexData[j].normalX = new Half(meshes[i].sharedMesh.normals[j].z);
-                o.additionalVertexData[j].normalY = new Half(meshes[i].sharedMesh.normals[j].y);
-                o.additionalVertexData[j].normalZ = new Half(meshes[i].sharedMesh.normals[j].x);
+                EditorUtility.DisplayProgressBar("Test Bar", $"Objects: {i}/{meshCount} Vertices: {j}/{vertCount}", (float)j / vertCount);
+
+                o.vertices[j].x = vertices[j].z;
+                o.vertices[j].y = vertices[j].y;
+                o.vertices[j].z = vertices[j].x;
+                o.additionalVertexData[j].normalX = new Half(normals[j].z);
+                o.additionalVertexData[j].normalY = new Half(normals[j].y);
+                o.additionalVertexData[j].normalZ = new Half(normals[j].x);
                 o.additionalVertexData[j].normalW = new Half(1f);
 
-                if (meshes[i].sharedMesh.tangents.Length > 0)
+                if (tangents.Length > 0)
                 {
-                    o.additionalVertexData[j].tangentX = new Half(meshes[i].sharedMesh.tangents[j].z);
-                    o.additionalVertexData[j].tangentY = new Half(meshes[i].sharedMesh.tangents[j].y);
-                    o.additionalVertexData[j].tangentZ = new Half(meshes[i].sharedMesh.tangents[j].x);
-                    o.additionalVertexData[j].tangentW = new Half(meshes[i].sharedMesh.tangents[j].w);
+                    o.additionalVertexData[j].tangentX = new Half(tangents[j].z);
+                    o.additionalVertexData[j].tangentY = new Half(tangents[j].y);
+                    o.additionalVertexData[j].tangentZ = new Half(tangents[j].x);
+                    o.additionalVertexData[j].tangentW = new Half(tangents[j].w);
                 } //if
 
                 //o.additionalVertexData[j].colourR = meshes[i].sharedMesh.colors[j].r;
@@ -1959,17 +2023,17 @@ public class Fmdl
                 //o.additionalVertexData[j].colourB = meshes[i].sharedMesh.colors[j].b;
                 //o.additionalVertexData[j].colourA = meshes[i].sharedMesh.colors[j].a;
 
-                if (meshes[i].sharedMesh.boneWeights.Length > 0)
+                if (weights.Length > 0)
                 {
-                    o.additionalVertexData[j].boneWeightX = meshes[i].sharedMesh.boneWeights[j].weight0;
-                    o.additionalVertexData[j].boneWeightY = meshes[i].sharedMesh.boneWeights[j].weight1;
-                    o.additionalVertexData[j].boneWeightZ = meshes[i].sharedMesh.boneWeights[j].weight2;
-                    o.additionalVertexData[j].boneWeightW = meshes[i].sharedMesh.boneWeights[j].weight3;
+                    o.additionalVertexData[j].boneWeightX = weights[j].weight0;
+                    o.additionalVertexData[j].boneWeightY = weights[j].weight1;
+                    o.additionalVertexData[j].boneWeightZ = weights[j].weight2;
+                    o.additionalVertexData[j].boneWeightW = weights[j].weight3;
 
 
                     for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
                     {
-                        if (meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex0] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]])
+                        if (meshes[i].bones[weights[j].boneIndex0] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]])
                         {
                             o.additionalVertexData[j].boneGroup0Id = (byte)h;
                             break;
@@ -1978,7 +2042,7 @@ public class Fmdl
 
                     for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
                     {
-                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        if ((meshes[i].bones[weights[j].boneIndex1] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
                             o.additionalVertexData[j].boneGroup1Id = (byte)h;
                             break;
@@ -1988,7 +2052,7 @@ public class Fmdl
 
                     for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
                     {
-                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex2] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        if ((meshes[i].bones[weights[j].boneIndex2] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
                             o.additionalVertexData[j].boneGroup2Id = (byte)h;
                             break;
@@ -1997,7 +2061,7 @@ public class Fmdl
 
                     for (int h = 0; h < section0Block5Entries[section0Block3Entries[i].boneGroupId].entries.Count; h++)
                     {
-                        if ((meshes[i].bones[meshes[i].sharedMesh.boneWeights[j].boneIndex3] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
+                        if ((meshes[i].bones[weights[j].boneIndex3] == bones[section0Block5Entries[section0Block3Entries[i].boneGroupId].entries[h]]))
                         {
                             o.additionalVertexData[j].boneGroup3Id = (byte)h;
                             break;
@@ -2005,29 +2069,29 @@ public class Fmdl
                     } //for
                 } //if
 
-                o.additionalVertexData[j].textureU = new Half(meshes[i].sharedMesh.uv[j].x);
-                o.additionalVertexData[j].textureV = new Half(-meshes[i].sharedMesh.uv[j].y);
+                o.additionalVertexData[j].textureU = new Half(uv[j].x);
+                o.additionalVertexData[j].textureV = new Half(-uv[j].y);
 
-                if (meshes[i].sharedMesh.uv2.Length > 0)
+                if (uv2.Length > 0)
                 {
-                    o.additionalVertexData[j].unknownU0 = new Half(meshes[i].sharedMesh.uv2[j].x);
-                    o.additionalVertexData[j].unknownV0 = new Half(meshes[i].sharedMesh.uv2[j].y);
+                    o.additionalVertexData[j].unknownU0 = new Half(uv2[j].x);
+                    o.additionalVertexData[j].unknownV0 = new Half(uv2[j].y);
 
-                    if (meshes[i].sharedMesh.uv3.Length > 0)
+                    if (uv3.Length > 0)
                     {
-                        o.additionalVertexData[j].unknownU1 = new Half(meshes[i].sharedMesh.uv3[j].x);
-                        o.additionalVertexData[j].unknownV1 = new Half(meshes[i].sharedMesh.uv3[j].y);
+                        o.additionalVertexData[j].unknownU1 = new Half(uv3[j].x);
+                        o.additionalVertexData[j].unknownV1 = new Half(uv3[j].y);
 
-                        if (meshes[i].sharedMesh.uv4.Length > 0)
+                        if (uv4.Length > 0)
                         {
-                            o.additionalVertexData[j].unknownU2 = new Half(meshes[i].sharedMesh.uv4[j].x);
-                            o.additionalVertexData[j].unknownV2 = new Half(meshes[i].sharedMesh.uv4[j].y);
+                            o.additionalVertexData[j].unknownU2 = new Half(uv4[j].x);
+                            o.additionalVertexData[j].unknownV2 = new Half(uv4[j].y);
                         } //if
                     } //if
                 } //if
             } //for
 
-            for (int j = 0, h = 0; j < o.faces.Length; j++, h += 3)
+            for (int j = 0, h = 0; j < faceCount; j++, h += 3)
             {
                 o.faces[j].vertex1Id = (ushort)meshes[i].sharedMesh.triangles[h];
                 o.faces[j].vertex2Id = (ushort)meshes[i].sharedMesh.triangles[h + 1];
@@ -2285,6 +2349,7 @@ public class Fmdl
 
         numSection1Blocks = (uint)section1Info.Count;
 
+        EditorUtility.DisplayProgressBar("Test Bar", "Writing: 0/1", 20 / TOTAL_TASKS);
         //Time to Write!
         //Header
         writer.Write(signature);
@@ -2452,6 +2517,8 @@ public class Fmdl
 
                 for (int j = 0; j < section0Block5Entries[i].entries.Count; j++)
                     writer.Write(section0Block5Entries[i].entries[j]);
+
+                UnityEngine.Debug.Log(0x40 - 2 * section0Block5Entries[i].numEntries);
 
                 writer.WriteZeroes(0x40 - 2 * section0Block5Entries[i].numEntries);
             } //for
@@ -2881,6 +2948,8 @@ public class Fmdl
         section1Length = (uint)(writer.BaseStream.Position - section1Offset);
         writer.BaseStream.Position = 0x34;
         writer.Write(section1Length);
+
+        EditorUtility.ClearProgressBar();
     } //Write
 
     private void GetObjects(Transform transform, List<SkinnedMeshRenderer> meshes, List<Material> materialInstances, List<Texture> textures, List<Transform> bones)

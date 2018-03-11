@@ -17,6 +17,7 @@ public class FmdlExporter
         } //try
         catch (Exception e)
         {
+            EditorUtility.ClearProgressBar();
             Debug.Log($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
             Debug.Log($"An exception occured{e.StackTrace}");
             stream.Close();

@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor.Experimental.AssetImporters;
 using System;
+using UnityEditor;
 
 #if FOXKIT
 [ScriptedImporter(1, "fmdl")]
