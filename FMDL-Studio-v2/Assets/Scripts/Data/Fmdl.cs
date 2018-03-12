@@ -240,7 +240,8 @@ public class Fmdl
 
     public struct MaterialParameter
     {
-        public float[] values;
+        public string name;
+        public Vector4 values;
     } //struct
 
     public struct Vertex
@@ -410,7 +411,7 @@ public class Fmdl
     private int section1MeshDataIndex = -1;
     private int section1StringsIndex = -1;
 
-    public MaterialParameter[] materialParameters { get; private set; }
+    public List<MaterialParameter> materialParameters { get; private set; } = new List<MaterialParameter>(0);
     public List<Object> objects { get; private set; }
     public List<string> strings { get; private set; } = new List<string>(0);
 
@@ -454,6 +455,9 @@ public class Fmdl
      */
     public void Read(FileStream stream)
     {
+        const string BAR_STRING = "Reading!";
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Starting!", 0);
+
         if (File.Exists("Assets/fmdl_dictionary.txt"))
             Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
 
@@ -478,6 +482,8 @@ public class Fmdl
         //get the section0 info.
         for (int i = 0; i < numSection0Blocks; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Section 0 Info: {i}/{numSection0Blocks}", (float)i / numSection0Blocks);
+
             Section0Info s = new Section0Info();
 
             s.id = reader.ReadUInt16();
@@ -559,6 +565,8 @@ public class Fmdl
         //get the section1 info.
         for (int i = 0; i < numSection1Blocks; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Section 1 Info: {i}/{numSection1Blocks}", (float)i / numSection1Blocks);
+
             Section1Info s = new Section1Info();
 
             s.id = reader.ReadUInt32();
@@ -569,7 +577,7 @@ public class Fmdl
             {
                 case (uint)Section1BlockType.MaterialParameters:
                     section1MaterialParametersIndex = i;
-                    materialParameters = new MaterialParameter[(s.length / 4) / 4];
+                    //materialParameters = new MaterialParameter[(s.length / 4) / 4];
                     break;
                 case (uint)Section1BlockType.MeshData:
                     section1MeshDataIndex = i;
@@ -596,6 +604,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[bonesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{section0Info[bonesIndex].numEntries}", (float)i / section0Info[bonesIndex].numEntries);
+
                 Section0Block0Entry s = new Section0Block0Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -628,6 +638,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[meshGroupsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{section0Info[meshGroupsIndex].numEntries}", (float)i / section0Info[meshGroupsIndex].numEntries);
+
                 Section0Block1Entry s = new Section0Block1Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -651,6 +663,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[meshGroupAssignmentIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{section0Info[meshGroupAssignmentIndex].numEntries}", (float)i / section0Info[meshGroupAssignmentIndex].numEntries);
+
                 Section0Block2Entry s = new Section0Block2Entry();
 
                 reader.BaseStream.Position += 0x4;
@@ -678,6 +692,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[meshInfoIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{section0Info[meshInfoIndex].numEntries}", (float)i / section0Info[meshInfoIndex].numEntries);
+
                 Section0Block3Entry s = new Section0Block3Entry();
 
                 s.alphaEnum = reader.ReadByte();
@@ -704,11 +720,13 @@ public class Fmdl
          ****************************************************************/
         if (materialInstancesIndex != -1)
         {
-            //go to and get the section 0x3 entry info.
+            //go to and get the section 0x4 entry info.
             reader.BaseStream.Position = section0Info[materialInstancesIndex].offset + section0Offset;
 
             for (int i = 0; i < section0Info[materialInstancesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{section0Info[materialInstancesIndex].numEntries}", (float)i / section0Info[materialInstancesIndex].numEntries);
+
                 Section0Block4Entry s = new Section0Block4Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -736,6 +754,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[boneGroupsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{section0Info[boneGroupsIndex].numEntries}", (float)i / section0Info[boneGroupsIndex].numEntries);
+
                 Section0Block5Entry s = new Section0Block5Entry();
 
                 s.unknown0 = reader.ReadUInt16();
@@ -763,6 +783,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[texturesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{section0Info[texturesIndex].numEntries}", (float)i / section0Info[texturesIndex].numEntries);
+
                 Section0Block6Entry s = new Section0Block6Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -784,6 +806,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[textureTypesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{section0Info[textureTypesIndex].numEntries}", (float)i / section0Info[textureTypesIndex].numEntries);
+
                 Section0Block7Entry s = new Section0Block7Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -805,6 +829,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[materialsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{section0Info[materialsIndex].numEntries}", (float)i / section0Info[materialsIndex].numEntries);
+
                 Section0Block8Entry s = new Section0Block8Entry();
 
                 s.stringId = reader.ReadUInt16();
@@ -826,6 +852,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[meshFormatAssignmentIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{section0Info[meshFormatAssignmentIndex].numEntries}", (float)i / section0Info[meshFormatAssignmentIndex].numEntries);
+
                 Section0Block9Entry s = new Section0Block9Entry();
 
                 s.numMeshFormatEntries = reader.ReadByte();
@@ -850,6 +878,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[meshFormatsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{section0Info[meshFormatsIndex].numEntries}", (float)i / section0Info[meshFormatsIndex].numEntries);
+
                 Section0BlockAEntry s = new Section0BlockAEntry();
 
                 s.bufferOffsetId = reader.ReadByte();
@@ -874,6 +904,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[vertexFormatsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{section0Info[vertexFormatsIndex].numEntries}", (float)i / section0Info[vertexFormatsIndex].numEntries);
+
                 Section0BlockBEntry s = new Section0BlockBEntry();
 
                 s.usage = reader.ReadByte();
@@ -896,6 +928,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[stringsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{section0Info[stringsIndex].numEntries}", (float)i / section0Info[stringsIndex].numEntries);
+
                 Section0BlockCEntry s = new Section0BlockCEntry();
 
                 s.section1BlockId = reader.ReadUInt16();
@@ -908,7 +942,7 @@ public class Fmdl
 
         /****************************************************************
          *
-         * SECTION 0 BLOCK 0xD - BOUNDING BOX/SHADOW(?) DEFINITIONS
+         * SECTION 0 BLOCK 0xD - BOUNDING BOX DEFINITIONS
          *
          ****************************************************************/
         if (boundingBoxesIndex != -1)
@@ -918,6 +952,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[boundingBoxesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{section0Info[boundingBoxesIndex].numEntries}", (float)i / section0Info[boundingBoxesIndex].numEntries);
+
                 Section0BlockDEntry s = new Section0BlockDEntry();
 
                 s.maxX = reader.ReadSingle();
@@ -945,6 +981,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[bufferOffsetsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Buffer Offsets: {i}/{section0Info[bufferOffsetsIndex].numEntries}", (float)i / section0Info[bufferOffsetsIndex].numEntries);
+
                 Section0BlockEEntry s = new Section0BlockEEntry();
 
                 s.unknown0 = reader.ReadUInt32();
@@ -968,6 +1006,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[lodInfoIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Info: {i}/{section0Info[lodInfoIndex].numEntries}", (float)i / section0Info[lodInfoIndex].numEntries);
+
                 Section0Block10Entry s = new Section0Block10Entry();
 
                 s.numLods = reader.ReadUInt32();
@@ -991,6 +1031,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{section0Info[faceIndicesIndex].numEntries}", (float)i / section0Info[faceIndicesIndex].numEntries);
+
                 Section0Block11Entry s = new Section0Block11Entry();
 
                 s.firstFaceVertexId = reader.ReadUInt32();
@@ -1012,6 +1054,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[type12Index].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 12: {i}/{section0Info[type12Index].numEntries}", (float)i / section0Info[type12Index].numEntries);
+
                 Section0Block12Entry s = new Section0Block12Entry();
 
                 s.unknown0 = reader.ReadUInt64();
@@ -1032,6 +1076,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[type14Index].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 14: {i}/{section0Info[type14Index].numEntries}", (float)i / section0Info[type14Index].numEntries);
+
                 Section0Block14Entry s = new Section0Block14Entry();
 
                 reader.BaseStream.Position += 0x4;
@@ -1060,6 +1106,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[texturePathsIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Paths: {i}/{section0Info[texturePathsIndex].numEntries}", (float)i / section0Info[texturePathsIndex].numEntries);
+
                 ulong u = reader.ReadUInt64();
 
                 section0Block15Entries.Add(u);
@@ -1078,6 +1126,8 @@ public class Fmdl
 
             for (int i = 0; i < section0Info[stringHashesIndex].numEntries; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"String Hashes: {i}/{section0Info[stringHashesIndex].numEntries}", (float)i / section0Info[stringHashesIndex].numEntries);
+
                 ulong u = reader.ReadUInt64();
 
                 section0Block16Entries.Add(u);
@@ -1093,12 +1143,22 @@ public class Fmdl
         {
             reader.BaseStream.Position = section1Info[section1MaterialParametersIndex].offset + section1Offset;
 
-            for (int i = 0; i < materialParameters.Length; i++)
-            {
-                materialParameters[i].values = new float[4];
+            int materialParameterCount = (int)(section1Info[section1MaterialParametersIndex].length / 4) / 4;
 
-                for (int j = 0; j < materialParameters[i].values.Length; j++)
-                    materialParameters[i].values[j] = reader.ReadSingle();
+            for (int i = 0; i < materialParameterCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Parameters: {i}/{materialParameterCount}", (float)i / materialParameterCount);
+
+                MaterialParameter m = new MaterialParameter();
+
+                //m.values = new Vector4();
+
+                m.values.x = reader.ReadSingle();
+                m.values.y = reader.ReadSingle();
+                m.values.z = reader.ReadSingle();
+                m.values.w = reader.ReadSingle();
+
+                materialParameters.Add(m);
             } //for
         } //if
 
@@ -1111,6 +1171,8 @@ public class Fmdl
 
         for (int i = 0; i < section0Block3Entries.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Positions: {i}/{section0Block3Entries.Count}", (float)i / section0Block3Entries.Count);
+
             reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset;
 
             Object o = new Object();
@@ -1140,6 +1202,8 @@ public class Fmdl
 
         for (int i = 0; i < objects.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Additional Vertex Data: {i}/{objects.Count}", (float)i / objects.Count);
+
             objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
             //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
 
@@ -1235,6 +1299,8 @@ public class Fmdl
          ****************************************************************/
         for (int i = 0; i < objects.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Faces: {i}/{objects.Count}", (float)i / objects.Count);
+
             reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2;
 
             objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
@@ -1257,6 +1323,8 @@ public class Fmdl
 
             for (int i = 0; i < objects.Count; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Faces: {i}/{objects.Count}", (float)i / objects.Count);
+
                 objects[i].lodFaces = new Face[section0Block10Entries[0].numLods][];
 
                 for (int j = 0; j < objects[i].lodFaces.Length; j++)
@@ -1286,12 +1354,16 @@ public class Fmdl
         {
             for (int i = 0; i < section0BlockCEntries.Count; i++)
             {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{section0BlockCEntries.Count}", (float)i / section0BlockCEntries.Count);
+
                 reader.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section0BlockCEntries[i].offset;
                 string s = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
 
                 strings.Add(s);
             } //for
         } //if
+
+        EditorUtility.ClearProgressBar();
     } //Read
 
     /*
@@ -1300,8 +1372,8 @@ public class Fmdl
      */
     public void Write(GameObject gameObject, FileStream stream)
     {
-        const float TOTAL_TASKS = 20f;
-        EditorUtility.DisplayProgressBar("Test Bar", "Starting!", 0 / TOTAL_TASKS);
+        const string BAR_STRING = "Writing!";
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Starting!", 0);
 
         Globals.ReadMaterialList();
 
@@ -1336,7 +1408,7 @@ public class Fmdl
         //Block 0 - Bones
         for (int i = 0; i < bones.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Bones: {i}/{bones.Count}", 0 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{bones.Count}", (float)i / bones.Count);
 
             Section0Block0Entry s = new Section0Block0Entry();
 
@@ -1374,7 +1446,7 @@ public class Fmdl
         //Block 1 - Mesh Groups
         for (int i = 0; i < meshGroups.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Groups: {i}/{meshGroups.Count}", 1 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{meshGroups.Count}", (float)i / meshGroups.Count);
 
             Section0Block1Entry s = new Section0Block1Entry();
 
@@ -1399,7 +1471,7 @@ public class Fmdl
         //Block 2 - Mesh Group Assignments
         for (int i = 0; i < meshGroupEntries.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Group Assignments: {i}/{meshGroupEntries.Count}", 2 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{meshGroupEntries.Count}", (float)i / meshGroupEntries.Count);
 
             Section0Block2Entry s = new Section0Block2Entry();
 
@@ -1420,7 +1492,7 @@ public class Fmdl
         //Block 3 - Meshes
         for (int i = 0; i < meshes.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Meshes: {i}/{meshes.Count}", 3 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{meshes.Count}", i / meshes.Count);
 
             FoxModel foxModel = gameObject.GetComponent<FoxModel>();
             Section0Block3Entry s = new Section0Block3Entry();
@@ -1454,7 +1526,7 @@ public class Fmdl
         //Block 8 - Materials
         for (int i = 0; i < materials.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Materials: {i}/{materials.Count}", 4 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{materials.Count}", (float)i / materials.Count);
 
             Section0Block8Entry s = new Section0Block8Entry();
 
@@ -1470,7 +1542,7 @@ public class Fmdl
         //Block 4 - Material Instances
         for (int i = 0; i < materialInstances.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Material Instances: {i}/{materialInstances.Count}", 5 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{materialInstances.Count}", (float)i / materialInstances.Count);
 
             Section0Block4Entry s = new Section0Block4Entry();
 
@@ -1521,7 +1593,7 @@ public class Fmdl
         if (bones.Count > 0)
             for (int i = 0; i < meshes.Count; i++)
             {
-                EditorUtility.DisplayProgressBar("Test Bar", $"Bone Groups: {i}/{meshes.Count}", 6 / TOTAL_TASKS);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{meshes.Count}", (float)i / meshes.Count);
 
                 Section0Block5Entry s = new Section0Block5Entry();
                 List<int> indices = GetBoneGroup(meshes[i], bones);
@@ -1545,7 +1617,7 @@ public class Fmdl
         //Block 6 - Textures
         for (int i = 0; i < textures.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Textures: {i}/{textures.Count}", 7 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{textures.Count}", (float)i / textures.Count);
 
             Section0Block6Entry s = new Section0Block6Entry();
 
@@ -1573,7 +1645,7 @@ public class Fmdl
         //Block 7 - Texture Type/Material Parameter Assignments
         for (int i = 0; i < materialInstances.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Texture Type/Material Parameter Assignments: {i}/{materialInstances.Count}", 8 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{materialInstances.Count}", (float)i / materialInstances.Count);
 
             for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
                 if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
@@ -1596,25 +1668,26 @@ public class Fmdl
                         section0Block7Entries.Add(s);
                     } //if
 
-            for (int j = 0; j < materials[section0Block4Entries[i].materialId].materialParameters.Count; j++)
+            for(int j = 0; j < section0Block4Entries[i].numParameters; j++)
             {
                 Section0Block7Entry s = new Section0Block7Entry();
 
-                int stringIndex = strings.IndexOf(materials[section0Block4Entries[i].materialId].materialParameters[j].name);
                 int numPrecedingParameters = 0;
+
+                for (int h = 0; h < i; h++)
+                    numPrecedingParameters += section0Block4Entries[h].numParameters;
+
+                s.referenceId = (ushort)(numPrecedingParameters + j);
+
+                int stringIndex = strings.IndexOf(materialParameters[s.referenceId].name);
 
                 if (stringIndex == -1)
                 {
                     stringIndex = strings.Count;
-                    strings.Add(materials[section0Block4Entries[i].materialId].materialParameters[j].name);
+                    strings.Add(materialParameters[s.referenceId].name);
                 } //if
 
                 s.stringId = (ushort)stringIndex;
-
-                for (int h = 0; h < section0Block4Entries[i].materialId; h++)
-                    numPrecedingParameters += materials[h].materialParameters.Count;
-
-                s.referenceId = (ushort)(numPrecedingParameters + j);
 
                 section0Block7Entries.Add(s);
             } //for
@@ -1623,7 +1696,7 @@ public class Fmdl
         //Block 9 - Mesh Format Assignments
         for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Mesh Format Assignments: {i}/{meshFormats.Count}", 9 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
 
             Section0Block9Entry s = new Section0Block9Entry();
 
@@ -1675,7 +1748,7 @@ public class Fmdl
         //Block A - Mesh Formats
         for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"meshFormats: {i}/{meshFormats.Count}", 10 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
 
             if (meshFormats[i].meshFormat0Size > 0)
             {
@@ -1725,7 +1798,8 @@ public class Fmdl
         //Block B - Vertex Formats
         for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Vertex Formats: {i}/{meshFormats.Count}", 11 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
+
             ushort offset = 0;
 
             Section0BlockBEntry s = new Section0BlockBEntry();
@@ -1850,7 +1924,7 @@ public class Fmdl
         //Block C - Strings
         for (int i = 0; i < strings.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Strings: {i}/{strings.Count}", 12 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{strings.Count}", (float)i / strings.Count);
 
             Section0BlockCEntry s = new Section0BlockCEntry();
             s.section1BlockId = 3;
@@ -1870,8 +1944,6 @@ public class Fmdl
 
         //Block D - Bounding Boxes
         {
-            EditorUtility.DisplayProgressBar("Test Bar", "Bounding Boxes...", 13 / TOTAL_TASKS);
-
             Section0BlockDEntry s = new Section0BlockDEntry();
 
             foreach (Transform t in gameObject.transform)
@@ -1894,6 +1966,8 @@ public class Fmdl
 
         for (int i = 0; i < bones.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{bones.Count}", (float)i / bones.Count);
+
             Section0BlockDEntry s = new Section0BlockDEntry();
             s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
             s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
@@ -1909,7 +1983,7 @@ public class Fmdl
         //Block E - Buffer Offsets
         for (int i = 0; i < 3; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Buffer Offsets: {i}/3", 14 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/3", (float)i / 3);
 
             Section0BlockEEntry s = new Section0BlockEEntry();
 
@@ -1926,7 +2000,7 @@ public class Fmdl
 
         //Block 10 - LOD Info
         {
-            EditorUtility.DisplayProgressBar("Test Bar", "LOD Info: 0/1", 15 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Info: 0/1", 0);
 
             Section0Block10Entry s = new Section0Block10Entry();
             s.numLods = 1;
@@ -1939,7 +2013,7 @@ public class Fmdl
         //Block 11 - Face Indices
         for (int i = 0; i < meshes.Count; i++)
         {
-            EditorUtility.DisplayProgressBar("Test Bar", $"Face Indices: {i}/{meshes.Count}", 16 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{meshes.Count}", (float)i / meshes.Count);
 
             Section0Block11Entry s = new Section0Block11Entry();
             s.firstFaceVertexId = 0;
@@ -1949,7 +2023,7 @@ public class Fmdl
 
         //Block 12 - Unknown
         {
-            EditorUtility.DisplayProgressBar("Test Bar", "Block 12: 0/1", 17 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, "Block 12: 0/1", 0);
 
             Section0Block12Entry s = new Section0Block12Entry();
             s.unknown0 = 0;
@@ -1958,7 +2032,7 @@ public class Fmdl
 
         //Block 14 - Unknown
         {
-            EditorUtility.DisplayProgressBar("Test Bar", "Block 14: 0/1", 18 / TOTAL_TASKS);
+            EditorUtility.DisplayProgressBar(BAR_STRING, "Block 14: 0/1", 0);
 
             Section0Block14Entry s = new Section0Block14Entry();
             s.unknown0 = 3.33850384f;
@@ -2349,7 +2423,7 @@ public class Fmdl
 
         numSection1Blocks = (uint)section1Info.Count;
 
-        EditorUtility.DisplayProgressBar("Test Bar", "Writing: 0/1", 20 / TOTAL_TASKS);
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Writing: 0/1", 0);
         //Time to Write!
         //Header
         writer.Write(signature);
@@ -2517,8 +2591,6 @@ public class Fmdl
 
                 for (int j = 0; j < section0Block5Entries[i].entries.Count; j++)
                     writer.Write(section0Block5Entries[i].entries[j]);
-
-                UnityEngine.Debug.Log(0x40 - 2 * section0Block5Entries[i].numEntries);
 
                 writer.WriteZeroes(0x40 - 2 * section0Block5Entries[i].numEntries);
             } //for
@@ -2783,10 +2855,13 @@ public class Fmdl
         {
             section1Info[section1MaterialParametersIndex].offset = (uint)(writer.BaseStream.Position - section1Offset);
 
-            for (int i = 0; i < materials.Count; i++)
-                for (int j = 0; j < materials[i].materialParameters.Count; j++)
-                    for (int h = 0; h < 4; h++)
-                        writer.Write(materials[i].materialParameters[j].values[h]);
+            for (int i = 0; i < materialParameters.Count; i++)
+            {
+                writer.Write(materialParameters[i].values.x);
+                writer.Write(materialParameters[i].values.y);
+                writer.Write(materialParameters[i].values.z);
+                writer.Write(materialParameters[i].values.w);
+            } //for
 
             section1Info[section1MaterialParametersIndex].length = (uint)(writer.BaseStream.Position - section1Offset - section1Info[section1MaterialParametersIndex].offset);
 
@@ -2996,6 +3071,17 @@ public class Fmdl
 
                 if (!materialInstances.Contains(m))
                 {
+                    for (int j = 0; j < ShaderUtil.GetPropertyCount(m.shader); j++)
+                    {
+                        if (ShaderUtil.GetPropertyType(m.shader, j) == ShaderUtil.ShaderPropertyType.Vector)
+                        {
+                            MaterialParameter mp = new MaterialParameter();
+                            mp.name = ShaderUtil.GetPropertyName(m.shader, j);
+                            mp.values = m.GetVector(mp.name);
+                            materialParameters.Add(mp);
+                        } //if
+                    } //for
+
                     materialInstances.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>().sharedMaterial);
 
                     for (int i = 0; i < ShaderUtil.GetPropertyCount(m.shader); i++)
@@ -3299,8 +3385,8 @@ public class Fmdl
 
                     parameter.name = paramName;
 
-                    for (int h = 0; h < materialParameters[section0Block7Entries[j].referenceId].values.Length; h++)
-                        parameter.values[h] = materialParameters[section0Block7Entries[j].referenceId].values[h];
+                    //for (int h = 0; h < materialParameters[section0Block7Entries[j].referenceId].values.Length; h++)
+                    //    parameter.values[h] = materialParameters[section0Block7Entries[j].referenceId].values[h];
 
                     foxMaterial.materialParameters.Add(parameter);
                 } //for

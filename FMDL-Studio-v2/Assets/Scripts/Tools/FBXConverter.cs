@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using UnityEditor;
 using UnityEngine;
 
 public static class FBXConverter
@@ -62,6 +63,9 @@ public static class FBXConverter
         int videoCount = videos.Count;
         int textureCount = textures.Count;
 
+        const string BAR_STRING = "Converting to FBX!";
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Starting!", 0);
+
         //Object Properties
         fbx.Append("\n; Object properties");
         fbx.Append("\n;------------------------------------------------------------------");
@@ -70,6 +74,8 @@ public static class FBXConverter
         //Bone Nodes
         for (int i = 0; i < boneCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Nodes: {i}/{boneCount}", (float)i / boneCount);
+
             fbx.AppendFormat("\n\tNodeAttribute: {0}, \"NodeAttribute::\", \"LimbNode\" {{", nodesToBones[i].Item1);
             fbx.Append("\n\t\tTypeFlags: \"Skeleton\"");
             fbx.Append("\n\t}");
@@ -78,6 +84,8 @@ public static class FBXConverter
         //Meshes
         for (int i = 0; i < meshCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{meshCount}", (float)i / meshCount);
+
             Vector3[] vertices = meshes[i].Item2.sharedMesh.vertices;
             int[] triangles = meshes[i].Item2.sharedMesh.triangles;
             Vector3[] normals = meshes[i].Item2.sharedMesh.normals;
@@ -373,6 +381,8 @@ public static class FBXConverter
         //General Objects Names/Positions
         for (int i = 0; i < objectCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Objects: {i}/{objectCount}", (float)i / objectCount);
+
             Tuple<int, GameObject> obj = objects[i];
 
             fbx.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"Null\" {{", obj.Item1, obj.Item2.name);
@@ -388,8 +398,10 @@ public static class FBXConverter
         } //for
 
         //Bones Names/Positions
-        for (int i = 0; i < bones.Count; i++)
+        for (int i = 0; i < boneCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{boneCount}", (float)i / boneCount);
+
             Tuple<int, Transform> bone = bones[i];
 
             fbx.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"LimbNode\" {{", bone.Item1, bone.Item2.gameObject.name);
@@ -408,8 +420,10 @@ public static class FBXConverter
         } //for
 
         //Mesh Names
-        for (int i = 0; i < meshes.Count; i++)
+        for (int i = 0; i < meshCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Names: {i}/{meshCount}", (float)i / meshCount);
+
             Tuple<int, SkinnedMeshRenderer> mesh = meshes[i];
 
             fbx.AppendFormat("\n\tModel: {0}, \"Model::{1}\", \"Mesh\" {{", mesh.Item1, mesh.Item2.name);
@@ -430,6 +444,8 @@ public static class FBXConverter
         fbx.AppendFormat("\n\t\tNbPoseNodes: {0}", geometryCount);
         for (int i = 0; i < geometryCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Pose Nodes: {i}/{geometryCount}", (float)i / geometryCount);
+
             fbx.Append("\n\t\tPoseNode:  {");
             fbx.AppendFormat("\n\t\t\tNode: {0}", geometry[i]);
             fbx.Append("\n\t\t}");
@@ -439,6 +455,8 @@ public static class FBXConverter
         //Materials
         for (int i = 0; i < materialCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{materialCount}", (float)i / materialCount);
+
             Tuple<int, Material> material = materials[i];
 
             fbx.AppendFormat("\n\tMaterial: {0}, \"Material::{1}\", \"\" {{", material.Item1, material.Item2);
@@ -460,6 +478,8 @@ public static class FBXConverter
         //Deformers
         for (int i = 0; i < deformerCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Deformers: {i}/{deformerCount}", (float)i / deformerCount);
+
             Tuple<int, SkinnedMeshRenderer> mesh = meshes[i];
 
             HashSet<int> usedBones = GetUsedBones(mesh.Item2);
@@ -537,6 +557,8 @@ public static class FBXConverter
         //Texture Videos
         for (int i = 0; i < videoCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Videos: {i}/{videoCount}", (float)i / videoCount);
+
             Texture texture = textures[i].Item2;
 
             fbx.AppendFormat("\n\tVideo: {0}, \"Video::{1}\", \"Clip\" {{", videos[i], texture.name);
@@ -553,6 +575,8 @@ public static class FBXConverter
         //Textures
         for (int i = 0; i < textureCount; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{textureCount}", (float)i / textureCount);
+
             Tuple<int, Texture> texture = textures[i];
 
             fbx.AppendFormat("\n\tTexture: {0}, \"Texture::{1}\", \"\" {{", texture.Item1, texture.Item2.name);
@@ -585,6 +609,8 @@ public static class FBXConverter
         //General Object Connections
         for (int i = 0; i < objectConnections.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Object Connections: {i}/{objectConnections.Count}", (float)i / objectConnections.Count);
+
             string name1 = "";
             string name2 = objects.Find(x => x.Item1 == objectConnections[i].Item2).Item2.name;
 
@@ -603,6 +629,8 @@ public static class FBXConverter
         //Bone Node to Bone Connections
         for (int i = 0; i < nodesToBones.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Node to Bone Connections: {i}/{nodesToBones.Count}", (float)i / nodesToBones.Count);
+
             string name1 = bones.Find(x => x.Item1 == nodesToBones[i].Item2).Item2.gameObject.name;
 
             fbx.AppendFormat("\n\n\t;NodeAttribute::, Model::{0}", name1);
@@ -612,6 +640,8 @@ public static class FBXConverter
         //Bone to Bone Connections
         for (int i = 0; i < boneConnections.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Connections: {i}/{boneConnections.Count}", (float)i / boneConnections.Count);
+
             string name1 = bones.Find(x => x.Item1 == boneConnections[i].Item1).Item2.gameObject.name;
             string name2 = bones.Find(x => x.Item1 == boneConnections[i].Item2).Item2.gameObject.name;
 
@@ -622,6 +652,8 @@ public static class FBXConverter
         //Material to Mesh Connections
         for (int i = 0; i < materialsToMeshes.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Material to Mesh Connections: {i}/{materialsToMeshes.Count}", (float)i / materialsToMeshes.Count);
+
             string name1 = materials.Find(x => x.Item1 == materialsToMeshes[i].Item1).Item2.name;
             string name2 = meshes.Find(x => x.Item1 == materialsToMeshes[i].Item2).Item2.name;
 
@@ -632,6 +664,8 @@ public static class FBXConverter
         //Geometry to Mesh Connections
         for (int i = 0; i < geometryToMeshes.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Geometry to Mesh Connections: {i}/{geometryToMeshes.Count}", (float)i / geometryToMeshes.Count);
+
             string name1 = meshes.Find(x => x.Item1 == geometryToMeshes[i].Item2).Item2.name;
 
             fbx.AppendFormat("\n\n\t;Geometry::Scene, Model::{0}", name1);
@@ -641,6 +675,8 @@ public static class FBXConverter
         //Deformer to Geometry Connections
         for (int i = 0; i < deformersToGeometry.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Deformer to Geometry Connections: {i}/{deformersToGeometry.Count}", (float)i / deformersToGeometry.Count);
+
             fbx.Append("\n\n\t;Deformer::, Geometry::Scene");
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", deformersToGeometry[i].Item1, deformersToGeometry[i].Item2);
         } //for
@@ -648,6 +684,8 @@ public static class FBXConverter
         //SubDeformer to Deformer Connections
         for (int i = 0; i < subDeformersToDeformers.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"SubDeformer to Deformer Connections: {i}/{subDeformersToDeformers.Count}", (float)i / subDeformersToDeformers.Count);
+
             fbx.Append("\n\n\t;SubDeformer::, Deformer::");
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", subDeformersToDeformers[i].Item1, subDeformersToDeformers[i].Item2);
         } //for
@@ -655,6 +693,8 @@ public static class FBXConverter
         //Bone to SubDeformer Connections
         for (int i = 0; i < bonesToSubDeformers.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone to SubDeformer Connections: {i}/{bonesToSubDeformers.Count}", (float)i / bonesToSubDeformers.Count);
+
             string name1 = bones.Find(x => x.Item1 == bonesToSubDeformers[i].Item1).Item2.gameObject.name;
 
             fbx.AppendFormat("\n\n\t;Model::{0}, SubDeformer::", name1);
@@ -664,6 +704,8 @@ public static class FBXConverter
         //Texture to Material Connections
         for (int i = 0; i < texturesToMaterials.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture to Material Connections: {i}/{texturesToMaterials.Count}", (float)i / texturesToMaterials.Count);
+
             string name1 = textures.Find(x => x.Item1 == texturesToMaterials[i].Item1).Item2.name;
             string name2 = materials.Find(x => x.Item1 == texturesToMaterials[i].Item2).Item2.name;
 
@@ -674,11 +716,15 @@ public static class FBXConverter
         //Texture Video to Texture Connections
         for (int i = 0; i < videosToTextures.Count; i++)
         {
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Video to Texture Connections: {i}/{videosToTextures.Count}", (float)i / videosToTextures.Count);
+
             string name1 = textures.Find(x => x.Item1 == videosToTextures[i].Item2).Item2.name;
 
             fbx.AppendFormat("\n\n\t;Video::{0}, Texture::{0}", name1);
             fbx.AppendFormat("\n\tC: \"OO\",{0},{1}", videosToTextures[i].Item1, videosToTextures[i].Item2);
         } //for
+
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Takes: 0/1", 0);
 
         //Takes
         fbx.Append("\n}");
@@ -687,6 +733,8 @@ public static class FBXConverter
         fbx.Append("\n\nTakes:  {");
         fbx.Append("\n\tCurrent: \"\"");
         fbx.Append("\n}");
+
+        EditorUtility.DisplayProgressBar(BAR_STRING, "Header: 0/1", 0);
 
         //Header
         header.Append("; FBX 7.4.0 project file");
@@ -990,6 +1038,7 @@ public static class FBXConverter
             stream.Close();
         } //using
 
+        EditorUtility.ClearProgressBar();
         Debug.Log("Done!");
     } //ConvertToFbx
 
