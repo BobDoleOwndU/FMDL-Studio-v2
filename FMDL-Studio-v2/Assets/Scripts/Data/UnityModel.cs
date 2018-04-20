@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -40,7 +41,7 @@ public class UnityModel
         fmdlGameObject.name = fmdl.name;
         GameObject[] subFmdlGameObjects = new GameObject[fmdl.objects.Count];
         Transform[] bones;
-        Matrix4x4[] bindPoses;
+        //Matrix4x4[] bindPoses;
         Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
         FoxModel foxModel = fmdlGameObject.AddComponent<FoxModel>();
@@ -51,15 +52,15 @@ public class UnityModel
         if (fmdl.bonesIndex != -1)
         {
             bones = new Transform[fmdl.section0Block0Entries.Count];
-            bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Count];
+            //bindPoses = new Matrix4x4[fmdl.section0Block0Entries.Count];
         } //if
         else
         {
             bones = new Transform[0];
-            bindPoses = new Matrix4x4[0];
+            //bindPoses = new Matrix4x4[0];
         } //else
 
-        for(int i = 0; i < fmdl.section0Block4Entries.Count; i++)
+        for (int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
             if (fmdl.stringsIndex != -1)
                 materials[i].material = new Material(Shader.Find($"FoxShaders/{fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]}"));
@@ -132,14 +133,14 @@ public class UnityModel
                 for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
                     materials[i].material.SetVector(Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]), new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
             } //else
-            
+
             //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
             for (int j = 0; j < ShaderUtil.GetPropertyCount(materials[i].material.shader); j++)
                 if (ShaderUtil.GetPropertyType(materials[i].material.shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
                     materials[i].material.SetTextureScale(ShaderUtil.GetPropertyName(materials[i].material.shader, j), new Vector2(1, -1));
         } //for
 
-        for(int i = 0; i < bounds.Length; i++)
+        for (int i = 0; i < bounds.Length; i++)
         {
             bounds[i].SetMinMax(new Vector3(fmdl.section0BlockDEntries[i].minZ, fmdl.section0BlockDEntries[i].minY, fmdl.section0BlockDEntries[i].minX), new Vector3(fmdl.section0BlockDEntries[i].maxZ, fmdl.section0BlockDEntries[i].maxY, fmdl.section0BlockDEntries[i].maxX));
         } //for
@@ -157,7 +158,7 @@ public class UnityModel
         {
             bones[i] = new GameObject().transform;
             bones[i].position = new Vector3(fmdl.section0Block0Entries[i].worldPositionZ, fmdl.section0Block0Entries[i].worldPositionY, fmdl.section0Block0Entries[i].worldPositionX);
-            
+
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
             collider.center = bones[i].InverseTransformPoint(bounds[fmdl.section0Block0Entries[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
             collider.size = bounds[fmdl.section0Block0Entries[i].boundingBoxId].size;
@@ -276,16 +277,76 @@ public class UnityModel
             mesh.triangles = meshes[i].faces;
             mesh.boneWeights = meshes[i].boneWeights;
 
-            for (int j = 0; j < bones.Length; j++)
+            //Sets up the model to only use weighted bones.
+            Transform[] boneArray = bones;
+            List<Transform> usedBones = new List<Transform>(0);
+            BoneWeight[] weightArray = meshes[i].boneWeights;
+            int boneCount = boneArray.Length;
+            int weightCount = weightArray.Length;
+
+            for (int j = 0; j < boneCount; j++)
             {
-                bindPoses[j] = bones[j].worldToLocalMatrix * subFmdlGameObjects[i].transform.localToWorldMatrix;
+                bool found = false;
+
+                for (int h = 0; h < weightCount; h++)
+                {
+                    if (weightArray[h].boneIndex0 == j)
+                    {
+                        found = true;
+
+                        if (!usedBones.Contains(boneArray[j]))
+                            weightArray[h].boneIndex0 = usedBones.Count;
+                        else
+                            weightArray[h].boneIndex0 = usedBones.IndexOf(boneArray[j]);
+                    } //if
+                    if (weightArray[h].boneIndex1 == j)
+                    {
+                        found = true;
+
+                        if (!usedBones.Contains(boneArray[j]))
+                            weightArray[h].boneIndex1 = usedBones.Count;
+                        else
+                            weightArray[h].boneIndex1 = usedBones.IndexOf(boneArray[j]);
+                    } //if
+                    if (weightArray[h].boneIndex2 == j)
+                    {
+                        found = true;
+
+                        if (!usedBones.Contains(boneArray[j]))
+                            weightArray[h].boneIndex2 = usedBones.Count;
+                        else
+                            weightArray[h].boneIndex2 = usedBones.IndexOf(boneArray[j]);
+                    } //if
+                    if (weightArray[h].boneIndex3 == j)
+                    {
+                        found = true;
+
+                        if (!usedBones.Contains(boneArray[j]))
+                            weightArray[h].boneIndex3 = usedBones.Count;
+                        else
+                            weightArray[h].boneIndex3 = usedBones.IndexOf(boneArray[j]);
+                    } //if
+                } //for
+
+                if (found)
+                    if (!usedBones.Contains(boneArray[j]))
+                        usedBones.Add(boneArray[j]);
             } //for
 
-            mesh.bindposes = bindPoses;
+            mesh.boneWeights = weightArray;
 
-            meshRenderer.bones = bones;
+            meshRenderer.bones = usedBones.ToArray();
+
+            boneCount = usedBones.Count;
+            List<Matrix4x4> bindPoses = new List<Matrix4x4>(0);
+
+            for (int j = 0; j < boneCount; j++)
+            {
+                bindPoses.Add(usedBones[j].worldToLocalMatrix * subFmdlGameObjects[i].transform.localToWorldMatrix);
+            } //for
+
+            mesh.bindposes = bindPoses.ToArray();
             meshRenderer.sharedMesh = mesh;
-
             foxMeshDefinition.mesh = meshRenderer.sharedMesh;
             foxModel.meshDefinitions[i] = foxMeshDefinition;
             subFmdlGameObjects[i].AddComponent<MeshCollider>();

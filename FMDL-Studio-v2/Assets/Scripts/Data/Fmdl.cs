@@ -1570,10 +1570,8 @@ public class Fmdl
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
             } //else
 
-            //string materialName = gameObject.GetComponent<FoxModel>().materialDefinitions[i].materialName;
 
             s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.type == materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1)));
-            //UnityEngine.Debug.Log(materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/')));
             s.numParameters = (byte)materials[s.materialId].materialParameters.Count;
 
             if (i != 0)
@@ -1668,7 +1666,7 @@ public class Fmdl
                         section0Block7Entries.Add(s);
                     } //if
 
-            for(int j = 0; j < section0Block4Entries[i].numParameters; j++)
+            for (int j = 0; j < section0Block4Entries[i].numParameters; j++)
             {
                 Section0Block7Entry s = new Section0Block7Entry();
 
@@ -3198,7 +3196,7 @@ public class Fmdl
 
             if (index != -1)
             {
-                if (!materials.Contains(materials.Find(x => x.name == Globals.foxMaterialList.foxMaterials[index].name)))
+                if (!materials.Contains(materials.Find(x => x.type == Globals.foxMaterialList.foxMaterials[index].type)))
                 {
                     FoxMaterial f = new FoxMaterial();
                     f.name = Globals.foxMaterialList.foxMaterials[index].name;
@@ -3398,6 +3396,22 @@ public class Fmdl
 
         Globals.WriteMaterialList();
     } //AddMaterialToList
+
+    [Conditional("DEBUG")]
+    public void OutputBones()
+    {
+        using (FileStream stream = new FileStream("bones.txt", FileMode.Create))
+        {
+            StreamWriter writer = new StreamWriter(stream);
+            writer.AutoFlush = true;
+            for (int i = 0; i < section0Block0Entries.Count; i++)
+            {
+                writer.WriteLine(Hashing.TryGetStringName(section0Block16Entries[section0Block0Entries[i].stringId]));
+            } //for
+
+            stream.Close();
+        } //using
+    } //OutputBones
 
     [Conditional("DEBUG")]
     public void OutputSection0Block0Info()

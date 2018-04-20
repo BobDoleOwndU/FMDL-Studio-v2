@@ -17,7 +17,7 @@ public class FoxModel : MonoBehaviour
 
             meshDefinitions = new FoxMeshDefinition[meshes.Count];
 
-            for(int i = 0; i < meshes.Count; i++)
+            for (int i = 0; i < meshes.Count; i++)
             {
                 meshDefinitions[i] = new FoxMeshDefinition();
                 meshDefinitions[i].mesh = meshes[i];
@@ -55,7 +55,7 @@ public class FoxModel : MonoBehaviour
 public class FoxMeshDefinition
 {
     public enum Alpha { NoAlpha = 0, Glass = 0x10, Glass2 = 0x11, Glass3 = 0x30, Unknown = 0x20, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0 }
-    public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, Glass = 5, Shadow2 = 0x40 }
+    public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, TintedGlass = 4, Glass = 5, Shadow2 = 0x40 }
 
     public Mesh mesh;
     public string meshGroup;

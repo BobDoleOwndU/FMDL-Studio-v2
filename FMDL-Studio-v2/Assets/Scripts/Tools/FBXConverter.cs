@@ -481,7 +481,8 @@ public static class FBXConverter
             EditorUtility.DisplayProgressBar(BAR_STRING, $"Deformers: {i}/{deformerCount}", (float)i / deformerCount);
 
             Tuple<int, SkinnedMeshRenderer> mesh = meshes[i];
-
+            List<Transform> meshBones = new List<Transform>(0);
+            meshBones.AddRange(mesh.Item2.bones);
             HashSet<int> usedBones = GetUsedBones(mesh.Item2);
 
             fbx.AppendFormat("\n\tDeformer: {0}, \"Deformer::\", \"Skin\" {{", deformers[i]);
@@ -502,22 +503,22 @@ public static class FBXConverter
 
                 for (int h = 0; h < boneWeights.Length; h++)
                 {
-                    if (boneWeights[h].boneIndex0 == j)
+                    if (meshBones[boneWeights[h].boneIndex0] == bones[j].Item2)
                     {
                         indices.Add(h);
                         weights.Add(boneWeights[h].weight0);
                     } //if
-                    else if (boneWeights[h].boneIndex1 == j)
+                    else if (meshBones[boneWeights[h].boneIndex1] == bones[j].Item2)
                     {
                         indices.Add(h);
                         weights.Add(boneWeights[h].weight1);
                     } //if
-                    else if (boneWeights[h].boneIndex2 == j)
+                    else if (meshBones[boneWeights[h].boneIndex2] == bones[j].Item2)
                     {
                         indices.Add(h);
                         weights.Add(boneWeights[h].weight2);
                     } //if
-                    else if (boneWeights[h].boneIndex3 == j)
+                    else if (meshBones[boneWeights[h].boneIndex3] == bones[j].Item2)
                     {
                         indices.Add(h);
                         weights.Add(boneWeights[h].weight3);
@@ -526,6 +527,17 @@ public static class FBXConverter
 
                 int indexCount = indices.Count;
                 int weightCount = weights.Count;
+                int meshBoneCount = mesh.Item2.bones.Length;
+                int bindPoseIndex = -1;
+
+                for(int h = 0; h < meshBoneCount; h++)
+                {
+                    if (mesh.Item2.bones[h] == bones[j].Item2)
+                    {
+                        bindPoseIndex = h;
+                        break;
+                    } //if
+                } //for
 
                 fbx.AppendFormat("\n\tDeformer: {0}, \"SubDeformer::\", \"Cluster\" {{", modelId);
                 fbx.Append("\n\t\tVersion: 100");
@@ -544,10 +556,10 @@ public static class FBXConverter
                 fbx.Append("\n\t\t}");
                 fbx.Append("\n\t\tTransform: *16 {");
                 fbx.Append("\n\t\t\ta: ");
-                fbx.AppendFormat("{0},{1},{2},{3},", bindPoses[j][0, 0], -bindPoses[j][1, 0], -bindPoses[j][2, 0], bindPoses[j][3, 0]);
-                fbx.AppendFormat("{0},{1},{2},{3},", -bindPoses[j][0, 1], bindPoses[j][1, 1], bindPoses[j][2, 1], bindPoses[j][3, 1]);
-                fbx.AppendFormat("{0},{1},{2},{3},", -bindPoses[j][0, 2], bindPoses[j][1, 2], bindPoses[j][2, 2], bindPoses[j][3, 2]);
-                fbx.AppendFormat("{0},{1},{2},{3}", -bindPoses[j][0, 3], bindPoses[j][1, 3], bindPoses[j][2, 3], bindPoses[j][3, 3]);
+                fbx.AppendFormat("{0},{1},{2},{3},", bindPoses[bindPoseIndex][0, 0], -bindPoses[bindPoseIndex][1, 0], -bindPoses[bindPoseIndex][2, 0], bindPoses[bindPoseIndex][3, 0]);
+                fbx.AppendFormat("{0},{1},{2},{3},", -bindPoses[bindPoseIndex][0, 1], bindPoses[bindPoseIndex][1, 1], bindPoses[bindPoseIndex][2, 1], bindPoses[bindPoseIndex][3, 1]);
+                fbx.AppendFormat("{0},{1},{2},{3},", -bindPoses[bindPoseIndex][0, 2], bindPoses[bindPoseIndex][1, 2], bindPoses[bindPoseIndex][2, 2], bindPoses[bindPoseIndex][3, 2]);
+                fbx.AppendFormat("{0},{1},{2},{3}", -bindPoses[bindPoseIndex][0, 3], bindPoses[bindPoseIndex][1, 3], bindPoses[bindPoseIndex][2, 3], bindPoses[bindPoseIndex][3, 3]);
                 fbx.Append("\n\t\t}");
                 fbx.Append("\n\t}");
                 modelId++;
@@ -1046,19 +1058,42 @@ public static class FBXConverter
     {
         GetMeshes(transform);
 
-        foreach (Transform t in meshes[0].Item2.bones)
+        foreach(Transform t in transform)
+        {
+            if (t.gameObject.name == "[Root]")
+            {
+                GetBones(t);
+                break;
+            } //if
+        } //foreach
+
+        /*foreach (Transform t in meshes[0].Item2.bones)
         {
             bones.Add(new Tuple<int, Transform>(modelId, t));
             modelId++;
             nodes.Add(modelId);
             nodesToBones.Add(new Tuple<int, int>(modelId, modelId - 1));
             modelId++;
-        } //foreach
+        } //foreach*/
 
         GetBoneConnections();
         GetGameObjects(transform);
         GetGameObjectConnections();
     } //GetObjects
+
+    private static void GetBones(Transform transform)
+    {
+        foreach(Transform t in transform)
+        {
+            bones.Add(new Tuple<int, Transform>(modelId, t));
+            modelId++;
+            nodes.Add(modelId);
+            nodesToBones.Add(new Tuple<int, int>(modelId, modelId - 1));
+            modelId++;
+
+            GetBones(t);
+        } //foreach
+    } //GetBones
 
     private static void GetMeshes(Transform transform)
     {
@@ -1248,13 +1283,13 @@ public static class FBXConverter
         for (int i = 0; i < boneWeightCount; i++)
         {
             if (boneWeights[i].weight0 > 0)
-                usedBones.Add(boneWeights[i].boneIndex0);
+                usedBones.Add(bones.IndexOf(bones.Find(x => x.Item2 == skinnedMeshRenderer.bones[boneWeights[i].boneIndex0])));
             if (boneWeights[i].weight1 > 0)
-                usedBones.Add(boneWeights[i].boneIndex1);
+                usedBones.Add(bones.IndexOf(bones.Find(x => x.Item2 == skinnedMeshRenderer.bones[boneWeights[i].boneIndex1])));
             if (boneWeights[i].weight2 > 0)
-                usedBones.Add(boneWeights[i].boneIndex2);
+                usedBones.Add(bones.IndexOf(bones.Find(x => x.Item2 == skinnedMeshRenderer.bones[boneWeights[i].boneIndex2])));
             if (boneWeights[i].weight3 > 0)
-                usedBones.Add(boneWeights[i].boneIndex3);
+                usedBones.Add(bones.IndexOf(bones.Find(x => x.Item2 == skinnedMeshRenderer.bones[boneWeights[i].boneIndex3])));
         } //for
 
         return usedBones;

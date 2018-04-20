@@ -265,7 +265,7 @@ public static class Hashing
         } //foreach
     } //ReadStringDictionary
 
-	public static void ReadPathDictionary(string path)
+    public static void ReadPathDictionary(string path)
     {
         pathDictionary.Clear();
         pathHashDictionary.Clear();
@@ -277,7 +277,7 @@ public static class Hashing
         } //foreach
     } //ReadPathDictionary
 
-	public static string TryGetStringName(ulong hash)
+    public static string TryGetStringName(ulong hash)
     {
         for (int i = 0; i < stringHashDictionary.Count; i++)
             if (hash == stringHashDictionary[i])

@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using System;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 public class FmdlStudioWindow : EditorWindow
@@ -86,4 +88,16 @@ public class FmdlStudioWindow : EditorWindow
         else
             Debug.Log("No objects selected.");
     } //FixTangents
+
+    //Unfinished.
+    /*[MenuItem("FMDL Studio/Convert to Prefab", false, 103)]
+    public static void ConvertToPrefab()
+    {
+        if (Selection.activeGameObject != null)
+        {
+            PrefabConverter.ConvertToPrefab(Selection.activeGameObject);
+        } //if
+        else
+            Debug.Log("No objects selected.");
+    } //ConvertToPrefab*/
 } //class
