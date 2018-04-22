@@ -20,14 +20,6 @@ public class UnityModel
         public int[] faces;
     } //struct
 
-    //Apparently you can't extend Unity classes. So we have to use a struct instead.
-    private struct UnityMaterial
-    {
-        public Material material;
-        public string materialName;
-        public string materialType;
-    } //struct
-
     //Instance Variables
     private UnityMesh[] meshes;
 
@@ -47,7 +39,7 @@ public class UnityModel
         FoxModel foxModel = fmdlGameObject.AddComponent<FoxModel>();
         foxModel.meshDefinitions = new FoxMeshDefinition[fmdl.objects.Count];
 
-        UnityMaterial[] materials = new UnityMaterial[fmdl.section0Block4Entries.Count];
+        Material[] materials = new Material[fmdl.section0Block4Entries.Count];
 
         if (fmdl.bonesIndex != -1)
         {
@@ -63,17 +55,15 @@ public class UnityModel
         for (int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
             if (fmdl.stringsIndex != -1)
-                materials[i].material = new Material(Shader.Find($"FoxShaders/{fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]}"));
+                materials[i] = new Material(Shader.Find($"FoxShaders/{fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]}"));
             else
-                materials[i].material = new Material(Shader.Find($"FoxShaders/{Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId])}"));
+                materials[i] = new Material(Shader.Find($"FoxShaders/{Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId])}"));
             //materials[i].material = new Material(Shader.Find("Legacy Shaders/Transparent/Cutout/Bumped Diffuse"));
             //materials[i].material = new Material(Shader.Find("Standard"));
 
             if (fmdl.stringsIndex != -1)
             {
-                materials[i].material.name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
-                materials[i].materialName = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId];
-                materials[i].materialType = fmdl.strings[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId];
+                materials[i].name = fmdl.strings[fmdl.section0Block4Entries[i].stringId];
 
                 for (int j = fmdl.section0Block4Entries[i].firstTextureId; j < fmdl.section0Block4Entries[i].firstTextureId + fmdl.section0Block4Entries[i].numTextures; j++)
                 {
@@ -92,7 +82,7 @@ public class UnityModel
                         Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
                         texture.name = textureName + ".dds";
 
-                        materials[i].material.SetTexture(textureType, texture);
+                        materials[i].SetTexture(textureType, texture);
                     } //if
                     else
                     {
@@ -101,13 +91,11 @@ public class UnityModel
                 } //for
 
                 for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
-                    materials[i].material.SetVector(fmdl.strings[fmdl.section0Block7Entries[j].stringId], new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.x, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.y, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.z, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.w));
+                    materials[i].SetVector(fmdl.strings[fmdl.section0Block7Entries[j].stringId], new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.x, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.y, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.z, fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values.w));
             } //if
             else
             {
-                materials[i].material.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
-                materials[i].materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].stringId]);
-                materials[i].materialType = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[fmdl.section0Block4Entries[i].materialId].typeId]);
+                materials[i].name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block4Entries[i].stringId]);
 
                 if (fmdl.texturePathsIndex != -1)
                 {
@@ -121,7 +109,7 @@ public class UnityModel
                             Texture2D texture = LoadTextureDXT(Globals.texturePath + "\\" + textureName + ".dds");
                             texture.name = textureName + ".dds";
 
-                            materials[i].material.SetTexture(textureType, texture);
+                            materials[i].SetTexture(textureType, texture);
                         } //if
                         else
                         {
@@ -131,13 +119,13 @@ public class UnityModel
                 } //if
 
                 for (int j = fmdl.section0Block4Entries[i].firstParameterId; j < fmdl.section0Block4Entries[i].firstParameterId + fmdl.section0Block4Entries[i].numParameters; j++)
-                    materials[i].material.SetVector(Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]), new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
+                    materials[i].SetVector(Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block7Entries[j].stringId]), new Vector4(fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[0], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[1], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[2], fmdl.materialParameters[fmdl.section0Block7Entries[j].referenceId].values[3]));
             } //else
 
             //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
-            for (int j = 0; j < ShaderUtil.GetPropertyCount(materials[i].material.shader); j++)
-                if (ShaderUtil.GetPropertyType(materials[i].material.shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
-                    materials[i].material.SetTextureScale(ShaderUtil.GetPropertyName(materials[i].material.shader, j), new Vector2(1, -1));
+            for (int j = 0; j < ShaderUtil.GetPropertyCount(materials[i].shader); j++)
+                if (ShaderUtil.GetPropertyType(materials[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    materials[i].SetTextureScale(ShaderUtil.GetPropertyName(materials[i].shader, j), new Vector2(1, -1));
         } //for
 
         for (int i = 0; i < bounds.Length; i++)
@@ -264,7 +252,7 @@ public class UnityModel
             subFmdlGameObjects[i].transform.parent = fmdlGameObject.transform;
             SkinnedMeshRenderer meshRenderer = subFmdlGameObjects[i].AddComponent<SkinnedMeshRenderer>();
 
-            meshRenderer.sharedMaterial = materials[fmdl.section0Block3Entries[i].materialInstanceId].material;
+            meshRenderer.sharedMaterial = materials[fmdl.section0Block3Entries[i].materialInstanceId];
 
             Mesh mesh = new Mesh();
             mesh.vertices = meshes[i].vertices;

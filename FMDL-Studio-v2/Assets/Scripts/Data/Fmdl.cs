@@ -336,18 +336,6 @@ public class Fmdl
         public int numMeshes;
     } //MeshGroupEntry
 
-    /*private struct FoxMaterial
-    {
-        public string name;
-        public string type;
-    } //Material
-
-    public struct FoxMaterialParameter
-    {
-        public string name;
-        public float[] values;
-    } //class*/
-
     private class MeshFormat
     {
         public byte meshFormat0Size = 1;
@@ -1375,7 +1363,7 @@ public class Fmdl
         const string BAR_STRING = "Writing!";
         EditorUtility.DisplayProgressBar(BAR_STRING, "Starting!", 0);
 
-        Globals.ReadMaterialList();
+        Globals.ReadPresetList();
 
         BinaryWriter writer = new BinaryWriter(stream, Encoding.Default, true);
         List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
@@ -1384,7 +1372,7 @@ public class Fmdl
         List<Transform> bones = new List<Transform>(0);
         List<MeshGroup> meshGroups = new List<MeshGroup>(0);
         List<MeshGroupEntry> meshGroupEntries = new List<MeshGroupEntry>(0);
-        List<FoxMaterial> materials;
+        List<Tuple<string, string>> materials;
         List<MeshFormat> meshFormats;
 
         GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
@@ -1531,10 +1519,10 @@ public class Fmdl
             Section0Block8Entry s = new Section0Block8Entry();
 
             s.stringId = (ushort)strings.Count;
-            strings.Add(materials[i].name);
+            strings.Add(materials[i].Item1);
 
             s.typeId = (ushort)strings.Count;
-            strings.Add(materials[i].type);
+            strings.Add(materials[i].Item2);
 
             section0Block8Entries.Add(s);
         } //for
@@ -1570,9 +1558,13 @@ public class Fmdl
                     s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
             } //else
 
+            s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.Item2 == materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1)));
 
-            s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.type == materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1)));
-            s.numParameters = (byte)materials[s.materialId].materialParameters.Count;
+            s.numParameters = 0;
+
+            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
+                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
+                    s.numParameters++;
 
             if (i != 0)
             {
@@ -1619,22 +1611,26 @@ public class Fmdl
 
             Section0Block6Entry s = new Section0Block6Entry();
 
-            string fileName = AssetDatabase.GetAssetPath(textures[i]);
-            string name = Path.GetFileNameWithoutExtension(fileName) + ".tga";
+            string assetPath = AssetDatabase.GetAssetPath(textures[i]);
+            
+            if (assetPath == "")
+                assetPath = textures[i].name.Substring(1);
+
+            string fileName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";
 
             s.stringId = (ushort)strings.Count;
-            strings.Add(name);
+            strings.Add(fileName);
 
-            string path = $"/{Path.GetDirectoryName(fileName)}/";
+            string directoryName = $"/{Path.GetDirectoryName(assetPath)}/";
 
-            int stringIndex = strings.IndexOf(path);
+            int stringIndex = strings.IndexOf(directoryName);
 
             if (stringIndex != -1)
                 s.pathId = (ushort)stringIndex;
             else
             {
                 s.pathId = (ushort)strings.Count;
-                strings.Add(path);
+                strings.Add(directoryName);
             } //else
 
             section0Block6Entries.Add(s);
@@ -3184,60 +3180,20 @@ public class Fmdl
         return indices;
     } //GetBoneGroup
 
-    private List<FoxMaterial> GetMaterials(List<Material> materialInstances)
+    //Turns out that fmdls don't care about the material names. So we can make them up (or just use the type name for them)!
+    private List<Tuple<string, string>> GetMaterials(List<Material> materialInstances)
     {
-        List<FoxMaterial> materials = new List<FoxMaterial>(0);
+        List<Tuple<string, string>> materials = new List<Tuple<string, string>>(0);
 
-        for (int i = 0; i < materialInstances.Count; i++)
+        int materialInstancesCount = materialInstances.Count;
+
+        for (int i = 0; i < materialInstancesCount; i++)
         {
             string shaderName = materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1);
 
-            int index = Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.type == shaderName));
-
-            if (index != -1)
-            {
-                if (!materials.Contains(materials.Find(x => x.type == Globals.foxMaterialList.foxMaterials[index].type)))
-                {
-                    FoxMaterial f = new FoxMaterial();
-                    f.name = Globals.foxMaterialList.foxMaterials[index].name;
-                    f.type = Globals.foxMaterialList.foxMaterials[index].type;
-
-                    for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
-                    {
-                        if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
-                        {
-                            FoxMaterial.FoxMaterialParameter p = new FoxMaterial.FoxMaterialParameter();
-                            p.name = ShaderUtil.GetPropertyName(materialInstances[i].shader, j);
-                            p.values = materialInstances[i].GetVector(p.name);
-                            f.materialParameters.Add(p);
-                        } //if
-                    } //for
-
-                    materials.Add(f);
-                } //if
-            } //if
-            else
-            {
-                UnityEngine.Debug.Log(shaderName);
-                throw new Exception("Material not in material list!");
-            } //else
+            if (!materials.Contains(materials.Find(x => x.Item1 == shaderName)))
+                materials.Add(new Tuple<string, string>(shaderName, shaderName));
         } //for
-
-        /*for (int i = 0; i < foxModel.materialDefinitions.Length; i++)
-        {
-            if (!materials.Contains(materials.Find(x => x.name == foxModel.materialDefinitions[i].materialName)))
-            {
-                int index = Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.name == foxModel.materialDefinitions[i].materialName));
-
-                if (index != -1)
-                {
-                    FoxMaterial f = Globals.foxMaterialList.foxMaterials[index];
-                    materials.Add(f);
-                } //if
-                else
-                    throw new Exception("Material not in material list!");
-            } //if
-        } //for*/
 
         return materials;
     } //GetMaterials
@@ -3342,7 +3298,7 @@ public class Fmdl
     [Conditional("DEBUG")]
     public void AddMaterialsToList()
     {
-        Globals.ReadMaterialList();
+        Globals.ReadPresetList();
 
         for (int i = 0; i < section0Block4Entries.Count; i++)
         {
@@ -3360,9 +3316,9 @@ public class Fmdl
                 type = strings[section0Block8Entries[section0Block4Entries[i].materialId].typeId];
             } //else
 
-            if (Globals.foxMaterialList.foxMaterials.IndexOf(Globals.foxMaterialList.foxMaterials.Find(x => x.name == name)) == -1)
+            if (Globals.materialPresetList.materialPresets.IndexOf(Globals.materialPresetList.materialPresets.Find(x => x.name == name)) == -1)
             {
-                FoxMaterial foxMaterial = new FoxMaterial();
+                MaterialPreset foxMaterial = new MaterialPreset();
                 foxMaterial.name = name;
                 foxMaterial.type = type;
 
@@ -3379,22 +3335,19 @@ public class Fmdl
                         paramName = strings[section0Block7Entries[j].stringId];
                     } //else
 
-                    FoxMaterial.FoxMaterialParameter parameter = new FoxMaterial.FoxMaterialParameter();
+                    MaterialPreset.MaterialPresetParameter parameter = new MaterialPreset.MaterialPresetParameter();
 
                     parameter.name = paramName;
-
-                    //for (int h = 0; h < materialParameters[section0Block7Entries[j].referenceId].values.Length; h++)
-                    //    parameter.values[h] = materialParameters[section0Block7Entries[j].referenceId].values[h];
 
                     foxMaterial.materialParameters.Add(parameter);
                 } //for
 
-                Globals.foxMaterialList.foxMaterials.Add(foxMaterial);
+                Globals.materialPresetList.materialPresets.Add(foxMaterial);
                 UnityEngine.Debug.Log($"Added {name} to material list!");
             } //if
         } //for
 
-        Globals.WriteMaterialList();
+        Globals.WritePresetList();
     } //AddMaterialToList
 
     [Conditional("DEBUG")]

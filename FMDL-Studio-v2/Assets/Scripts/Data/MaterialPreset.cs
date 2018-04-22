@@ -2,11 +2,11 @@
 using System.Xml.Serialization;
 using UnityEngine;
 
-[XmlType("FoxMaterial")]
-public class FoxMaterial
+[XmlType("MaterialPreset")]
+public class MaterialPreset
 {
-    [XmlType("FoxMaterialParameter")]
-    public class FoxMaterialParameter
+    [XmlType("MaterialPresetParameter")]
+    public class MaterialPresetParameter
     {
         [XmlElement]
         public string name;
@@ -22,5 +22,5 @@ public class FoxMaterial
     public string type;
 
     [XmlArray]
-    public List<FoxMaterialParameter> materialParameters = new List<FoxMaterialParameter>();
-} //FoxMaterial
+    public List<MaterialPresetParameter> materialParameters = new List<MaterialPresetParameter>();
+} //MaterialPreset

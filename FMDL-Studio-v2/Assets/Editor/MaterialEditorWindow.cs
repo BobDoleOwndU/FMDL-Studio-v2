@@ -6,10 +6,10 @@ public class MaterialEditorWindow : EditorWindow
     private Vector2 scrollPos;
     private int selected = 0;
 
-    [MenuItem("FMDL Studio/Edit Materials", false, 200)]
+    [MenuItem("FMDL Studio/Edit Material Presets", false, 200)]
     static void Init()
     {
-        Globals.ReadMaterialList();
+        Globals.ReadPresetList();
         MaterialEditorWindow window = (MaterialEditorWindow)GetWindow(typeof(MaterialEditorWindow));
         window.Show();
     } //Init
@@ -18,55 +18,93 @@ public class MaterialEditorWindow : EditorWindow
     {
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos, false, true);
 
-        if (GUILayout.Button("Add New Material"))
-        {
-            FoxMaterial f = new FoxMaterial();
-            f.name = "New Material";
+        if (GUILayout.Button("Save"))
+            Globals.WritePresetList();
 
-            Globals.foxMaterialList.foxMaterials.Add(f);
+        if (GUILayout.Button("Add New Preset"))
+        {
+            MaterialPreset f = new MaterialPreset();
+            f.name = "New Preset";
+
+            Globals.materialPresetList.materialPresets.Add(f);
         } //if
 
-        if (GUILayout.Button("Save"))
-            Globals.WriteMaterialList();
+        if (GUILayout.Button("Create Preset From Selected Mesh"))
+        {
+            GameObject gameObject = Selection.activeGameObject;
 
-        if (GUILayout.Button("Apply Material to Selected Mesh"))
+            if (gameObject != null)
+            {
+                SkinnedMeshRenderer skinnedMeshRenderer = gameObject.GetComponent<SkinnedMeshRenderer>();
+
+                if(skinnedMeshRenderer != null)
+                {
+                    Material material = skinnedMeshRenderer.sharedMaterial;
+                    Shader shader = material.shader;
+
+                    MaterialPreset materialPreset = new MaterialPreset();
+                    materialPreset.name = gameObject.name + " Material";
+                    materialPreset.type = shader.name.Substring(shader.name.IndexOf('/') + 1);
+
+                    int propertyCount = ShaderUtil.GetPropertyCount(shader);
+
+                    for(int i = 0; i < propertyCount; i++)
+                    {
+                        if(ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Vector)
+                        {
+                            MaterialPreset.MaterialPresetParameter materialPresetParameter = new MaterialPreset.MaterialPresetParameter();
+                            materialPresetParameter.name = ShaderUtil.GetPropertyName(shader, i);
+                            materialPresetParameter.values = material.GetVector(materialPresetParameter.name);
+
+                            materialPreset.materialParameters.Add(materialPresetParameter);
+                        } //if
+                    } //for
+
+                    Globals.materialPresetList.materialPresets.Add(materialPreset);
+                } //if
+            } //if
+            else
+                Debug.Log("No objects selected.");
+        } //if
+
+        if (GUILayout.Button("Apply Preset to Selected Mesh"))
             ApplyMaterialToMesh();
 
-        string[] matNames = new string[Globals.foxMaterialList.foxMaterials.Count];
+        string[] matNames = new string[Globals.materialPresetList.materialPresets.Count];
 
-        for (int i = 0; i < Globals.foxMaterialList.foxMaterials.Count; i++)
-            matNames[i] = Globals.foxMaterialList.foxMaterials[i].name;
+        for (int i = 0; i < Globals.materialPresetList.materialPresets.Count; i++)
+            matNames[i] = Globals.materialPresetList.materialPresets[i].name;
         
         selected = EditorGUILayout.Popup(selected, matNames);
 
-        EditorGUILayout.LabelField(Globals.foxMaterialList.foxMaterials[selected].name, EditorStyles.boldLabel);
+        EditorGUILayout.LabelField(Globals.materialPresetList.materialPresets[selected].name, EditorStyles.boldLabel);
         GUILayout.BeginHorizontal();
-        Globals.foxMaterialList.foxMaterials[selected].name = EditorGUILayout.TextField("Name", Globals.foxMaterialList.foxMaterials[selected].name);
+        Globals.materialPresetList.materialPresets[selected].name = EditorGUILayout.TextField("Preset Name", Globals.materialPresetList.materialPresets[selected].name);
         if (GUILayout.Button("Remove"))
         {
-            Globals.foxMaterialList.foxMaterials.Remove(Globals.foxMaterialList.foxMaterials[selected]);
+            Globals.materialPresetList.materialPresets.Remove(Globals.materialPresetList.materialPresets[selected]);
             selected = 0;
         } //if
         GUILayout.EndHorizontal();
 
-        Globals.foxMaterialList.foxMaterials[selected].type = EditorGUILayout.TextField("Type", Globals.foxMaterialList.foxMaterials[selected].type);
+        Globals.materialPresetList.materialPresets[selected].type = EditorGUILayout.TextField("Shader Name", Globals.materialPresetList.materialPresets[selected].type);
 
         if (GUILayout.Button("Add New Parameter"))
-            Globals.foxMaterialList.foxMaterials[selected].materialParameters.Add(new FoxMaterial.FoxMaterialParameter());
+            Globals.materialPresetList.materialPresets[selected].materialParameters.Add(new MaterialPreset.MaterialPresetParameter());
 
-        for (int i = 0; i < Globals.foxMaterialList.foxMaterials[selected].materialParameters.Count; i++)
+        for (int i = 0; i < Globals.materialPresetList.materialPresets[selected].materialParameters.Count; i++)
         {
-            EditorGUILayout.LabelField(Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name, EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(Globals.materialPresetList.materialPresets[selected].materialParameters[i].name, EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
-            Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name = EditorGUILayout.TextField("Parameter Name", Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].name);
+            Globals.materialPresetList.materialPresets[selected].materialParameters[i].name = EditorGUILayout.TextField("Parameter Name", Globals.materialPresetList.materialPresets[selected].materialParameters[i].name);
             if (GUILayout.Button("Remove"))
             {
-                Globals.foxMaterialList.foxMaterials[selected].materialParameters.Remove(Globals.foxMaterialList.foxMaterials[selected].materialParameters[i]);
+                Globals.materialPresetList.materialPresets[selected].materialParameters.Remove(Globals.materialPresetList.materialPresets[selected].materialParameters[i]);
                 break;
             } //if
             GUILayout.EndHorizontal();
 
-            Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values = EditorGUILayout.Vector4Field("Values", Globals.foxMaterialList.foxMaterials[selected].materialParameters[i].values);
+            Globals.materialPresetList.materialPresets[selected].materialParameters[i].values = EditorGUILayout.Vector4Field("Values", Globals.materialPresetList.materialPresets[selected].materialParameters[i].values);
         } //for
 
         EditorGUILayout.EndScrollView();
@@ -81,19 +119,19 @@ public class MaterialEditorWindow : EditorWindow
             if(g.GetComponent<MeshRenderer>())
             {
                 MeshRenderer renderer = g.GetComponent<MeshRenderer>();
-                renderer.sharedMaterial.shader = Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}");
+                renderer.sharedMaterial.shader = Shader.Find($"FoxShaders/{Globals.materialPresetList.materialPresets[selected].type}");
                 //m.name = renderer.sharedMaterial.name;
 
-                foreach(FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
+                foreach(MaterialPreset.MaterialPresetParameter f in Globals.materialPresetList.materialPresets[selected].materialParameters)
                     renderer.sharedMaterial.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
             } //if
             else if(g.GetComponent<SkinnedMeshRenderer>())
             {
                 SkinnedMeshRenderer renderer = g.GetComponent<SkinnedMeshRenderer>();
-                Material m = new Material(Shader.Find($"FoxShaders/{Globals.foxMaterialList.foxMaterials[selected].type}"));
+                Material m = new Material(Shader.Find($"FoxShaders/{Globals.materialPresetList.materialPresets[selected].type}"));
                 m.name = renderer.sharedMaterial.name;
 
-                foreach (FoxMaterial.FoxMaterialParameter f in Globals.foxMaterialList.foxMaterials[selected].materialParameters)
+                foreach (MaterialPreset.MaterialPresetParameter f in Globals.materialPresetList.materialPresets[selected].materialParameters)
                 {
                     m.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
                 } //foreach

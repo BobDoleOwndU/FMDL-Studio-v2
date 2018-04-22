@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 public class FmdlStudioWindow : EditorWindow

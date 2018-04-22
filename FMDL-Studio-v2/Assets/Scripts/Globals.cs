@@ -6,7 +6,7 @@ using UnityEngine;
 public static class Globals
 {
     public static string texturePath { get; private set; }
-    public static FoxMaterialList foxMaterialList = new FoxMaterialList();
+    public static MaterialPresetList materialPresetList = new MaterialPresetList();
 
     public static void WriteTexturePath(string path)
     {
@@ -53,29 +53,31 @@ public static class Globals
         } //if
     } //ReadTexturePath
 
-    public static void ReadMaterialList()
+    public static void ReadPresetList()
     {
-        if (File.Exists("Assets/materials.xml"))
+        if (File.Exists("Assets/presets.xml"))
         {
-            XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
+            XmlSerializer serializer = new XmlSerializer(typeof(MaterialPresetList));
 
-            using (FileStream stream = new FileStream("Assets/materials.xml", FileMode.Open))
+            using (FileStream stream = new FileStream("Assets/presets.xml", FileMode.Open))
             {
-                foxMaterialList = (FoxMaterialList)serializer.Deserialize(stream);
+                materialPresetList = (MaterialPresetList)serializer.Deserialize(stream);
                 stream.Close();
             } //using
         } //if
         else
-            Debug.Log("Could not find materials.xml");
+            Debug.Log("Could not find presets.xml");
     } //ReadMaterialList
 
-    public static void WriteMaterialList()
+    public static void WritePresetList()
     {
-        XmlSerializer serializer = new XmlSerializer(typeof(FoxMaterialList));
+        materialPresetList.materialPresets.Sort((x, y) => x.name.CompareTo(y.name));
 
-        using (FileStream stream = new FileStream("Assets/materials.xml", FileMode.Create))
+        XmlSerializer serializer = new XmlSerializer(typeof(MaterialPresetList));
+
+        using (FileStream stream = new FileStream("Assets/presets.xml", FileMode.Create))
         {
-            serializer.Serialize(stream, foxMaterialList);
+            serializer.Serialize(stream, materialPresetList);
             stream.Close();
         } //using
     } //WriteMaterialList
