@@ -1,61 +1,37 @@
-Shader "FoxShaders/fox3DDF_FastLeaf_DirectiveAlpha"
-{
-	Properties
-	{
-		MatParamIndex_0("MatParamIndex_0", Vector) = (0.0, 0.0, 0.0, 0.0)
-		Specular_Value("Specular_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
-		Roughness_Value("Roughness_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
-		Translucent_Value("Translucent_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
-		StartFadeDot("StartFadeDot", Vector) = (0.0, 0.0, 0.0, 0.0)
-		EndFadeDot("EndFadeDot", Vector) = (0.0, 0.0, 0.0, 0.0)
-		Base_Tex_SRGB("Base_Tex_SRGB", 2D) = "white" {}
-	}
-		
-	Subshader
-	{
-		Tags{ "Queue" = "Geometry" "Ignore Projector" = "True" "RenderType" = "Opaque" }
-		LOD 200
+Shader "FoxShaders/fox3DDF_FastLeaf_DirectiveAlpha" {
+Properties {
+	MatParamIndex_0("MatParamIndex_0", Vector) = (0.0, 0.0, 0.0, 0.0)
+	Specular_Value("Specular_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
+	Roughness_Value("Roughness_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
+	Translucent_Value("Translucent_Value", Vector) = (0.0, 0.0, 0.0, 0.0)
+	StartFadeDot("StartFadeDot", Vector) = (0.0, 0.0, 0.0, 0.0)
+	EndFadeDot("EndFadeDot", Vector) = (0.0, 0.0, 0.0, 0.0)
+	Base_Tex_SRGB("Base_Tex_SRGB", 2D) = "white" {}
+	_Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
+}
 
-		Blend SrcAlpha OneMinusSrcAlpha
+SubShader {
+	Tags {"Queue"="AlphaTest" "IgnoreProjector"="True" "RenderType"="TransparentCutout"}
+	LOD 400
 
-		AlphaToMask On
+CGPROGRAM
+#pragma surface surf BlinnPhong alphatest:_Cutoff
+#pragma target 3.0
 
-		Pass
-		{
-			ZWrite On
-			ColorMask 0
-		}
+sampler2D Base_Tex_SRGB;
 
-		CGPROGRAM
+struct Input {
+	float2 uvBase_Tex_SRGB;
+};
 
-		#pragma surface surf Standard fullforwardshadows alpha
-		#pragma target 3.0
+void surf (Input IN, inout SurfaceOutput o) {
+	fixed4 tex = tex2D(Base_Tex_SRGB, IN.uvBase_Tex_SRGB);
+	o.Albedo = tex.rgb;
+	o.Gloss = tex.a;
+	o.Alpha = tex.a;
+}
+ENDCG
+}
 
-		sampler2D Base_Tex_SRGB;
-		sampler2D NormalMap_Tex_NRM;
-		sampler2D SpecularMap_Tex_LIN;
-		sampler2D Translucent_Tex_LIN;
-
-		struct Input
-		{
-			float2 uvBase_Tex_SRGB;
-		};
-
-		void surf(Input IN, inout SurfaceOutputStandard o)
-		{
-			fixed4 mainTex = tex2D(Base_Tex_SRGB, IN.uvBase_Tex_SRGB);
-			o.Albedo = mainTex.rgb;
-			o.Alpha = mainTex.a;
-			o.Metallic = 0.0f;
-			o.Smoothness = 1.0f - tex2D(SpecularMap_Tex_LIN, IN.uvBase_Tex_SRGB).g;
-			fixed4 finalNormal = tex2D(NormalMap_Tex_NRM, IN.uvBase_Tex_SRGB);
-			finalNormal.r = finalNormal.g;
-			finalNormal.g = 1.0f - finalNormal.g;
-			finalNormal.b = 1.0f;
-			finalNormal.a = 1.0f;
-			o.Normal = UnpackNormal(finalNormal);
-		}
-		ENDCG
-	}
-	FallBack "Standard"
+FallBack "Standard"
 }

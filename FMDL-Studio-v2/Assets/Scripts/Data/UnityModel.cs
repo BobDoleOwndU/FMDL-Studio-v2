@@ -37,6 +37,7 @@ public class UnityModel
         Bounds[] bounds = new Bounds[fmdl.section0BlockDEntries.Count];
 
         FoxModel foxModel = fmdlGameObject.AddComponent<FoxModel>();
+        foxModel.meshGroups = new FoxMeshGroup[fmdl.section0Block1Entries.Count];
         foxModel.meshDefinitions = new FoxMeshDefinition[fmdl.objects.Count];
 
         Material[] materials = new Material[fmdl.section0Block4Entries.Count];
@@ -52,6 +53,25 @@ public class UnityModel
             //bindPoses = new Matrix4x4[0];
         } //else
 
+        //Mesh Groups
+        for(int i = 0; i < fmdl.section0Block1Entries.Count; i++)
+        {
+            FoxMeshGroup foxMeshGroup = new FoxMeshGroup();
+
+            if (fmdl.stringsIndex != -1)
+                foxMeshGroup.name = fmdl.strings[fmdl.section0Block1Entries[i].stringId];
+            else
+                foxMeshGroup.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[i].stringId]);
+
+            if (fmdl.section0Block1Entries[i].invisibilityFlag == 0)
+                foxMeshGroup.visible = true;
+            else
+                foxMeshGroup.visible = false;
+
+            foxModel.meshGroups[i] = foxMeshGroup;
+        } //for
+
+        //Materials
         for (int i = 0; i < fmdl.section0Block4Entries.Count; i++)
         {
             if (fmdl.stringsIndex != -1)
@@ -130,7 +150,7 @@ public class UnityModel
 
         for (int i = 0; i < bounds.Length; i++)
         {
-            bounds[i].SetMinMax(new Vector3(fmdl.section0BlockDEntries[i].minZ, fmdl.section0BlockDEntries[i].minY, fmdl.section0BlockDEntries[i].minX), new Vector3(fmdl.section0BlockDEntries[i].maxZ, fmdl.section0BlockDEntries[i].maxY, fmdl.section0BlockDEntries[i].maxX));
+            bounds[i].SetMinMax(new Vector3(-fmdl.section0BlockDEntries[i].minX, fmdl.section0BlockDEntries[i].minY, fmdl.section0BlockDEntries[i].minZ), new Vector3(-fmdl.section0BlockDEntries[i].maxX, fmdl.section0BlockDEntries[i].maxY, fmdl.section0BlockDEntries[i].maxZ));
         } //for
 
         Transform rootBone = new GameObject("[Root]").transform; //From what I can tell, the real name is "". But it looks kinda dumb having "" as its name; so using "[Root]" as a placeholder seems better.
@@ -145,7 +165,7 @@ public class UnityModel
         for (int i = 0; i < bones.Length; i++)
         {
             bones[i] = new GameObject().transform;
-            bones[i].position = new Vector3(fmdl.section0Block0Entries[i].worldPositionZ, fmdl.section0Block0Entries[i].worldPositionY, fmdl.section0Block0Entries[i].worldPositionX);
+            bones[i].position = new Vector3(-fmdl.section0Block0Entries[i].worldPositionX, fmdl.section0Block0Entries[i].worldPositionY, fmdl.section0Block0Entries[i].worldPositionZ);
 
             BoxCollider collider = bones[i].gameObject.AddComponent<BoxCollider>();
             collider.center = bones[i].InverseTransformPoint(bounds[fmdl.section0Block0Entries[i].boundingBoxId].center); //Have to convert these to local positions. They're stored as world positions.
@@ -180,13 +200,13 @@ public class UnityModel
 
             //Position
             for (int j = 0; j < fmdl.objects[i].vertices.Length; j++)
-                meshes[i].vertices[j] = new Vector3(fmdl.objects[i].vertices[j].z, fmdl.objects[i].vertices[j].y, fmdl.objects[i].vertices[j].x);
+                meshes[i].vertices[j] = new Vector3(-fmdl.objects[i].vertices[j].x, fmdl.objects[i].vertices[j].y, fmdl.objects[i].vertices[j].z);
 
             //Normals, Bone Weights, Bone Group Ids and UVs
             for (int j = 0; j < fmdl.objects[i].additionalVertexData.Length; j++)
             {
-                meshes[i].normals[j] = new Vector3(fmdl.objects[i].additionalVertexData[j].normalZ, fmdl.objects[i].additionalVertexData[j].normalY, fmdl.objects[i].additionalVertexData[j].normalX);
-                meshes[i].tangents[j] = new Vector4(fmdl.objects[i].additionalVertexData[j].tangentZ, fmdl.objects[i].additionalVertexData[j].tangentY, fmdl.objects[i].additionalVertexData[j].tangentX, fmdl.objects[i].additionalVertexData[j].tangentW);
+                meshes[i].normals[j] = new Vector3(-fmdl.objects[i].additionalVertexData[j].normalX, fmdl.objects[i].additionalVertexData[j].normalY, fmdl.objects[i].additionalVertexData[j].normalZ);
+                meshes[i].tangents[j] = new Vector4(-fmdl.objects[i].additionalVertexData[j].tangentX, fmdl.objects[i].additionalVertexData[j].tangentY, fmdl.objects[i].additionalVertexData[j].tangentZ, fmdl.objects[i].additionalVertexData[j].tangentW);
                 meshes[i].colour[j] = new Color(fmdl.objects[i].additionalVertexData[j].colourR, fmdl.objects[i].additionalVertexData[j].colourG, fmdl.objects[i].additionalVertexData[j].colourB, fmdl.objects[i].additionalVertexData[j].colourA);
 
                 if (fmdl.bonesIndex != -1)
@@ -235,15 +255,11 @@ public class UnityModel
                 if (i >= fmdl.section0Block2Entries[j].firstObjectId && i < fmdl.section0Block2Entries[j].firstObjectId + fmdl.section0Block2Entries[j].numObjects)
                 {
                     if (fmdl.stringsIndex != -1)
-                    {
                         subFmdlGameObjects[i].name = i + " - " + fmdl.strings[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId];
-                        foxMeshDefinition.meshGroup = fmdl.strings[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId];
-                    } //if
                     else
-                    {
                         subFmdlGameObjects[i].name = i + " - " + Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId]);
-                        foxMeshDefinition.meshGroup = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[fmdl.section0Block2Entries[j].meshGroupId].stringId]);
-                    } //else
+
+                    foxMeshDefinition.meshGroup = fmdl.section0Block2Entries[j].meshGroupId;
 
                     break;
                 } //if

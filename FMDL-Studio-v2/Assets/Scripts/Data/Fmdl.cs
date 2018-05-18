@@ -324,11 +324,11 @@ public class Fmdl
     } //struct
 
     //Importer Classes/Structs
-    private class MeshGroup
+    /*private class MeshGroup
     {
         public string name;
         public bool invisible;
-    } //MeshGroup
+    } //MeshGroup*/
 
     private class MeshGroupEntry
     {
@@ -1370,13 +1370,12 @@ public class Fmdl
         List<Material> materialInstances = new List<Material>(0);
         List<Texture> textures = new List<Texture>(0);
         List<Transform> bones = new List<Transform>(0);
-        List<MeshGroup> meshGroups = new List<MeshGroup>(0);
         List<MeshGroupEntry> meshGroupEntries = new List<MeshGroupEntry>(0);
         List<Tuple<string, string>> materials;
         List<MeshFormat> meshFormats;
 
         GetObjects(gameObject.transform, meshes, materialInstances, textures, bones);
-        GetMeshGroups(gameObject.transform, meshGroups, meshGroupEntries);
+        GetMeshGroups(gameObject.transform, meshGroupEntries);
         materials = GetMaterials(materialInstances);
         meshFormats = GetMeshFormats(meshes);
         bones.Sort((x, y) => x.gameObject.name.CompareTo(y.gameObject.name));
@@ -1418,43 +1417,48 @@ public class Fmdl
             s.boundingBoxId = (ushort)(i + 1); //Should work for now.
             s.unknown0 = 0x1;
 
-            //Unity uses left-handed coordinates so x and z get flipped.
-            s.localPositionX = bones[i].localPosition.z;
+            //Unity uses left-handed coordinates so x gets inverted.
+            s.localPositionX = -bones[i].localPosition.x;
             s.localPositionY = bones[i].localPosition.y;
-            s.localPositionZ = bones[i].localPosition.x;
+            s.localPositionZ = bones[i].localPosition.z;
             s.localPositionW = 1f;
-            s.worldPositionX = bones[i].position.z;
+            s.worldPositionX = -bones[i].position.x;
             s.worldPositionY = bones[i].position.y;
-            s.worldPositionZ = bones[i].position.x;
+            s.worldPositionZ = bones[i].position.z;
             s.worldPositionW = 1f;
 
             section0Block0Entries.Add(s);
         } //for
 
         //Block 1 - Mesh Groups
-        for (int i = 0; i < meshGroups.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{meshGroups.Count}", (float)i / meshGroups.Count);
+            FoxMeshGroup[] meshGroups = gameObject.GetComponent<FoxModel>().meshGroups;
+            int meshGroupLength = meshGroups.Length;
 
-            Section0Block1Entry s = new Section0Block1Entry();
+            for (int i = 0; i < meshGroupLength; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{meshGroupLength}", (float)i / meshGroupLength);
 
-            s.stringId = (ushort)strings.Count;
-            strings.Add(meshGroups[i].name);
+                Section0Block1Entry s = new Section0Block1Entry();
 
-            if (meshGroups[i].invisible)
-                s.invisibilityFlag = 1;
-            else
-                s.invisibilityFlag = 0;
+                s.stringId = (ushort)strings.Count;
+                strings.Add(meshGroups[i].name);
 
-            if (i == 0)
-                s.parentId = 0xFFFF;
-            else
-                s.parentId = 0;
+                if (meshGroups[i].visible)
+                    s.invisibilityFlag = 0;
+                else
+                    s.invisibilityFlag = 1;
 
-            s.unknown0 = 0xFFFF;
+                if (i == 0)
+                    s.parentId = 0xFFFF;
+                else
+                    s.parentId = 0;
 
-            section0Block1Entries.Add(s);
-        } //for
+                s.unknown0 = 0xFFFF;
+
+                section0Block1Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 2 - Mesh Group Assignments
         for (int i = 0; i < meshGroupEntries.Count; i++)
@@ -1612,7 +1616,7 @@ public class Fmdl
             Section0Block6Entry s = new Section0Block6Entry();
 
             string assetPath = AssetDatabase.GetAssetPath(textures[i]);
-            
+
             if (assetPath == "")
                 assetPath = textures[i].name.Substring(1);
 
@@ -1944,13 +1948,13 @@ public class Fmdl
             {
                 if (t.gameObject.name == "[Root]")
                 {
-                    s.minX = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
+                    s.minX = -t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
                     s.minY = t.gameObject.GetComponent<BoxCollider>().bounds.min.y;
-                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.x;
+                    s.minZ = t.gameObject.GetComponent<BoxCollider>().bounds.min.z;
                     s.minW = 1f;
-                    s.maxX = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
+                    s.maxX = -t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
                     s.maxY = t.gameObject.GetComponent<BoxCollider>().bounds.max.y;
-                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.x;
+                    s.maxZ = t.gameObject.GetComponent<BoxCollider>().bounds.max.z;
                     s.maxW = 1f;
                     section0BlockDEntries.Add(s);
                     break;
@@ -1963,13 +1967,13 @@ public class Fmdl
             EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{bones.Count}", (float)i / bones.Count);
 
             Section0BlockDEntry s = new Section0BlockDEntry();
-            s.minX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
+            s.minX = -bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
             s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
-            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
+            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
             s.minW = 1f;
-            s.maxX = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
+            s.maxX = -bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
             s.maxY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.y;
-            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
+            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
             s.maxW = 1f;
             section0BlockDEntries.Add(s);
         } //for
@@ -2070,19 +2074,19 @@ public class Fmdl
             {
                 EditorUtility.DisplayProgressBar("Test Bar", $"Objects: {i}/{meshCount} Vertices: {j}/{vertCount}", (float)j / vertCount);
 
-                o.vertices[j].x = vertices[j].z;
+                o.vertices[j].x = -vertices[j].x;
                 o.vertices[j].y = vertices[j].y;
-                o.vertices[j].z = vertices[j].x;
-                o.additionalVertexData[j].normalX = new Half(normals[j].z);
+                o.vertices[j].z = vertices[j].z;
+                o.additionalVertexData[j].normalX = new Half(-normals[j].x);
                 o.additionalVertexData[j].normalY = new Half(normals[j].y);
-                o.additionalVertexData[j].normalZ = new Half(normals[j].x);
+                o.additionalVertexData[j].normalZ = new Half(normals[j].z);
                 o.additionalVertexData[j].normalW = new Half(1f);
 
                 if (tangents.Length > 0)
                 {
-                    o.additionalVertexData[j].tangentX = new Half(tangents[j].z);
+                    o.additionalVertexData[j].tangentX = new Half(-tangents[j].x);
                     o.additionalVertexData[j].tangentY = new Half(tangents[j].y);
-                    o.additionalVertexData[j].tangentZ = new Half(tangents[j].x);
+                    o.additionalVertexData[j].tangentZ = new Half(tangents[j].z);
                     o.additionalVertexData[j].tangentW = new Half(tangents[j].w);
                 } //if
 
@@ -3090,7 +3094,7 @@ public class Fmdl
         } //foreach
     } //GetMeshes
 
-    private void GetMeshGroups(Transform transform, List<MeshGroup> meshGroups, List<MeshGroupEntry> meshGroupEntries)
+    private void GetMeshGroups(Transform transform, List<MeshGroupEntry> meshGroupEntries)
     {
         FoxModel foxModel = transform.gameObject.GetComponent<FoxModel>();
 
@@ -3098,72 +3102,22 @@ public class Fmdl
         {
             if (i != 0)
             {
-                bool add = true;
-
-                for (int j = 0; j < meshGroups.Count; j++)
-                {
-                    if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
-                    {
-                        add = false;
-                        break;
-                    } //if
-                } //for
-
-                if (add)
-                {
-                    MeshGroup meshGroup = new MeshGroup();
-                    meshGroup.name = foxModel.meshDefinitions[i].meshGroup;
-                    meshGroup.invisible = false;
-                    meshGroups.Add(meshGroup);
-                } //if
-            } //if
-            else
-            {
-                MeshGroup meshGroup;
-
-                if (foxModel.meshDefinitions[i].meshGroup != "MESH_ROOT")
-                {
-                    meshGroup = new MeshGroup();
-                    meshGroup.name = "MESH_ROOT";
-                    meshGroup.invisible = false;
-                    meshGroups.Add(meshGroup);
-                } //if
-
-                meshGroup = new MeshGroup();
-                meshGroup.name = foxModel.meshDefinitions[i].meshGroup;
-                meshGroup.invisible = false;
-                meshGroups.Add(meshGroup);
-            } //else
-        } //for
-
-        for (int i = 0; i < foxModel.meshDefinitions.Length; i++)
-        {
-            if (i != 0)
-            {
-                if (foxModel.meshDefinitions[i].meshGroup == meshGroups[meshGroupEntries[meshGroupEntries.Count - 1].meshGroupIndex].name)
+                if (meshGroupEntries[meshGroupEntries.Count - 1].meshGroupIndex == foxModel.meshDefinitions[i].meshGroup)
                     meshGroupEntries[meshGroupEntries.Count - 1].numMeshes++;
                 else
-                    for (int j = 0; j < meshGroups.Count; j++)
-                        if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
-                        {
-                            MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
-                            meshGroupEntry.meshGroupIndex = j;
-                            meshGroupEntry.numMeshes = 1;
-                            meshGroupEntries.Add(meshGroupEntry);
-                            break;
-                        } //if
+                {
+                    MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
+                    meshGroupEntry.meshGroupIndex = foxModel.meshDefinitions[i].meshGroup;
+                    meshGroupEntry.numMeshes = 1;
+                    meshGroupEntries.Add(meshGroupEntry);
+                } //else
             } //if
             else
             {
-                for (int j = 0; j < meshGroups.Count; j++)
-                    if (foxModel.meshDefinitions[i].meshGroup == meshGroups[j].name)
-                    {
-                        MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
-                        meshGroupEntry.meshGroupIndex = j;
-                        meshGroupEntry.numMeshes = 1;
-                        meshGroupEntries.Add(meshGroupEntry);
-                        break;
-                    } //if
+                MeshGroupEntry meshGroupEntry = new MeshGroupEntry();
+                meshGroupEntry.meshGroupIndex = foxModel.meshDefinitions[i].meshGroup;
+                meshGroupEntry.numMeshes = 1;
+                meshGroupEntries.Add(meshGroupEntry);
             } //else
         } //for
     } //GetMeshGroups

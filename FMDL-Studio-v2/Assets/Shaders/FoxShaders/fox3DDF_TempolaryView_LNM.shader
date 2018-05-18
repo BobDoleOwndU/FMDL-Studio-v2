@@ -1,55 +1,21 @@
-Shader "FoxShaders/fox3DDF_TempolaryView_LNM"
-{
-	Properties
-	{
-		TempolaryBaseColor("TempolaryBaseColor", Vector) = (0.0, 0.0, 0.0, 0.0)
-	}
-		
-	Subshader
-	{
-		Tags{ "Queue" = "Geometry" "Ignore Projector" = "True" "RenderType" = "Opaque" }
-		LOD 200
+Shader "FoxShaders/fox3DDF_TempolaryView_LNM" {
+Properties {
+	TempolaryBaseColor("TempolaryBaseColor", Vector) = (0.0, 0.0, 0.0, 0.0)
+	_Cutoff ("Alpha cutoff", Range(0,1)) = 0.5
+}
 
-		Blend SrcAlpha OneMinusSrcAlpha
+SubShader {
+	Tags {"Queue"="AlphaTest" "IgnoreProjector"="True" "RenderType"="TransparentCutout"}
+	LOD 400
 
-		AlphaToMask On
+CGPROGRAM
+#pragma surface surf BlinnPhong alphatest:_Cutoff
+#pragma target 3.0
 
-		Pass
-		{
-			ZWrite On
-			ColorMask 0
-		}
+void surf (Input IN, inout SurfaceOutput o) {
+}
+ENDCG
+}
 
-		CGPROGRAM
-
-		#pragma surface surf Standard fullforwardshadows alpha
-		#pragma target 3.0
-
-		sampler2D Base_Tex_SRGB;
-		sampler2D NormalMap_Tex_NRM;
-		sampler2D SpecularMap_Tex_LIN;
-		sampler2D Translucent_Tex_LIN;
-
-		struct Input
-		{
-			float2 uvBase_Tex_SRGB;
-		};
-
-		void surf(Input IN, inout SurfaceOutputStandard o)
-		{
-			fixed4 mainTex = tex2D(Base_Tex_SRGB, IN.uvBase_Tex_SRGB);
-			o.Albedo = mainTex.rgb;
-			o.Alpha = mainTex.a;
-			o.Metallic = 0.0f;
-			o.Smoothness = 1.0f - tex2D(SpecularMap_Tex_LIN, IN.uvBase_Tex_SRGB).g;
-			fixed4 finalNormal = tex2D(NormalMap_Tex_NRM, IN.uvBase_Tex_SRGB);
-			finalNormal.r = finalNormal.g;
-			finalNormal.g = 1.0f - finalNormal.g;
-			finalNormal.b = 1.0f;
-			finalNormal.a = 1.0f;
-			o.Normal = UnpackNormal(finalNormal);
-		}
-		ENDCG
-	}
-	FallBack "Standard"
+FallBack "Standard"
 }
