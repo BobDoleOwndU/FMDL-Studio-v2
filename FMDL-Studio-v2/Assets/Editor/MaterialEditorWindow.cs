@@ -29,7 +29,7 @@ public class MaterialEditorWindow : EditorWindow
             Globals.materialPresetList.materialPresets.Add(f);
         } //if
 
-        if (GUILayout.Button("Create Preset From Selected Mesh"))
+        if (GUILayout.Button("Create Preset from Selected Mesh"))
         {
             GameObject gameObject = Selection.activeGameObject;
 

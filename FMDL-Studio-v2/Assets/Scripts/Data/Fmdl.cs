@@ -590,9 +590,11 @@ public class Fmdl
             //go to and get the section 0x0 entry info.
             reader.BaseStream.Position = section0Info[bonesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[bonesIndex].numEntries; i++)
+            int numBoneEntries = section0Info[bonesIndex].numEntries;
+
+            for (int i = 0; i < numBoneEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{section0Info[bonesIndex].numEntries}", (float)i / section0Info[bonesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{numBoneEntries}", (float)i / numBoneEntries);
 
                 Section0Block0Entry s = new Section0Block0Entry();
 
@@ -624,9 +626,11 @@ public class Fmdl
             //go to and get the section 0x1 entry info.
             reader.BaseStream.Position = section0Info[meshGroupsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[meshGroupsIndex].numEntries; i++)
+            int numMeshGroupEntries = section0Info[meshGroupsIndex].numEntries;
+
+            for (int i = 0; i < numMeshGroupEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{section0Info[meshGroupsIndex].numEntries}", (float)i / section0Info[meshGroupsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Groups: {i}/{numMeshGroupEntries}", (float)i / numMeshGroupEntries);
 
                 Section0Block1Entry s = new Section0Block1Entry();
 
@@ -649,9 +653,11 @@ public class Fmdl
             //go to and get the section 0x2 entry info.
             reader.BaseStream.Position = section0Info[meshGroupAssignmentIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[meshGroupAssignmentIndex].numEntries; i++)
+            int numMeshGroupAssignmentEntries = section0Info[meshGroupAssignmentIndex].numEntries;
+
+            for (int i = 0; i < numMeshGroupAssignmentEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{section0Info[meshGroupAssignmentIndex].numEntries}", (float)i / section0Info[meshGroupAssignmentIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{numMeshGroupAssignmentEntries}", (float)i / numMeshGroupAssignmentEntries);
 
                 Section0Block2Entry s = new Section0Block2Entry();
 
@@ -678,9 +684,11 @@ public class Fmdl
             //go to and get the section 0x3 entry info.
             reader.BaseStream.Position = section0Info[meshInfoIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[meshInfoIndex].numEntries; i++)
+            int numMeshInfoEntries = section0Info[meshInfoIndex].numEntries;
+
+            for (int i = 0; i < numMeshInfoEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{section0Info[meshInfoIndex].numEntries}", (float)i / section0Info[meshInfoIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{numMeshInfoEntries}", (float)i / numMeshInfoEntries);
 
                 Section0Block3Entry s = new Section0Block3Entry();
 
@@ -711,9 +719,11 @@ public class Fmdl
             //go to and get the section 0x4 entry info.
             reader.BaseStream.Position = section0Info[materialInstancesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[materialInstancesIndex].numEntries; i++)
+            int numMaterialInstanceEntries = section0Info[materialInstancesIndex].numEntries;
+
+            for (int i = 0; i < numMaterialInstanceEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{section0Info[materialInstancesIndex].numEntries}", (float)i / section0Info[materialInstancesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{numMaterialInstanceEntries}", (float)i / numMaterialInstanceEntries);
 
                 Section0Block4Entry s = new Section0Block4Entry();
 
@@ -740,9 +750,11 @@ public class Fmdl
             //go to and get the section 0x5 entry info.
             reader.BaseStream.Position = section0Info[boneGroupsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[boneGroupsIndex].numEntries; i++)
+            int numBoneGroupEntries = section0Info[boneGroupsIndex].numEntries;
+
+            for (int i = 0; i < numBoneGroupEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{section0Info[boneGroupsIndex].numEntries}", (float)i / section0Info[boneGroupsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{numBoneGroupEntries}", (float)i / numBoneGroupEntries);
 
                 Section0Block5Entry s = new Section0Block5Entry();
 
@@ -769,9 +781,11 @@ public class Fmdl
             //go to and get the section 0x6 entry info.
             reader.BaseStream.Position = section0Info[texturesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[texturesIndex].numEntries; i++)
+            int numTextureEntries = section0Info[texturesIndex].numEntries;
+
+            for (int i = 0; i < numTextureEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{section0Info[texturesIndex].numEntries}", (float)i / section0Info[texturesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{numTextureEntries}", (float)i / numTextureEntries);
 
                 Section0Block6Entry s = new Section0Block6Entry();
 
@@ -792,9 +806,11 @@ public class Fmdl
             //go to and get the section 0x7 entry info.
             reader.BaseStream.Position = section0Info[textureTypesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[textureTypesIndex].numEntries; i++)
+            int numTextureTypeEntries = section0Info[textureTypesIndex].numEntries;
+
+            for (int i = 0; i < numTextureTypeEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{section0Info[textureTypesIndex].numEntries}", (float)i / section0Info[textureTypesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{numTextureTypeEntries}", (float)i / numTextureTypeEntries);
 
                 Section0Block7Entry s = new Section0Block7Entry();
 
@@ -815,9 +831,11 @@ public class Fmdl
             //go to and get the section 0x8 entry info.
             reader.BaseStream.Position = section0Info[materialsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[materialsIndex].numEntries; i++)
+            int numMaterialIndexEntries = section0Info[materialsIndex].numEntries;
+
+            for (int i = 0; i < numMaterialIndexEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{section0Info[materialsIndex].numEntries}", (float)i / section0Info[materialsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{numMaterialIndexEntries}", (float)i / numMaterialIndexEntries);
 
                 Section0Block8Entry s = new Section0Block8Entry();
 
@@ -838,9 +856,11 @@ public class Fmdl
             //go to and get the section 0x8 entry info.
             reader.BaseStream.Position = section0Info[meshFormatAssignmentIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[meshFormatAssignmentIndex].numEntries; i++)
+            int numMeshFormatAssignmentEntries = section0Info[meshFormatAssignmentIndex].numEntries;
+
+            for (int i = 0; i < numMeshFormatAssignmentEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{section0Info[meshFormatAssignmentIndex].numEntries}", (float)i / section0Info[meshFormatAssignmentIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{numMeshFormatAssignmentEntries}", (float)i / numMeshFormatAssignmentEntries);
 
                 Section0Block9Entry s = new Section0Block9Entry();
 
@@ -864,9 +884,11 @@ public class Fmdl
             //go to and get the section 0xA entry info.
             reader.BaseStream.Position = section0Info[meshFormatsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[meshFormatsIndex].numEntries; i++)
+            int numMeshFormatEntries = section0Info[meshFormatsIndex].numEntries;
+
+            for (int i = 0; i < numMeshFormatEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{section0Info[meshFormatsIndex].numEntries}", (float)i / section0Info[meshFormatsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{numMeshFormatEntries}", (float)i / numMeshFormatEntries);
 
                 Section0BlockAEntry s = new Section0BlockAEntry();
 
@@ -890,9 +912,11 @@ public class Fmdl
             //go to and get the section 0xB entry info.
             reader.BaseStream.Position = section0Info[vertexFormatsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[vertexFormatsIndex].numEntries; i++)
+            int numVertexFormatEntries = section0Info[vertexFormatsIndex].numEntries;
+
+            for (int i = 0; i < numVertexFormatEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{section0Info[vertexFormatsIndex].numEntries}", (float)i / section0Info[vertexFormatsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{numVertexFormatEntries}", (float)i / numVertexFormatEntries);
 
                 Section0BlockBEntry s = new Section0BlockBEntry();
 
@@ -914,9 +938,11 @@ public class Fmdl
             //go to and get the section 0xC entry info.
             reader.BaseStream.Position = section0Info[stringsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[stringsIndex].numEntries; i++)
+            int numStringEntries = section0Info[stringsIndex].numEntries;
+
+            for (int i = 0; i < numStringEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{section0Info[stringsIndex].numEntries}", (float)i / section0Info[stringsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{numStringEntries}", (float)i / numStringEntries);
 
                 Section0BlockCEntry s = new Section0BlockCEntry();
 
@@ -938,9 +964,11 @@ public class Fmdl
             //go to and get the section 0xD entry info.
             reader.BaseStream.Position = section0Info[boundingBoxesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[boundingBoxesIndex].numEntries; i++)
+            int numBoundingBoxEntries = section0Info[boundingBoxesIndex].numEntries;
+
+            for (int i = 0; i < numBoundingBoxEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{section0Info[boundingBoxesIndex].numEntries}", (float)i / section0Info[boundingBoxesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{numBoundingBoxEntries}", (float)i / numBoundingBoxEntries);
 
                 Section0BlockDEntry s = new Section0BlockDEntry();
 
@@ -967,9 +995,11 @@ public class Fmdl
             //go to and get the section 0xE entry info.
             reader.BaseStream.Position = section0Info[bufferOffsetsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[bufferOffsetsIndex].numEntries; i++)
+            int numBufferOffsetEntries = section0Info[bufferOffsetsIndex].numEntries;
+
+            for (int i = 0; i < numBufferOffsetEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Buffer Offsets: {i}/{section0Info[bufferOffsetsIndex].numEntries}", (float)i / section0Info[bufferOffsetsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Buffer Offsets: {i}/{numBufferOffsetEntries}", (float)i / numBufferOffsetEntries);
 
                 Section0BlockEEntry s = new Section0BlockEEntry();
 
@@ -992,9 +1022,11 @@ public class Fmdl
             //go to and get the section 0x10 entry info.
             reader.BaseStream.Position = section0Info[lodInfoIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[lodInfoIndex].numEntries; i++)
+            int numLodInfoEntries = section0Info[lodInfoIndex].numEntries;
+
+            for (int i = 0; i < numLodInfoEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Info: {i}/{section0Info[lodInfoIndex].numEntries}", (float)i / section0Info[lodInfoIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Info: {i}/{numLodInfoEntries}", (float)i / numLodInfoEntries);
 
                 Section0Block10Entry s = new Section0Block10Entry();
 
@@ -1017,9 +1049,11 @@ public class Fmdl
             //go to and get the section 0x11 entry info.
             reader.BaseStream.Position = section0Info[faceIndicesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[faceIndicesIndex].numEntries; i++)
+            int numFaceIndexEntries = section0Info[faceIndicesIndex].numEntries;
+
+            for (int i = 0; i < numFaceIndexEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{section0Info[faceIndicesIndex].numEntries}", (float)i / section0Info[faceIndicesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{numFaceIndexEntries}", (float)i / numFaceIndexEntries);
 
                 Section0Block11Entry s = new Section0Block11Entry();
 
@@ -1040,9 +1074,11 @@ public class Fmdl
             //go to and get the section 0x12 entry info.
             reader.BaseStream.Position = section0Info[type12Index].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[type12Index].numEntries; i++)
+            int numType12Entries = section0Info[type12Index].numEntries;
+
+            for (int i = 0; i < numType12Entries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 12: {i}/{section0Info[type12Index].numEntries}", (float)i / section0Info[type12Index].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 12: {i}/{numType12Entries}", (float)i / numType12Entries);
 
                 Section0Block12Entry s = new Section0Block12Entry();
 
@@ -1062,9 +1098,11 @@ public class Fmdl
             //go to and get the section 0x14 entry info.
             reader.BaseStream.Position = section0Info[type14Index].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[type14Index].numEntries; i++)
+            int numType14Entries = section0Info[type14Index].numEntries;
+
+            for (int i = 0; i < numType14Entries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 14: {i}/{section0Info[type14Index].numEntries}", (float)i / section0Info[type14Index].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Type 14: {i}/{numType14Entries}", (float)i / numType14Entries);
 
                 Section0Block14Entry s = new Section0Block14Entry();
 
@@ -1092,9 +1130,11 @@ public class Fmdl
             //go to and get the section 0x15 entry info.
             reader.BaseStream.Position = section0Info[texturePathsIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[texturePathsIndex].numEntries; i++)
+            int numTexturePathEntries = section0Info[texturePathsIndex].numEntries;
+
+            for (int i = 0; i < numTexturePathEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Paths: {i}/{section0Info[texturePathsIndex].numEntries}", (float)i / section0Info[texturePathsIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Paths: {i}/{numTexturePathEntries}", (float)i / numTexturePathEntries);
 
                 ulong u = reader.ReadUInt64();
 
@@ -1112,9 +1152,11 @@ public class Fmdl
             //go to and get the section 0x16 entry info.
             reader.BaseStream.Position = section0Info[stringHashesIndex].offset + section0Offset;
 
-            for (int i = 0; i < section0Info[stringHashesIndex].numEntries; i++)
+            int numStringHashEntries = section0Info[stringHashesIndex].numEntries;
+
+            for (int i = 0; i < numStringHashEntries; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"String Hashes: {i}/{section0Info[stringHashesIndex].numEntries}", (float)i / section0Info[stringHashesIndex].numEntries);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"String Hashes: {i}/{numStringHashEntries}", (float)i / numStringHashEntries);
 
                 ulong u = reader.ReadUInt64();
 
@@ -1155,151 +1197,174 @@ public class Fmdl
          * POSITION
          *
          ****************************************************************/
-        objects = new List<Object>(0);
-
-        for (int i = 0; i < section0Block3Entries.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Positions: {i}/{section0Block3Entries.Count}", (float)i / section0Block3Entries.Count);
+            objects = new List<Object>(0);
 
-            reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entries[i].id].firstMeshFormatId].offset;
+            int meshInfoCount = section0Block3Entries.Count;
 
-            Object o = new Object();
-
-            o.vertices = new Vertex[section0Block3Entries[i].numVertices];
-
-            for (int j = 0; j < o.vertices.Length; j++)
+            for (int i = 0; i < meshInfoCount; i++)
             {
-                o.vertices[j].x = reader.ReadSingle();
-                o.vertices[j].y = reader.ReadSingle();
-                o.vertices[j].z = reader.ReadSingle();
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Positions: {i}/{meshInfoCount}", (float)i / meshInfoCount);
+
+                Section0Block3Entry section0Block3Entry = section0Block3Entries[i];
+
+                reader.BaseStream.Position = section1Info[section1MeshDataIndex].offset + section1Offset + section0BlockAEntries[section0Block9Entries[section0Block3Entry.id].firstMeshFormatId].offset;
+
+                Object o = new Object();
+
+                o.vertices = new Vertex[section0Block3Entry.numVertices];
+
+                for (int j = 0; j < o.vertices.Length; j++)
+                {
+                    o.vertices[j].x = reader.ReadSingle();
+                    o.vertices[j].y = reader.ReadSingle();
+                    o.vertices[j].z = reader.ReadSingle();
+                } //for
+
+                objects.Add(o);
+
+                //align the stream.
+                if (reader.BaseStream.Position % 0x10 != 0)
+                    reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
             } //for
-
-            objects.Add(o);
-
-            //align the stream.
-            if (reader.BaseStream.Position % 0x10 != 0)
-                reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
-        } //for
+        } //code block
 
         /****************************************************************
          *
          * ADDITIONAL VERTEX DATA
          *
          ****************************************************************/
-        reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset;
-
-        for (int i = 0; i < objects.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Additional Vertex Data: {i}/{objects.Count}", (float)i / objects.Count);
+            reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset;
 
-            objects[i].additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
-            //reader.BaseStream.Position = section0BlockEEntries[1].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].offset;
+            int objectCount = objects.Count;
 
-            for (int j = 0; j < objects[i].additionalVertexData.Length; j++)
+            for (int i = 0; i < objectCount; i++)
             {
-                long position = reader.BaseStream.Position;
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Additional Vertex Data: {i}/{objectCount}", (float)i / objectCount);
 
-                for (int h = section0Block9Entries[i].firstVertexFormatId; h < section0Block9Entries[i].firstVertexFormatId + section0Block9Entries[i].numVertexFormatEntries; h++)
+                Object o = objects[i];
+                Section0Block9Entry section0Block9Entry = section0Block9Entries[i];
+
+                o.additionalVertexData = new AdditionalVertexData[section0Block3Entries[i].numVertices];
+
+                int additionalVertexDataLength = o.additionalVertexData.Length;
+
+                for (int j = 0; j < additionalVertexDataLength; j++)
                 {
-                    reader.BaseStream.Position = position + section0BlockBEntries[h].offset;
+                    long position = reader.BaseStream.Position;
+                    int firstVertexFormatId = section0Block9Entry.firstVertexFormatId;
+                    int lastVertexFormatId = section0Block9Entry.firstVertexFormatId + section0Block9Entry.numVertexFormatEntries;
 
-                    switch (section0BlockBEntries[h].usage)
+                    for (int h = firstVertexFormatId; h < lastVertexFormatId; h++)
                     {
-                        case 0: //vertex positions.
-                            break;
-                        case 1: //bone weights.
-                            objects[i].additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
-                            objects[i].additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
-                            objects[i].additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255.0f;
-                            objects[i].additionalVertexData[j].boneWeightW = reader.ReadByte() / 255.0f;
-                            break;
-                        case 2: //normals.
-                            objects[i].additionalVertexData[j].normalX = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
-                            break;
-                        case 3: //diffuse.
-                            objects[i].additionalVertexData[j].colourR = reader.ReadByte();
-                            objects[i].additionalVertexData[j].colourG = reader.ReadByte();
-                            objects[i].additionalVertexData[j].colourB = reader.ReadByte();
-                            objects[i].additionalVertexData[j].colourA = reader.ReadByte();
-                            break;
-                        case 7: //bone indices.
-                            objects[i].additionalVertexData[j].boneGroup0Id = reader.ReadByte();
-                            objects[i].additionalVertexData[j].boneGroup1Id = reader.ReadByte();
-                            objects[i].additionalVertexData[j].boneGroup2Id = reader.ReadByte();
-                            objects[i].additionalVertexData[j].boneGroup3Id = reader.ReadByte();
-                            break;
-                        case 8: //UV.
-                            objects[i].additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16());
-                            break;
-                        case 9: //UV 2?
-                            objects[i].additionalVertexData[j].unknownU0 = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].unknownV0 = ToHalf(reader.ReadUInt16());
-                            break;
-                        case 10: //UV 3?
-                            objects[i].additionalVertexData[j].unknownU1 = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].unknownV1 = ToHalf(reader.ReadUInt16());
-                            break;
-                        case 11: //UV 4?
-                            objects[i].additionalVertexData[j].unknownU2 = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].unknownV2 = ToHalf(reader.ReadUInt16());
-                            break;
-                        case 12: //bone weights 2?
-                            objects[i].additionalVertexData[j].unknownWeight0 = reader.ReadByte();
-                            objects[i].additionalVertexData[j].unknownWeight1 = reader.ReadByte();
-                            objects[i].additionalVertexData[j].unknownWeight2 = reader.ReadByte();
-                            objects[i].additionalVertexData[j].unknownWeight3 = reader.ReadByte();
-                            break;
-                        case 13: //bone indices 2?
-                            objects[i].additionalVertexData[j].unknownId0 = reader.ReadUInt16();
-                            objects[i].additionalVertexData[j].unknownId1 = reader.ReadUInt16();
-                            objects[i].additionalVertexData[j].unknownId2 = reader.ReadUInt16();
-                            objects[i].additionalVertexData[j].unknownId3 = reader.ReadUInt16();
-                            break;
-                        case 14: //tangent.
-                            objects[i].additionalVertexData[j].tangentX = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].tangentY = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].tangentZ = ToHalf(reader.ReadUInt16());
-                            objects[i].additionalVertexData[j].tangentW = ToHalf(reader.ReadUInt16());
-                            break;
-                        default:
-                            UnityEngine.Debug.Log("Usage: " + section0BlockBEntries[h].usage);
-                            UnityEngine.Debug.Log("h: " + h);
-                            break;
-                    } //switch
+                        reader.BaseStream.Position = position + section0BlockBEntries[h].offset;
+
+                        switch (section0BlockBEntries[h].usage)
+                        {
+                            case 0: //vertex positions.
+                                break;
+                            case 1: //bone weights.
+                                o.additionalVertexData[j].boneWeightX = reader.ReadByte() / 255.0f;
+                                o.additionalVertexData[j].boneWeightY = reader.ReadByte() / 255.0f;
+                                o.additionalVertexData[j].boneWeightZ = reader.ReadByte() / 255.0f;
+                                o.additionalVertexData[j].boneWeightW = reader.ReadByte() / 255.0f;
+                                break;
+                            case 2: //normals.
+                                o.additionalVertexData[j].normalX = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].normalY = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].normalZ = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].normalW = ToHalf(reader.ReadUInt16());
+                                break;
+                            case 3: //diffuse.
+                                o.additionalVertexData[j].colourR = reader.ReadByte();
+                                o.additionalVertexData[j].colourG = reader.ReadByte();
+                                o.additionalVertexData[j].colourB = reader.ReadByte();
+                                o.additionalVertexData[j].colourA = reader.ReadByte();
+                                break;
+                            case 7: //bone indices.
+                                o.additionalVertexData[j].boneGroup0Id = reader.ReadByte();
+                                o.additionalVertexData[j].boneGroup1Id = reader.ReadByte();
+                                o.additionalVertexData[j].boneGroup2Id = reader.ReadByte();
+                                o.additionalVertexData[j].boneGroup3Id = reader.ReadByte();
+                                break;
+                            case 8: //UV.
+                                o.additionalVertexData[j].textureU = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].textureV = ToHalf(reader.ReadUInt16());
+                                break;
+                            case 9: //UV 2?
+                                o.additionalVertexData[j].unknownU0 = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].unknownV0 = ToHalf(reader.ReadUInt16());
+                                break;
+                            case 10: //UV 3?
+                                o.additionalVertexData[j].unknownU1 = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].unknownV1 = ToHalf(reader.ReadUInt16());
+                                break;
+                            case 11: //UV 4?
+                                o.additionalVertexData[j].unknownU2 = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].unknownV2 = ToHalf(reader.ReadUInt16());
+                                break;
+                            case 12: //bone weights 2?
+                                o.additionalVertexData[j].unknownWeight0 = reader.ReadByte();
+                                o.additionalVertexData[j].unknownWeight1 = reader.ReadByte();
+                                o.additionalVertexData[j].unknownWeight2 = reader.ReadByte();
+                                o.additionalVertexData[j].unknownWeight3 = reader.ReadByte();
+                                break;
+                            case 13: //bone indices 2?
+                                o.additionalVertexData[j].unknownId0 = reader.ReadUInt16();
+                                o.additionalVertexData[j].unknownId1 = reader.ReadUInt16();
+                                o.additionalVertexData[j].unknownId2 = reader.ReadUInt16();
+                                o.additionalVertexData[j].unknownId3 = reader.ReadUInt16();
+                                break;
+                            case 14: //tangent.
+                                o.additionalVertexData[j].tangentX = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].tangentY = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].tangentZ = ToHalf(reader.ReadUInt16());
+                                o.additionalVertexData[j].tangentW = ToHalf(reader.ReadUInt16());
+                                break;
+                            default:
+                                UnityEngine.Debug.Log("Usage: " + section0BlockBEntries[h].usage);
+                                UnityEngine.Debug.Log("h: " + h);
+                                break;
+                        } //switch
+                    } //for
+
+                    reader.BaseStream.Position = position + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].length;
                 } //for
 
-                reader.BaseStream.Position = position + section0BlockAEntries[section0Block9Entries[i].firstMeshFormatId + 1].length;
+                //align the stream.
+                if (reader.BaseStream.Position % 0x10 != 0)
+                    reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
             } //for
-
-            //align the stream.
-            if (reader.BaseStream.Position % 0x10 != 0)
-                reader.BaseStream.Position += (0x10 - reader.BaseStream.Position % 0x10);
-        } //for
+        } //code block
 
         /****************************************************************
          *
          * FACES
          *
          ****************************************************************/
-        for (int i = 0; i < objects.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Faces: {i}/{objects.Count}", (float)i / objects.Count);
+            int objectCount = objects.Count;
 
-            reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2;
-
-            objects[i].faces = new Face[section0Block3Entries[i].numFaceVertices / 3];
-
-            for (int j = 0; j < objects[i].faces.Length; j++)
+            for (int i = 0; i < objectCount; i++)
             {
-                objects[i].faces[j].vertex1Id = reader.ReadUInt16();
-                objects[i].faces[j].vertex2Id = reader.ReadUInt16();
-                objects[i].faces[j].vertex3Id = reader.ReadUInt16();
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Faces: {i}/{objectCount}", (float)i / objectCount);
+
+                Object o = objects[i];
+                Section0Block3Entry section0Block3Entry = section0Block3Entries[i];
+
+                reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entry.firstFaceVertexId * 2;
+
+                o.faces = new Face[section0Block3Entry.numFaceVertices / 3];
+
+                for (int j = 0; j < objects[i].faces.Length; j++)
+                {
+                    o.faces[j].vertex1Id = reader.ReadUInt16();
+                    o.faces[j].vertex2Id = reader.ReadUInt16();
+                    o.faces[j].vertex3Id = reader.ReadUInt16();
+                } //for
             } //for
-        } //for
+        } //code block
 
         /****************************************************************
          *
@@ -1308,24 +1373,32 @@ public class Fmdl
          ****************************************************************/
         {
             int section0Block11Counter = 0;
+            int objectCount = objects.Count;
 
-            for (int i = 0; i < objects.Count; i++)
+            for (int i = 0; i < objectCount; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Faces: {i}/{objects.Count}", (float)i / objects.Count);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"LOD Faces: {i}/{objectCount}", (float)i / objectCount);
 
-                objects[i].lodFaces = new Face[section0Block10Entries[0].numLods][];
+                Object o = objects[i];
+                Section0Block11Entry section0Block11Entry = section0Block11Entries[section0Block11Counter];
 
-                for (int j = 0; j < objects[i].lodFaces.Length; j++)
+                o.lodFaces = new Face[section0Block10Entries[0].numLods][];
+
+                int lodFacesLength = o.lodFaces.Length;
+
+                for (int j = 0; j < lodFacesLength; j++)
                 {
-                    reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2 + section0Block11Entries[section0Block11Counter].firstFaceVertexId * 2;
+                    reader.BaseStream.Position = section0BlockEEntries[2].offset + section1Offset + section1Info[section1MeshDataIndex].offset + section0Block3Entries[i].firstFaceVertexId * 2 + section0Block11Entry.firstFaceVertexId * 2;
 
-                    objects[i].lodFaces[j] = new Face[section0Block11Entries[section0Block11Counter].numFaceVertices / 3];
+                    objects[i].lodFaces[j] = new Face[section0Block11Entry.numFaceVertices / 3];
 
-                    for (int h = 0; h < objects[i].lodFaces[j].Length; h++)
+                    int subLodFacesLength = o.lodFaces[j].Length;
+
+                    for (int h = 0; h < subLodFacesLength; h++)
                     {
-                        objects[i].lodFaces[j][h].vertex1Id = reader.ReadUInt16();
-                        objects[i].lodFaces[j][h].vertex2Id = reader.ReadUInt16();
-                        objects[i].lodFaces[j][h].vertex3Id = reader.ReadUInt16();
+                        o.lodFaces[j][h].vertex1Id = reader.ReadUInt16();
+                        o.lodFaces[j][h].vertex2Id = reader.ReadUInt16();
+                        o.lodFaces[j][h].vertex3Id = reader.ReadUInt16();
                     } //for
 
                     section0Block11Counter++;
@@ -1340,12 +1413,16 @@ public class Fmdl
          ****************************************************************/
         if (stringsIndex != -1)
         {
-            for (int i = 0; i < section0BlockCEntries.Count; i++)
-            {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{section0BlockCEntries.Count}", (float)i / section0BlockCEntries.Count);
+            int stringsCount = section0BlockCEntries.Count;
 
-                reader.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section0BlockCEntries[i].offset;
-                string s = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntries[i].length));
+            for (int i = 0; i < stringsCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{stringsCount}", (float)i / stringsCount);
+
+                Section0BlockCEntry section0BlockCEntry = section0BlockCEntries[i];
+
+                reader.BaseStream.Position = section1Offset + section1Info[section1StringsIndex].offset + section0BlockCEntry.offset;
+                string s = Encoding.Default.GetString(reader.ReadBytes(section0BlockCEntry.length));
 
                 strings.Add(s);
             } //for
@@ -2147,17 +2224,17 @@ public class Fmdl
                 if (uv2.Length > 0)
                 {
                     o.additionalVertexData[j].unknownU0 = new Half(uv2[j].x);
-                    o.additionalVertexData[j].unknownV0 = new Half(uv2[j].y);
+                    o.additionalVertexData[j].unknownV0 = new Half(-uv2[j].y);
 
                     if (uv3.Length > 0)
                     {
                         o.additionalVertexData[j].unknownU1 = new Half(uv3[j].x);
-                        o.additionalVertexData[j].unknownV1 = new Half(uv3[j].y);
+                        o.additionalVertexData[j].unknownV1 = new Half(-uv3[j].y);
 
                         if (uv4.Length > 0)
                         {
                             o.additionalVertexData[j].unknownU2 = new Half(uv4[j].x);
-                            o.additionalVertexData[j].unknownV2 = new Half(uv4[j].y);
+                            o.additionalVertexData[j].unknownV2 = new Half(-uv4[j].y);
                         } //if
                     } //if
                 } //if
