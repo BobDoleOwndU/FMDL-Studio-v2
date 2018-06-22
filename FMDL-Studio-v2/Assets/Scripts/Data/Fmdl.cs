@@ -1469,43 +1469,43 @@ public class Fmdl
 
         strings.Add("");
 
+        int meshCount = meshes.Count;
+
         //Block 0 - Bones
-        for (int i = 0; i < bones.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{bones.Count}", (float)i / bones.Count);
+            int boneCount = bones.Count;
 
-            Section0Block0Entry s = new Section0Block0Entry();
-
-            s.stringId = (ushort)strings.Count;
-            strings.Add(bones[i].gameObject.name);
-
-            if (bones[i].parent.gameObject.name == "[Root]")
-                s.parentId = 0xFFFF;
-            else
+            for (int i = 0; i < boneCount; i++)
             {
-                for (int j = 0; j < bones.Count; j++)
-                    if (bones[i].parent == bones[j])
-                    {
-                        s.parentId = (ushort)j;
-                        break;
-                    } //if
-            } //else
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bones: {i}/{boneCount}", (float)i / boneCount);
 
-            s.boundingBoxId = (ushort)(i + 1); //Should work for now.
-            s.unknown0 = 0x1;
+                Transform bone = bones[i];
+                Section0Block0Entry s = new Section0Block0Entry();
 
-            //Unity uses left-handed coordinates so x gets inverted.
-            s.localPositionX = -bones[i].localPosition.x;
-            s.localPositionY = bones[i].localPosition.y;
-            s.localPositionZ = bones[i].localPosition.z;
-            s.localPositionW = 1f;
-            s.worldPositionX = -bones[i].position.x;
-            s.worldPositionY = bones[i].position.y;
-            s.worldPositionZ = bones[i].position.z;
-            s.worldPositionW = 1f;
+                s.stringId = (ushort)strings.Count;
+                strings.Add(bone.gameObject.name);
 
-            section0Block0Entries.Add(s);
-        } //for
+                if (bone.parent.gameObject.name == "[Root]")
+                    s.parentId = 0xFFFF;
+                else
+                    s.parentId = (ushort)bones.IndexOf(bone.parent);
+
+                s.boundingBoxId = (ushort)(i + 1); //Should work for now.
+                s.unknown0 = 0x1;
+
+                //Unity uses left-handed coordinates so x gets inverted.
+                s.localPositionX = -bone.localPosition.x;
+                s.localPositionY = bone.localPosition.y;
+                s.localPositionZ = bone.localPosition.z;
+                s.localPositionW = 1f;
+                s.worldPositionX = -bone.position.x;
+                s.worldPositionY = bone.position.y;
+                s.worldPositionZ = bone.position.z;
+                s.worldPositionW = 1f;
+
+                section0Block0Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 1 - Mesh Groups
         {
@@ -1538,146 +1538,160 @@ public class Fmdl
         } //code block
 
         //Block 2 - Mesh Group Assignments
-        for (int i = 0; i < meshGroupEntries.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{meshGroupEntries.Count}", (float)i / meshGroupEntries.Count);
+            int meshGroupEntriesCount = meshGroupEntries.Count;
 
-            Section0Block2Entry s = new Section0Block2Entry();
+            for (int i = 0; i < meshGroupEntriesCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Group Assignments: {i}/{meshGroupEntriesCount}", (float)i / meshGroupEntriesCount);
 
-            s.meshGroupId = (ushort)meshGroupEntries[i].meshGroupIndex;
-            s.numObjects = (ushort)meshGroupEntries[i].numMeshes;
+                Section0Block2Entry s = new Section0Block2Entry();
+                MeshGroupEntry meshGroupEntry = meshGroupEntries[i];
 
-            if (i == 0)
-                s.firstObjectId = 0;
-            else
-                s.firstObjectId = (ushort)(section0Block2Entries[i - 1].firstObjectId + section0Block2Entries[i - 1].numObjects);
+                s.meshGroupId = (ushort)meshGroupEntry.meshGroupIndex;
+                s.numObjects = (ushort)meshGroupEntry.numMeshes;
 
-            s.id = (ushort)i;
-            s.firstFaceIndexId = s.firstObjectId;
+                if (i == 0)
+                    s.firstObjectId = 0;
+                else
+                    s.firstObjectId = (ushort)(section0Block2Entries[i - 1].firstObjectId + section0Block2Entries[i - 1].numObjects);
 
-            section0Block2Entries.Add(s);
-        } //for
+                s.id = (ushort)i;
+                s.firstFaceIndexId = s.firstObjectId;
+
+                section0Block2Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 3 - Meshes
-        for (int i = 0; i < meshes.Count; i++)
+        for (int i = 0; i < meshCount; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{meshes.Count}", i / meshes.Count);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Meshes: {i}/{meshCount}", i / meshCount);
 
             FoxModel foxModel = gameObject.GetComponent<FoxModel>();
             Section0Block3Entry s = new Section0Block3Entry();
+            SkinnedMeshRenderer mesh = meshes[i];
 
             s.alphaEnum = (byte)foxModel.meshDefinitions[i].alpha;
             s.shadowEnum = (byte)foxModel.meshDefinitions[i].shadow;
 
-            for (int j = 0; j < materialInstances.Count; j++)
-                if (meshes[i].sharedMaterial == materialInstances[j])
-                {
-                    s.materialInstanceId = (ushort)j;
-                    break;
-                } //if
+            int materialInstanceCount = materialInstances.Count;
+
+            s.materialInstanceId = (ushort)materialInstances.IndexOf(mesh.sharedMaterial);
 
             s.boneGroupId = (ushort)i;
 
             s.id = (ushort)i;
-            s.numVertices = (ushort)meshes[i].sharedMesh.vertexCount;
+            s.numVertices = (ushort)mesh.sharedMesh.vertexCount;
 
             if (i != 0)
                 s.firstFaceVertexId = section0Block3Entries[i - 1].firstFaceVertexId + section0Block3Entries[i - 1].numFaceVertices;
             else
                 s.firstFaceVertexId = 0;
 
-            s.numFaceVertices = (ushort)meshes[i].sharedMesh.triangles.Length;
+            s.numFaceVertices = (ushort)mesh.sharedMesh.triangles.Length;
             s.firstFaceIndexId = (ushort)(i * 1); //might have to change the 4 depending on how many 0xA entries we end up having per mesh. It'll always be i * something though.
 
             section0Block3Entries.Add(s);
         } //for
 
         //Block 8 - Materials
-        for (int i = 0; i < materials.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{materials.Count}", (float)i / materials.Count);
+            int materialCount = materials.Count;
 
-            Section0Block8Entry s = new Section0Block8Entry();
+            for (int i = 0; i < materialCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Materials: {i}/{materialCount}", (float)i / materialCount);
 
-            s.stringId = (ushort)strings.Count;
-            strings.Add(materials[i].Item1);
+                Section0Block8Entry s = new Section0Block8Entry();
+                Tuple<string, string> material = materials[i];
 
-            s.typeId = (ushort)strings.Count;
-            strings.Add(materials[i].Item2);
+                s.stringId = (ushort)strings.Count;
+                strings.Add(material.Item1);
 
-            section0Block8Entries.Add(s);
-        } //for
+                s.typeId = (ushort)strings.Count;
+                strings.Add(material.Item2);
+
+                section0Block8Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 4 - Material Instances
-        for (int i = 0; i < materialInstances.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{materialInstances.Count}", (float)i / materialInstances.Count);
+            int materialInstanceCount = materialInstances.Count;
 
-            Section0Block4Entry s = new Section0Block4Entry();
-
-            s.stringId = (ushort)strings.Count;
-
-            if (materialInstances[i].name.Contains(" (UnityEngine.Material)"))
-                materialInstances[i].name = materialInstances[i].name.Substring(0, materialInstances[i].name.IndexOf(" (UnityEngine.Material)"));
-
-            strings.Add(materialInstances[i].name);
-
-            s.numTextures = 0;
-
-            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
-                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
-                    if (materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
-                        s.numTextures++;
-
-            if (i == 0)
-                s.firstTextureId = 0;
-            else
+            for (int i = 0; i < materialInstanceCount; i++)
             {
-                if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId && section0Block4Entries[i - 1].numParameters > 0)
-                    s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Material Instances: {i}/{materialInstanceCount}", (float)i / materialInstanceCount);
+
+                Section0Block4Entry s = new Section0Block4Entry();
+                Material materialInstance = materialInstances[i];
+
+                s.stringId = (ushort)strings.Count;
+
+                if (materialInstance.name.Contains(" (UnityEngine.Material)"))
+                    materialInstance.name = materialInstance.name.Substring(0, materialInstance.name.IndexOf(" (UnityEngine.Material)"));
+
+                strings.Add(materialInstances[i].name);
+
+                s.numTextures = 0;
+
+                for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstance.shader); j++)
+                    if (ShaderUtil.GetPropertyType(materialInstance.shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                        if (materialInstance.GetTexture(ShaderUtil.GetPropertyName(materialInstance.shader, j)))
+                            s.numTextures++;
+
+                if (i == 0)
+                    s.firstTextureId = 0;
                 else
-                    s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
-            } //else
+                {
+                    if (section0Block4Entries[i - 1].firstParameterId >= section0Block4Entries[i - 1].firstTextureId && section0Block4Entries[i - 1].numParameters > 0)
+                        s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                    else
+                        s.firstTextureId = (ushort)(section0Block4Entries[i - 1].firstTextureId + section0Block4Entries[i - 1].numTextures);
+                } //else
 
-            s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.Item2 == materialInstances[i].shader.name.Substring(materialInstances[i].shader.name.IndexOf('/') + 1)));
+                s.materialId = (ushort)materials.IndexOf(materials.Find(x => x.Item2 == materialInstance.shader.name.Substring(materialInstance.shader.name.IndexOf('/') + 1)));
 
-            s.numParameters = 0;
+                s.numParameters = 0;
 
-            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
-                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.Vector)
-                    s.numParameters++;
+                for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstance.shader); j++)
+                    if (ShaderUtil.GetPropertyType(materialInstance.shader, j) == ShaderUtil.ShaderPropertyType.Vector)
+                        s.numParameters++;
 
-            if (i != 0)
-            {
-                if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
-                    s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                if (i != 0)
+                {
+                    if (section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters >= s.firstTextureId + s.numTextures)
+                        s.firstParameterId = (ushort)(section0Block4Entries[i - 1].firstParameterId + section0Block4Entries[i - 1].numParameters);
+                    else
+                        s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
+                } //if
                 else
                     s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
-            } //if
-            else
-                s.firstParameterId = (ushort)(s.firstTextureId + s.numTextures);
 
-            section0Block4Entries.Add(s);
-        } //for
+                section0Block4Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 5 - Bone Groups
         if (bones.Count > 0)
-            for (int i = 0; i < meshes.Count; i++)
+            for (int i = 0; i < meshCount; i++)
             {
-                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{meshes.Count}", (float)i / meshes.Count);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bone Groups: {i}/{meshCount}", (float)i / meshCount);
 
                 Section0Block5Entry s = new Section0Block5Entry();
                 List<int> indices = GetBoneGroup(meshes[i], bones);
+                int indexCount = indices.Count;
 
                 s.unknown0 = 4; //Most bone groups use 0x4. Dunno if it matters.
-                s.numEntries = (ushort)indices.Count;
+                s.numEntries = (ushort)indexCount;
 
                 if (s.numEntries > 0x20)
                     throw new Exception("Meshes cannot be weighted to more than 32 bones!");
 
                 s.entries = new List<ushort>(0);
 
-                for (int j = 0; j < indices.Count; j++)
+                for (int j = 0; j < indexCount; j++)
                 {
                     s.entries.Add((ushort)indices[j]);
                 } //for
@@ -1686,336 +1700,369 @@ public class Fmdl
             } //for
 
         //Block 6 - Textures
-        for (int i = 0; i < textures.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{textures.Count}", (float)i / textures.Count);
+            int textureCount = textures.Count;
 
-            Section0Block6Entry s = new Section0Block6Entry();
-
-            string assetPath = AssetDatabase.GetAssetPath(textures[i]);
-
-            if (assetPath == "")
-                assetPath = textures[i].name.Substring(1);
-
-            string fileName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";
-
-            s.stringId = (ushort)strings.Count;
-            strings.Add(fileName);
-
-            string directoryName = $"/{Path.GetDirectoryName(assetPath)}/";
-
-            int stringIndex = strings.IndexOf(directoryName);
-
-            if (stringIndex != -1)
-                s.pathId = (ushort)stringIndex;
-            else
+            for (int i = 0; i < textureCount; i++)
             {
-                s.pathId = (ushort)strings.Count;
-                strings.Add(directoryName);
-            } //else
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Textures: {i}/{textureCount}", (float)i / textureCount);
 
-            section0Block6Entries.Add(s);
-        } //for
+                Section0Block6Entry s = new Section0Block6Entry();
+                Texture texture = textures[i];
+
+                string assetPath = AssetDatabase.GetAssetPath(texture);
+
+                if (assetPath == "")
+                    assetPath = texture.name.Substring(1);
+
+                string fileName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";
+
+                s.stringId = (ushort)strings.Count;
+                strings.Add(fileName);
+
+                string directoryName = $"/{Path.GetDirectoryName(assetPath)}/";
+
+                int stringIndex = strings.IndexOf(directoryName);
+
+                if (stringIndex != -1)
+                    s.pathId = (ushort)stringIndex;
+                else
+                {
+                    s.pathId = (ushort)strings.Count;
+                    strings.Add(directoryName);
+                } //else
+
+                section0Block6Entries.Add(s);
+            } //for
+        } //code block
 
         //Block 7 - Texture Type/Material Parameter Assignments
-        for (int i = 0; i < materialInstances.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{materialInstances.Count}", (float)i / materialInstances.Count);
+            int materialInstanceCount = materialInstances.Count;
 
-            for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstances[i].shader); j++)
-                if (ShaderUtil.GetPropertyType(materialInstances[i].shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
-                    if (materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)))
-                    {
-                        Section0Block7Entry s = new Section0Block7Entry();
+            for (int i = 0; i < materialInstanceCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Texture Type/Material Parameter Assignments: {i}/{materialInstanceCount}", (float)i / materialInstanceCount);
 
-                        s.referenceId = (ushort)textures.IndexOf(materialInstances[i].GetTexture(ShaderUtil.GetPropertyName(materialInstances[i].shader, j)));
+                Material materialInstance = materialInstances[i];
 
-                        int stringIndex = strings.IndexOf(ShaderUtil.GetPropertyName(materialInstances[i].shader, j));
-
-                        if (stringIndex == -1)
+                for (int j = 0; j < ShaderUtil.GetPropertyCount(materialInstance.shader); j++)
+                    if (ShaderUtil.GetPropertyType(materialInstance.shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                        if (materialInstance.GetTexture(ShaderUtil.GetPropertyName(materialInstance.shader, j)))
                         {
-                            s.stringId = (ushort)strings.Count;
-                            strings.Add(ShaderUtil.GetPropertyName(materialInstances[i].shader, j));
-                        } //if
-                        else
-                            s.stringId = (ushort)stringIndex;
+                            Section0Block7Entry s = new Section0Block7Entry();
 
-                        section0Block7Entries.Add(s);
+                            s.referenceId = (ushort)textures.IndexOf(materialInstance.GetTexture(ShaderUtil.GetPropertyName(materialInstance.shader, j)));
+
+                            int stringIndex = strings.IndexOf(ShaderUtil.GetPropertyName(materialInstance.shader, j));
+
+                            if (stringIndex == -1)
+                            {
+                                s.stringId = (ushort)strings.Count;
+                                strings.Add(ShaderUtil.GetPropertyName(materialInstance.shader, j));
+                            } //if
+                            else
+                                s.stringId = (ushort)stringIndex;
+
+                            section0Block7Entries.Add(s);
+                        } //if
+
+                Section0Block4Entry section0Block4Entry = section0Block4Entries[i];
+
+                for (int j = 0; j < section0Block4Entry.numParameters; j++)
+                {
+                    Section0Block7Entry s = new Section0Block7Entry();
+
+                    int numPrecedingParameters = 0;
+
+                    for (int h = 0; h < i; h++)
+                        numPrecedingParameters += section0Block4Entries[h].numParameters;
+
+                    s.referenceId = (ushort)(numPrecedingParameters + j);
+
+                    int stringIndex = strings.IndexOf(materialParameters[s.referenceId].name);
+
+                    if (stringIndex == -1)
+                    {
+                        stringIndex = strings.Count;
+                        strings.Add(materialParameters[s.referenceId].name);
                     } //if
 
-            for (int j = 0; j < section0Block4Entries[i].numParameters; j++)
-            {
-                Section0Block7Entry s = new Section0Block7Entry();
+                    s.stringId = (ushort)stringIndex;
 
-                int numPrecedingParameters = 0;
-
-                for (int h = 0; h < i; h++)
-                    numPrecedingParameters += section0Block4Entries[h].numParameters;
-
-                s.referenceId = (ushort)(numPrecedingParameters + j);
-
-                int stringIndex = strings.IndexOf(materialParameters[s.referenceId].name);
-
-                if (stringIndex == -1)
-                {
-                    stringIndex = strings.Count;
-                    strings.Add(materialParameters[s.referenceId].name);
-                } //if
-
-                s.stringId = (ushort)stringIndex;
-
-                section0Block7Entries.Add(s);
+                    section0Block7Entries.Add(s);
+                } //for
             } //for
-        } //for
+        } //code block
 
         //Block 9 - Mesh Format Assignments
-        for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
+            int meshFormatCount = meshFormats.Count;
 
-            Section0Block9Entry s = new Section0Block9Entry();
-
-            byte numMeshFormatEntries = 0;
-            byte numVertexFormatEntries = 0;
-
-            if (meshFormats[i].meshFormat0Size > 0)
+            for (int i = 0; i < meshFormatCount; i++)
             {
-                numMeshFormatEntries++;
-                numVertexFormatEntries += meshFormats[i].meshFormat0Size;
-            } //if
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Format Assignments: {i}/{meshFormatCount}", (float)i / meshFormatCount);
 
-            if (meshFormats[i].meshFormat1Size > 0)
-            {
-                numMeshFormatEntries++;
-                numVertexFormatEntries += meshFormats[i].meshFormat1Size;
-            } //if
+                Section0Block9Entry s = new Section0Block9Entry();
+                MeshFormat meshFormat = meshFormats[i];
 
-            if (meshFormats[i].meshFormat2Size > 0)
-            {
-                numMeshFormatEntries++;
-                numVertexFormatEntries += meshFormats[i].meshFormat2Size;
-            } //if
+                byte numMeshFormatEntries = 0;
+                byte numVertexFormatEntries = 0;
 
-            if (meshFormats[i].meshFormat3Size > 0)
-            {
-                numMeshFormatEntries++;
-                numVertexFormatEntries += meshFormats[i].meshFormat3Size;
-            } //if
+                if (meshFormat.meshFormat0Size > 0)
+                {
+                    numMeshFormatEntries++;
+                    numVertexFormatEntries += meshFormat.meshFormat0Size;
+                } //if
 
-            s.numMeshFormatEntries = numMeshFormatEntries;
-            s.numVertexFormatEntries = numVertexFormatEntries;
-            s.unknown0 = 0x100;
+                if (meshFormat.meshFormat1Size > 0)
+                {
+                    numMeshFormatEntries++;
+                    numVertexFormatEntries += meshFormat.meshFormat1Size;
+                } //if
 
-            if (i == 0)
-            {
-                s.firstMeshFormatId = 0;
-                s.firstVertexFormatId = 0;
-            } //if
-            else
-            {
-                s.firstMeshFormatId = (ushort)(section0Block9Entries[i - 1].firstMeshFormatId + section0Block9Entries[i - 1].numMeshFormatEntries);
-                s.firstVertexFormatId = (ushort)(section0Block9Entries[i - 1].firstVertexFormatId + section0Block9Entries[i - 1].numVertexFormatEntries);
-            } //else
+                if (meshFormat.meshFormat2Size > 0)
+                {
+                    numMeshFormatEntries++;
+                    numVertexFormatEntries += meshFormat.meshFormat2Size;
+                } //if
 
-            section0Block9Entries.Add(s);
-        } //for
+                if (meshFormat.meshFormat3Size > 0)
+                {
+                    numMeshFormatEntries++;
+                    numVertexFormatEntries += meshFormat.meshFormat3Size;
+                } //if
+
+                s.numMeshFormatEntries = numMeshFormatEntries;
+                s.numVertexFormatEntries = numVertexFormatEntries;
+                s.unknown0 = 0x100;
+
+                if (i == 0)
+                {
+                    s.firstMeshFormatId = 0;
+                    s.firstVertexFormatId = 0;
+                } //if
+                else
+                {
+                    s.firstMeshFormatId = (ushort)(section0Block9Entries[i - 1].firstMeshFormatId + section0Block9Entries[i - 1].numMeshFormatEntries);
+                    s.firstVertexFormatId = (ushort)(section0Block9Entries[i - 1].firstVertexFormatId + section0Block9Entries[i - 1].numVertexFormatEntries);
+                } //else
+
+                section0Block9Entries.Add(s);
+            } //for
+        } //code block
 
         //Block A - Mesh Formats
-        for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
+            int meshFormatCount = meshFormats.Count;
 
-            if (meshFormats[i].meshFormat0Size > 0)
+            for (int i = 0; i < meshFormatCount; i++)
             {
-                Section0BlockAEntry s = new Section0BlockAEntry();
-                s.bufferOffsetId = 0;
-                s.numVertexFormatEntries = meshFormats[i].meshFormat0Size;
-                s.length = 0xC;
-                s.type = 0;
-                s.offset = meshFormats[i].zeroOffset;
-                section0BlockAEntries.Add(s);
-            } //if
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Mesh Formats: {i}/{meshFormatCount}", (float)i / meshFormatCount);
+                MeshFormat meshFormat = meshFormats[i];
 
-            if (meshFormats[i].meshFormat1Size > 0)
-            {
-                Section0BlockAEntry s = new Section0BlockAEntry();
-                s.bufferOffsetId = 1;
-                s.numVertexFormatEntries = meshFormats[i].meshFormat1Size;
-                s.length = meshFormats[i].size;
-                s.type = 1;
-                s.offset = meshFormats[i].additionalOffset;
-                section0BlockAEntries.Add(s);
-            } //if
+                if (meshFormat.meshFormat0Size > 0)
+                {
+                    Section0BlockAEntry s = new Section0BlockAEntry();
+                    s.bufferOffsetId = 0;
+                    s.numVertexFormatEntries = meshFormat.meshFormat0Size;
+                    s.length = 0xC;
+                    s.type = 0;
+                    s.offset = meshFormat.zeroOffset;
+                    section0BlockAEntries.Add(s);
+                } //if
 
-            if (meshFormats[i].meshFormat2Size > 0)
-            {
-                Section0BlockAEntry s = new Section0BlockAEntry();
-                s.bufferOffsetId = 1;
-                s.numVertexFormatEntries = meshFormats[i].meshFormat2Size;
-                s.length = meshFormats[i].size;
-                s.type = 2;
-                s.offset = meshFormats[i].additionalOffset;
-                section0BlockAEntries.Add(s);
-            } //if
+                if (meshFormat.meshFormat1Size > 0)
+                {
+                    Section0BlockAEntry s = new Section0BlockAEntry();
+                    s.bufferOffsetId = 1;
+                    s.numVertexFormatEntries = meshFormat.meshFormat1Size;
+                    s.length = meshFormat.size;
+                    s.type = 1;
+                    s.offset = meshFormat.additionalOffset;
+                    section0BlockAEntries.Add(s);
+                } //if
 
-            if (meshFormats[i].meshFormat3Size > 0)
-            {
-                Section0BlockAEntry s = new Section0BlockAEntry();
-                s.bufferOffsetId = 1;
-                s.numVertexFormatEntries = meshFormats[i].meshFormat3Size;
-                s.length = meshFormats[i].size;
-                s.type = 3;
-                s.offset = meshFormats[i].additionalOffset;
-                section0BlockAEntries.Add(s);
-            } //if
-        } //for
+                if (meshFormat.meshFormat2Size > 0)
+                {
+                    Section0BlockAEntry s = new Section0BlockAEntry();
+                    s.bufferOffsetId = 1;
+                    s.numVertexFormatEntries = meshFormat.meshFormat2Size;
+                    s.length = meshFormat.size;
+                    s.type = 2;
+                    s.offset = meshFormat.additionalOffset;
+                    section0BlockAEntries.Add(s);
+                } //if
+
+                if (meshFormat.meshFormat3Size > 0)
+                {
+                    Section0BlockAEntry s = new Section0BlockAEntry();
+                    s.bufferOffsetId = 1;
+                    s.numVertexFormatEntries = meshFormat.meshFormat3Size;
+                    s.length = meshFormat.size;
+                    s.type = 3;
+                    s.offset = meshFormat.additionalOffset;
+                    section0BlockAEntries.Add(s);
+                } //if
+            } //for
+        } //code block
 
         //Block B - Vertex Formats
-        for (int i = 0; i < meshFormats.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{meshFormats.Count}", (float)i / meshFormats.Count);
+            int meshFormatCount = meshFormats.Count;
 
-            ushort offset = 0;
-
-            Section0BlockBEntry s = new Section0BlockBEntry();
-
-            s.usage = 0;
-            s.format = 1;
-            s.offset = offset;
-
-            section0BlockBEntries.Add(s);
-
-            if (meshFormats[i].normals)
+            for (int i = 0; i < meshFormatCount; i++)
             {
-                s = new Section0BlockBEntry();
-                s.usage = 2;
-                s.format = 6;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 8;
-            } //if
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Vertex Formats: {i}/{meshFormatCount}", (float)i / meshFormatCount);
 
-            if (meshFormats[i].tangents)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 0xE;
-                s.format = 6;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 8;
-            } //if
+                MeshFormat meshFormat = meshFormats[i];
 
-            if (meshFormats[i].colour)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 3;
-                s.format = 8;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                ushort offset = 0;
 
-            if (meshFormats[i].weights0)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 1;
-                s.format = 8;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                Section0BlockBEntry s = new Section0BlockBEntry();
 
-            if (meshFormats[i].indices0)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 7;
-                s.format = 9;
+                s.usage = 0;
+                s.format = 1;
                 s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
 
-            if (meshFormats[i].uv0)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 8;
-                s.format = 7;
-                s.offset = offset;
                 section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
 
-            if (meshFormats[i].uv1)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 9;
-                s.format = 7;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                if (meshFormat.normals)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 2;
+                    s.format = 6;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 8;
+                } //if
 
-            if (meshFormats[i].uv2)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 0xA;
-                s.format = 7;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                if (meshFormat.tangents)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 0xE;
+                    s.format = 6;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 8;
+                } //if
 
-            if (meshFormats[i].uv3)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 0xB;
-                s.format = 7;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                if (meshFormat.colour)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 3;
+                    s.format = 8;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
 
-            if (meshFormats[i].weights1)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 0xC;
-                s.format = 8;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 4;
-            } //if
+                if (meshFormat.weights0)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 1;
+                    s.format = 8;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
 
-            if (meshFormats[i].indices1)
-            {
-                s = new Section0BlockBEntry();
-                s.usage = 0xD;
-                s.format = 4;
-                s.offset = offset;
-                section0BlockBEntries.Add(s);
-                offset += 8;
-            } //if
-        } //for
+                if (meshFormat.indices0)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 7;
+                    s.format = 9;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.uv0)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 8;
+                    s.format = 7;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.uv1)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 9;
+                    s.format = 7;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.uv2)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 0xA;
+                    s.format = 7;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.uv3)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 0xB;
+                    s.format = 7;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.weights1)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 0xC;
+                    s.format = 8;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 4;
+                } //if
+
+                if (meshFormat.indices1)
+                {
+                    s = new Section0BlockBEntry();
+                    s.usage = 0xD;
+                    s.format = 4;
+                    s.offset = offset;
+                    section0BlockBEntries.Add(s);
+                    offset += 8;
+                } //if
+            } //for
+        } //code block
 
         //Block C - Strings
-        for (int i = 0; i < strings.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{strings.Count}", (float)i / strings.Count);
+            int stringCount = strings.Count;
 
-            Section0BlockCEntry s = new Section0BlockCEntry();
-            s.section1BlockId = 3;
-            s.length = (ushort)strings[i].Length;
-
-            if (i == 0)
+            for (int i = 0; i < stringCount; i++)
             {
-                s.offset = 0;
-            } //if
-            else
-            {
-                s.offset = section0BlockCEntries[i - 1].offset + section0BlockCEntries[i - 1].length + 1;
-            } //else
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Strings: {i}/{stringCount}", (float)i / stringCount);
 
-            section0BlockCEntries.Add(s);
-        } //for
+                Section0BlockCEntry s = new Section0BlockCEntry();
+                s.section1BlockId = 3;
+                s.length = (ushort)strings[i].Length;
+
+                if (i == 0)
+                {
+                    s.offset = 0;
+                } //if
+                else
+                {
+                    s.offset = section0BlockCEntries[i - 1].offset + section0BlockCEntries[i - 1].length + 1;
+                } //else
+
+                section0BlockCEntries.Add(s);
+            } //for
+        } //code block
 
         //Block D - Bounding Boxes
         {
@@ -2039,21 +2086,27 @@ public class Fmdl
             } //foreach
         } //code block
 
-        for (int i = 0; i < bones.Count; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{bones.Count}", (float)i / bones.Count);
+            int boneCount = bones.Count;
 
-            Section0BlockDEntry s = new Section0BlockDEntry();
-            s.minX = -bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.x;
-            s.minY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.y;
-            s.minZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.min.z;
-            s.minW = 1f;
-            s.maxX = -bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.x;
-            s.maxY = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.y;
-            s.maxZ = bones[i].gameObject.GetComponent<BoxCollider>().bounds.max.z;
-            s.maxW = 1f;
-            section0BlockDEntries.Add(s);
-        } //for
+            for (int i = 0; i < boneCount; i++)
+            {
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Bounding Boxes: {i}/{boneCount}", (float)i / boneCount);
+
+                Transform bone = bones[i];
+
+                Section0BlockDEntry s = new Section0BlockDEntry();
+                s.minX = -bone.gameObject.GetComponent<BoxCollider>().bounds.min.x;
+                s.minY = bone.gameObject.GetComponent<BoxCollider>().bounds.min.y;
+                s.minZ = bone.gameObject.GetComponent<BoxCollider>().bounds.min.z;
+                s.minW = 1f;
+                s.maxX = -bone.gameObject.GetComponent<BoxCollider>().bounds.max.x;
+                s.maxY = bone.gameObject.GetComponent<BoxCollider>().bounds.max.y;
+                s.maxZ = bone.gameObject.GetComponent<BoxCollider>().bounds.max.z;
+                s.maxW = 1f;
+                section0BlockDEntries.Add(s);
+            } //for
+        } //code block
 
         //Block E - Buffer Offsets
         for (int i = 0; i < 3; i++)
@@ -2086,9 +2139,9 @@ public class Fmdl
         } //code block
 
         //Block 11 - Face Indices
-        for (int i = 0; i < meshes.Count; i++)
+        for (int i = 0; i < meshCount; i++)
         {
-            EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{meshes.Count}", (float)i / meshes.Count);
+            EditorUtility.DisplayProgressBar(BAR_STRING, $"Face Indices: {i}/{meshCount}", (float)i / meshCount);
 
             Section0Block11Entry s = new Section0Block11Entry();
             s.firstFaceVertexId = 0;
@@ -2122,7 +2175,6 @@ public class Fmdl
         //Objects
         objects = new List<Object>(0);
 
-        int meshCount = meshes.Count;
         int vertCount;
         int faceCount;
 
@@ -2149,7 +2201,7 @@ public class Fmdl
 
             for (int j = 0; j < vertCount; j++)
             {
-                EditorUtility.DisplayProgressBar("Test Bar", $"Objects: {i}/{meshCount} Vertices: {j}/{vertCount}", (float)j / vertCount);
+                EditorUtility.DisplayProgressBar(BAR_STRING, $"Objects: {i}/{meshCount} Vertices: {j}/{vertCount}", (float)j / vertCount);
 
                 o.vertices[j].x = -vertices[j].x;
                 o.vertices[j].y = vertices[j].y;
