@@ -63,6 +63,8 @@ public class UnityModel
             else
                 foxMeshGroup.name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[i].stringId]);
 
+            foxMeshGroup.parent = (short)fmdl.section0Block1Entries[i].parentId;
+
             if (fmdl.section0Block1Entries[i].invisibilityFlag == 0)
                 foxMeshGroup.visible = true;
             else

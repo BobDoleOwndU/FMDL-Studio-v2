@@ -93,5 +93,6 @@ public class FoxMeshDefinition
 public class FoxMeshGroup
 {
     public string name;
+    public short parent;
     public bool visible = true;
 } //class

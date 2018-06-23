@@ -1525,11 +1525,8 @@ public class Fmdl
                     s.invisibilityFlag = 0;
                 else
                     s.invisibilityFlag = 1;
-
-                if (i == 0)
-                    s.parentId = 0xFFFF;
-                else
-                    s.parentId = 0;
+                
+                s.parentId = (ushort)meshGroups[i].parent;
 
                 s.unknown0 = 0xFFFF;
 

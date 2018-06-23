@@ -41,7 +41,15 @@ public class FoxModelEditor : Editor
 
                 if (serializedObject.FindProperty("meshGroups").GetArrayElementAtIndex(i).isExpanded)
                 {
+                    string[] meshGroupStrings = new string[i + 1];
+
+                    meshGroupStrings[0] = "No Parent";
+
+                    for (int j = 0; j < i; j++)
+                        meshGroupStrings[j + 1] = foxModel.meshGroups[j].name;
+
                     foxModel.meshGroups[i].name = EditorGUILayout.TextField("Name", foxModel.meshGroups[i].name);
+                    foxModel.meshGroups[i].parent = (short)(EditorGUILayout.Popup("Parent", foxModel.meshGroups[i].parent + 1, meshGroupStrings) - 1);
                     foxModel.meshGroups[i].visible = EditorGUILayout.Toggle("Is Visible", foxModel.meshGroups[i].visible);
                 } //if
             } //for
