@@ -5,7 +5,7 @@ using System;
 
 public class FmdlExporter
 {
-    public static void FMDLWrite(string path)
+    public static void FmdlWrite(string path)
     {
         FileStream stream = new FileStream(path, FileMode.Create);
 
@@ -24,5 +24,5 @@ public class FmdlExporter
         } //catch
 
         stream.Close();
-    }
-}
+    } //FmdlWrite
+} //class

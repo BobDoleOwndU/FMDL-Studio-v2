@@ -362,7 +362,7 @@ public class Fmdl
     public string name { get; private set; }
 
     private uint signature;
-    private float versionNum;
+    public float versionNum { get; private set; }
     private ulong blocksOffset;
     private ulong section0BlockFlags;
     private ulong section1BlockFlags;

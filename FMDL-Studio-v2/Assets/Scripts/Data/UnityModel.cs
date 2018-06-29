@@ -250,7 +250,6 @@ public class UnityModel
             foxMeshDefinition.alpha = (FoxMeshDefinition.Alpha)fmdl.section0Block3Entries[i].alphaEnum;
             foxMeshDefinition.shadow = (FoxMeshDefinition.Shadow)fmdl.section0Block3Entries[i].shadowEnum;
 
-
             //Get the mesh name.
             for (int j = 0; j < fmdl.section0Block2Entries.Count; j++)
             {

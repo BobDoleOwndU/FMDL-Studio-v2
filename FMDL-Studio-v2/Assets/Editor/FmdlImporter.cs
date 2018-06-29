@@ -1,31 +1,10 @@
 ﻿using System.IO;
 using UnityEngine;
-using UnityEditor.Experimental.AssetImporters;
 using System;
-using UnityEditor;
-
-#if FOXKIT
-[ScriptedImporter(1, "fmdl")]
-public class FmdlImporter : ScriptedImporter
-{
-    public override void OnImportAsset(AssetImportContext ctx)
-    {
-        FileStream stream = new FileStream(ctx.assetPath, FileMode.Open);
-
-        Fmdl fmdl = new Fmdl(Path.GetFileNameWithoutExtension(ctx.assetPath));
-        UnityModel model = new UnityModel();
-        fmdl.Read(stream);
-        GameObject fmdlGameObject = model.GetDataFromFmdl(fmdl);
-        ctx.AddObjectToAsset(ctx.assetPath, fmdlGameObject);
-        ctx.SetMainObject(fmdlGameObject);
-        stream.Close();
-    }
-}
-#else
 
 public static class FmdlImporter
 {
-    public static void FMDLRead(string fmdlPath)
+    public static void FmdlRead(string fmdlPath)
     {
         FileStream stream = new FileStream(fmdlPath, FileMode.Open);
 
@@ -43,6 +22,5 @@ public static class FmdlImporter
             Debug.Log($"An exception occured{e.StackTrace}");
             stream.Close();
         } //catch
-    }
-}
-#endif
+    } //FmdlRead
+} //class

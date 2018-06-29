@@ -10,7 +10,7 @@ public class FmdlStudioWindow : EditorWindow
 
         if (!string.IsNullOrWhiteSpace(windowPath))
         {
-            FmdlImporter.FMDLRead(windowPath);
+            FmdlImporter.FmdlRead(windowPath);
             Debug.Log("Selected FMDL: " + windowPath);
         } //if
         else
@@ -42,7 +42,7 @@ public class FmdlStudioWindow : EditorWindow
 
             if (!string.IsNullOrWhiteSpace(windowPath))
             {
-                FmdlExporter.FMDLWrite(windowPath);
+                FmdlExporter.FmdlWrite(windowPath);
                 Debug.Log("Fmdl Exported to: " + windowPath);
             } //if
             else
