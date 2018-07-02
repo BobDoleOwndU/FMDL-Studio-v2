@@ -2,8 +2,6 @@
 using UnityEditor.Experimental.AssetImporters;
 using System.IO;
 using System;
-using System.Collections.Generic;
-using UnityEditor;
 
 [ScriptedImporter(1, "fmdl")]
 public class ExperimentalFmdlImporter: ScriptedImporter
