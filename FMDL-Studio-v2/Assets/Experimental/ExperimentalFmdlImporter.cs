@@ -8,15 +8,15 @@ public class ExperimentalFmdlImporter: ScriptedImporter
 {
     public void Read(AssetImportContext ctx, FileStream stream)
     {
-        Fmdl fmdl = new Fmdl(Path.GetFileNameWithoutExtension(ctx.assetPath));
+        ExpFmdl fmdl = new ExpFmdl(Path.GetFileNameWithoutExtension(ctx.assetPath));
         fmdl.Read(stream);
 
-        bool isGZFormat = fmdl.versionNum == 2.03f;
-        int boneCount = fmdl.section0Block0Entries.Count;
-        int materialCount = fmdl.section0Block4Entries.Count;
-        int textureCount = fmdl.section0Block6Entries.Count;
-        int meshCount = fmdl.section0Block3Entries.Count;
-        int meshGroupCount = fmdl.section0Block1Entries.Count;
+        bool isGZFormat = fmdl.version == 2.03f;
+        int boneCount = fmdl.fmdlBones.Length;
+        int materialCount = fmdl.fmdlMaterialInstances.Length;
+        int textureCount = fmdl.fmdlTextures.Length;
+        int meshCount = fmdl.fmdlMeshInfos.Length;
+        int meshGroupCount = fmdl.fmdlMeshGroups.Length;
 
         GameObject mainObject = new GameObject(fmdl.name);
         ctx.AddObjectToAsset($"{mainObject.name}", mainObject);
@@ -35,10 +35,10 @@ public class ExperimentalFmdlImporter: ScriptedImporter
         rootBone.parent = mainObject.transform;
 
         {
-            Fmdl.Section0BlockDEntry section0BlockDEntry = fmdl.section0BlockDEntries[0];
+            ExpFmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[0];
 
             Bounds bounds = new Bounds();
-            bounds.SetMinMax(new Vector3(-section0BlockDEntry.minX, section0BlockDEntry.minY, section0BlockDEntry.minZ), new Vector3(-section0BlockDEntry.maxX, section0BlockDEntry.maxY, section0BlockDEntry.maxZ));
+            bounds.SetMinMax(new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
             BoxCollider boxCollider = rootBone.gameObject.AddComponent<BoxCollider>();
             ctx.AddObjectToAsset($"Root Bone BoxCollider", boxCollider);
             boxCollider.center = rootBone.InverseTransformPoint(bounds.center);
@@ -50,26 +50,26 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             bones[i] = new GameObject().transform;
             ctx.AddObjectToAsset($"{i}", bones[i]);
 
-            Fmdl.Section0Block0Entry section0Block0Entry = fmdl.section0Block0Entries[i];
-            Fmdl.Section0BlockDEntry section0BlockDEntry = fmdl.section0BlockDEntries[section0Block0Entry.boundingBoxId];
+            ExpFmdl.FmdlBone fmdlBone = fmdl.fmdlBones[i];
+            ExpFmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[fmdlBone.boundingBoxIndex];
 
             //Get the name.
             if (isGZFormat)
-                bones[i].name = fmdl.strings[section0Block0Entry.stringId];
+                bones[i].name = fmdl.fmdlStrings[fmdlBone.nameIndex];
             else
-                bones[i].name = Hashing.TryGetStringName(fmdl.section0Block16Entries[section0Block0Entry.stringId]);
+                bones[i].name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlBone.nameIndex]);
 
             //Assign the parent.
-            if (section0Block0Entry.parentId != 0xFFFF)
-                bones[i].parent = bones[section0Block0Entry.parentId];
+            if (fmdlBone.parentIndex != -1)
+                bones[i].parent = bones[fmdlBone.parentIndex];
             else
                 bones[i].parent = rootBone.transform;
 
-            bones[i].position = new Vector3(-section0Block0Entry.worldPositionX, section0Block0Entry.worldPositionY, section0Block0Entry.worldPositionZ);
+            bones[i].position = new Vector3(-fmdlBone.worldPosition.x, fmdlBone.worldPosition.y, fmdlBone.worldPosition.z);
 
             //Set up the bounding box.
             Bounds bounds = new Bounds();
-            bounds.SetMinMax(new Vector3(-section0BlockDEntry.minX, section0BlockDEntry.minY, section0BlockDEntry.minZ), new Vector3(-section0BlockDEntry.maxX, section0BlockDEntry.maxY, section0BlockDEntry.maxZ));
+            bounds.SetMinMax(new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
             BoxCollider boxCollider = bones[i].gameObject.AddComponent<BoxCollider>();
             ctx.AddObjectToAsset($"Bone {i} BoxCollider", boxCollider);
             boxCollider.center = bones[i].InverseTransformPoint(bounds.center);
@@ -82,16 +82,16 @@ public class ExperimentalFmdlImporter: ScriptedImporter
         {
             string name;
 
-            Fmdl.Section0Block6Entry section0Block6Entry = fmdl.section0Block6Entries[i];
+            ExpFmdl.FmdlTexture fmdlTexture = fmdl.fmdlTextures[i];
 
             //Get the name.
             if (isGZFormat)
             {
-                name = fmdl.strings[section0Block6Entry.pathId] + fmdl.strings[section0Block6Entry.stringId];
+                name = fmdl.fmdlStrings[fmdlTexture.pathIndex] + fmdl.fmdlStrings[fmdlTexture.nameIndex];
                 name = name.Substring(0, name.IndexOf(".")) + ".dds";
             } //if
             else
-                name = Hashing.TryGetPathName(fmdl.section0Block15Entries[section0Block6Entry.pathId]) + ".dds";
+                name = Hashing.TryGetPathName(fmdl.fmdlPathCode64s[fmdlTexture.pathIndex]) + ".dds";
 
             //Read the file.
             if (File.Exists($"{Globals.texturePath}\\{name}"))
@@ -108,53 +108,53 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             string shaderName;
             string materialName;
 
-            Fmdl.Section0Block4Entry section0Block4Entry = fmdl.section0Block4Entries[i];
+            ExpFmdl.FmdlMaterialInstance fmdlMaterialInstance = fmdl.fmdlMaterialInstances[i];
 
             //Get the shader and material name.
             if (isGZFormat)
             {
-                shaderName = fmdl.strings[fmdl.section0Block8Entries[section0Block4Entry.materialId].typeId];
-                materialName = fmdl.strings[section0Block4Entry.stringId];
+                shaderName = fmdl.fmdlStrings[fmdl.fmdlMaterials[fmdlMaterialInstance.materialIndex].typeIndex];
+                materialName = fmdl.fmdlStrings[fmdlMaterialInstance.nameIndex];
             } //if
             else
             {
-                shaderName = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block8Entries[section0Block4Entry.materialId].typeId]);
-                materialName = Hashing.TryGetStringName(fmdl.section0Block16Entries[section0Block4Entry.stringId]);
+                shaderName = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdl.fmdlMaterials[fmdlMaterialInstance.materialIndex].typeIndex]);
+                materialName = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialInstance.nameIndex]);
             } //else
-
+            
             materials[i] = new Material(Shader.Find($"FoxShaders/{shaderName}"));
             ctx.AddObjectToAsset($"Material {i}", materials[i]);
             materials[i].name = materialName;
 
             //Link textures.
-            for(int j = section0Block4Entry.firstTextureId; j < section0Block4Entry.firstTextureId + section0Block4Entry.numTextures; j++)
+            for(int j = fmdlMaterialInstance.firstTextureIndex; j < fmdlMaterialInstance.firstTextureIndex + fmdlMaterialInstance.textureCount; j++)
             {
                 string textureType;
 
-                Fmdl.Section0Block7Entry section0Block7Entry = fmdl.section0Block7Entries[j];
+                ExpFmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
 
                 if (isGZFormat)
-                    textureType = fmdl.strings[section0Block7Entry.stringId];
+                    textureType = fmdl.fmdlStrings[fmdlMaterialParameter.nameIndex];
                 else
-                    textureType = Hashing.TryGetStringName(fmdl.section0Block16Entries[section0Block7Entry.stringId]);
+                    textureType = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialParameter.nameIndex]);
 
-                materials[i].SetTexture(textureType, textures[section0Block7Entry.referenceId]);
+                materials[i].SetTexture(textureType, textures[fmdlMaterialParameter.referenceIndex]);
                 materials[i].SetTextureScale(textureType, new Vector2(1, -1)); //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
             } //for
 
             //Set parameters.
-            for(int j = section0Block4Entry.firstParameterId; j < section0Block4Entry.firstParameterId + section0Block4Entry.numParameters; j++)
+            for(int j = fmdlMaterialInstance.firstParameterIndex; j < fmdlMaterialInstance.firstParameterIndex + fmdlMaterialInstance.parameterCount; j++)
             {
                 string parameterName;
 
-                Fmdl.Section0Block7Entry section0Block7Entry = fmdl.section0Block7Entries[j];
+                ExpFmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
 
                 if (isGZFormat)
-                    parameterName = fmdl.strings[section0Block7Entry.stringId];
+                    parameterName = fmdl.fmdlStrings[fmdlMaterialParameter.nameIndex];
                 else
-                    parameterName = Hashing.TryGetStringName(fmdl.section0Block16Entries[section0Block7Entry.stringId]);
+                    parameterName = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialParameter.nameIndex]);
 
-                materials[i].SetVector(parameterName, fmdl.materialParameters[section0Block7Entry.referenceId].values);
+                materials[i].SetVector(parameterName, fmdl.fmdlMaterialParameterVectors[fmdlMaterialParameter.referenceIndex]);
             } //for
         } //for
 
@@ -163,17 +163,17 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             foxModel.meshGroups[i] = new FoxMeshGroup();
             string name;
 
-            Fmdl.Section0Block1Entry section0Block1Entry = fmdl.section0Block1Entries[i];
+            ExpFmdl.FmdlMeshGroup fmdlMeshGroup = fmdl.fmdlMeshGroups[i];
 
             if (isGZFormat)
-                name = fmdl.strings[section0Block1Entry.stringId];
+                name = fmdl.fmdlStrings[fmdlMeshGroup.nameIndex];
             else
-                name = Hashing.TryGetStringName(fmdl.section0Block16Entries[section0Block1Entry.stringId]);
+                name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMeshGroup.nameIndex]);
 
             foxModel.meshGroups[i].name = name;
-            foxModel.meshGroups[i].parent = (short)section0Block1Entry.parentId;
+            foxModel.meshGroups[i].parent = fmdlMeshGroup.parentIndex;
 
-            if (section0Block1Entry.invisibilityFlag == 0)
+            if (fmdlMeshGroup.invisibilityFlag == 0)
                 foxModel.meshGroups[i].visible = true;
             else
                 foxModel.meshGroups[i].visible = false;
@@ -188,12 +188,12 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             SkinnedMeshRenderer skinnedMeshRenderer = gameObject.AddComponent<SkinnedMeshRenderer>();
             foxModel.meshDefinitions[i] = new FoxMeshDefinition();
 
-            Fmdl.Object obj = fmdl.objects[i];
-            Fmdl.Section0Block3Entry section0Block3Entry = fmdl.section0Block3Entries[i];
-            Fmdl.Section0Block5Entry section0Block5Entry = fmdl.section0Block5Entries[section0Block3Entry.boneGroupId];
+            ExpFmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
+            ExpFmdl.FmdlMeshInfo fmdlMeshInfo = fmdl.fmdlMeshInfos[i];
+            ExpFmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex];
 
-            int vertexLength = obj.vertices.Length;
-            int faceLength = obj.faces.Length;
+            int vertexLength = fmdlMesh.vertices.Length;
+            int faceLength = fmdlMesh.triangles.Length;
             string name;
 
             Vector3[] vertices = new Vector3[vertexLength];
@@ -202,32 +202,28 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             Color[] colors = new Color[vertexLength];
             BoneWeight[] boneWeights = new BoneWeight[vertexLength];
             Vector2[] uv = new Vector2[vertexLength];
-            int[] triangles = new int[faceLength * 3];
+            int[] triangles = new int[faceLength];
             Matrix4x4[] bindPoses = new Matrix4x4[boneCount];
 
             for (int j = 0; j < vertexLength; j++)
             {
-                vertices[j] = new Vector3(-obj.vertices[j].x, obj.vertices[j].y, obj.vertices[j].z);
-                normals[j] = new Vector3(-obj.additionalVertexData[j].normalX, obj.additionalVertexData[j].normalY, obj.additionalVertexData[j].normalZ);
-                tangents[j] = new Vector4(-obj.additionalVertexData[j].tangentX, obj.additionalVertexData[j].tangentY, obj.additionalVertexData[j].tangentZ, obj.additionalVertexData[j].tangentW);
-                colors[j] = new Color(obj.additionalVertexData[j].colourR, obj.additionalVertexData[j].colourG, obj.additionalVertexData[j].colourB, obj.additionalVertexData[j].colourA);
-                boneWeights[j].weight0 = obj.additionalVertexData[j].boneWeightX;
-                boneWeights[j].weight1 = obj.additionalVertexData[j].boneWeightY;
-                boneWeights[j].weight2 = obj.additionalVertexData[j].boneWeightZ;
-                boneWeights[j].weight3 = obj.additionalVertexData[j].boneWeightW;
-                boneWeights[j].boneIndex0 = section0Block5Entry.entries[obj.additionalVertexData[j].boneGroup0Id];
-                boneWeights[j].boneIndex1 = section0Block5Entry.entries[obj.additionalVertexData[j].boneGroup1Id];
-                boneWeights[j].boneIndex2 = section0Block5Entry.entries[obj.additionalVertexData[j].boneGroup2Id];
-                boneWeights[j].boneIndex3 = section0Block5Entry.entries[obj.additionalVertexData[j].boneGroup3Id];
-                uv[j] = new Vector2(obj.additionalVertexData[j].textureU, -obj.additionalVertexData[j].textureV);
+                vertices[j] = new Vector3(-fmdlMesh.vertices[j].x, fmdlMesh.vertices[j].y, fmdlMesh.vertices[j].z);
+                normals[j] = new Vector3(-fmdlMesh.normals[j].x, fmdlMesh.normals[j].y, fmdlMesh.normals[j].z);
+                tangents[j] = new Vector4(-fmdlMesh.tangents[j].x, fmdlMesh.tangents[j].y, fmdlMesh.tangents[j].z, fmdlMesh.tangents[j].w);
+                colors[j] = new Color(fmdlMesh.colors[j].x, fmdlMesh.colors[j].y, fmdlMesh.colors[j].z, fmdlMesh.colors[j].w);
+                boneWeights[j].weight0 = fmdlMesh.boneWeights[j].x / 255f;
+                boneWeights[j].weight1 = fmdlMesh.boneWeights[j].y / 255f;
+                boneWeights[j].weight2 = fmdlMesh.boneWeights[j].z / 255f;
+                boneWeights[j].weight3 = fmdlMesh.boneWeights[j].w / 255f;
+                boneWeights[j].boneIndex0 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].x];
+                boneWeights[j].boneIndex1 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].y];
+                boneWeights[j].boneIndex2 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].z];
+                boneWeights[j].boneIndex3 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].w];
+                uv[j] = new Vector2(fmdlMesh.uv[j].x, -fmdlMesh.uv[j].y);
             } //for
 
-            for(int j = 0, h = 0; j < faceLength; j++, h += 3)
-            {
-                triangles[h] = obj.faces[j].vertex1Id;
-                triangles[h + 1] = obj.faces[j].vertex2Id;
-                triangles[h + 2] = obj.faces[j].vertex3Id;
-            } //for
+            for (int j = 0; j < faceLength; j++)
+                triangles[j] = fmdlMesh.triangles[j];
 
             for (int j = 0; j < boneCount; j++)
                 bindPoses[j] = bones[j].worldToLocalMatrix * gameObject.transform.localToWorldMatrix;
@@ -242,18 +238,18 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             meshes[i].bindposes = bindPoses;
 
             skinnedMeshRenderer.bones = bones;
-            skinnedMeshRenderer.sharedMaterial = materials[section0Block3Entry.materialInstanceId];
+            skinnedMeshRenderer.sharedMaterial = materials[fmdlMeshInfo.materialInstanceIndex];
             skinnedMeshRenderer.sharedMesh = meshes[i];
 
             foxModel.meshDefinitions[i].mesh = meshes[i];
-            foxModel.meshDefinitions[i].meshGroup = fmdl.section0Block2Entries.Find(x => x.firstObjectId <= i && x.firstObjectId + x.numObjects > i).meshGroupId;
-            foxModel.meshDefinitions[i].alpha = (FoxMeshDefinition.Alpha)section0Block3Entry.alphaEnum;
-            foxModel.meshDefinitions[i].shadow = (FoxMeshDefinition.Shadow)section0Block3Entry.shadowEnum;
+            foxModel.meshDefinitions[i].meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
+            foxModel.meshDefinitions[i].alpha = (FoxMeshDefinition.Alpha)fmdlMeshInfo.alphaEnum;
+            foxModel.meshDefinitions[i].shadow = (FoxMeshDefinition.Shadow)fmdlMeshInfo.shadowEnum;
 
             if (isGZFormat)
-                name = fmdl.strings[fmdl.section0Block1Entries[foxModel.meshDefinitions[i].meshGroup].stringId];
+                name = fmdl.fmdlStrings[fmdl.fmdlMeshGroups[foxModel.meshDefinitions[i].meshGroup].nameIndex];
             else
-                name = Hashing.TryGetStringName(fmdl.section0Block16Entries[fmdl.section0Block1Entries[foxModel.meshDefinitions[i].meshGroup].stringId]);
+                name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdl.fmdlMeshGroups[foxModel.meshDefinitions[i].meshGroup].nameIndex]);
 
             gameObject.name = $"{i} - {name}";
         } //for

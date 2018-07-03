@@ -223,7 +223,7 @@ public class ExpFmdl
         public Vector3[] vertices;
         public Vector4Half[] normals;
         public Vector4Half[] tangents;
-        public Color[] colors;
+        public Vector4[] colors;
         public Vector4[] boneWeights;
         public Vector4[] boneIndices;
         public Vector2Half[] uv;
@@ -276,37 +276,48 @@ public class ExpFmdl
     private uint section0Length;
     private uint section1Offset;
     private uint section1Length;
-    private Section0Info[] section0Infos;
-    private Section1Info[] section1Infos;
-    private FmdlBone[] fmdlBones;
-    private FmdlMeshGroup[] fmdlMeshGroups;
-    private FmdlMeshGroupEntry[] fmdlMeshGroupEntries;
-    private FmdlMeshInfo[] fmdlMeshInfos;
-    private FmdlMaterialInstance[] fmdlMaterialInstances;
-    private FmdlBoneGroup[] fmdlBoneGroups;
-    private FmdlTexture[] fmdlTextures;
-    private FmdlMaterialParameter[] fmdlMaterialParameters;
-    private FmdlMaterial[] fmdlMaterials;
-    private FmdlMeshFormatInfo[] fmdlMeshFormatInfos;
-    private FmdlMeshFormat[] fmdlMeshFormats;
-    private FmdlVertexFormat[] fmdlVertexFormats;
-    private FmdlStringInfo[] fmdlStringInfos;
-    private FmdlBoundingBox[] fmdlBoundingBoxes;
-    private FmdlBufferOffset[] fmdlBufferOffsets;
-    private FmdlLodInfo[] fmdlLodInfos;
-    private FmdlFaceInfo[] fmdlFaceInfos;
-    private FmdlType12[] fmdlType12s;
-    private FmdlType14[] fmdlType14s;
-    private ulong[] fmdlPathCode64s;
-    private ulong[] fmdlStrCode64s;
+    public Section0Info[] section0Infos { get; private set; }
+    public Section1Info[] section1Infos { get; private set; }
+    public FmdlBone[] fmdlBones { get; private set; }
+    public FmdlMeshGroup[] fmdlMeshGroups { get; private set; }
+    public FmdlMeshGroupEntry[] fmdlMeshGroupEntries { get; private set; }
+    public FmdlMeshInfo[] fmdlMeshInfos { get; private set; }
+    public FmdlMaterialInstance[] fmdlMaterialInstances { get; private set; }
+    public FmdlBoneGroup[] fmdlBoneGroups { get; private set; }
+    public FmdlTexture[] fmdlTextures { get; private set; }
+    public FmdlMaterialParameter[] fmdlMaterialParameters { get; private set; }
+    public FmdlMaterial[] fmdlMaterials { get; private set; }
+    public FmdlMeshFormatInfo[] fmdlMeshFormatInfos { get; private set; }
+    public FmdlMeshFormat[] fmdlMeshFormats { get; private set; }
+    public FmdlVertexFormat[] fmdlVertexFormats { get; private set; }
+    public FmdlStringInfo[] fmdlStringInfos { get; private set; }
+    public FmdlBoundingBox[] fmdlBoundingBoxes { get; private set; }
+    public FmdlBufferOffset[] fmdlBufferOffsets { get; private set; }
+    public FmdlLodInfo[] fmdlLodInfos { get; private set; }
+    public FmdlFaceInfo[] fmdlFaceInfos { get; private set; }
+    public FmdlType12[] fmdlType12s { get; private set; }
+    public FmdlType14[] fmdlType14s { get; private set; }
+    public ulong[] fmdlPathCode64s { get; private set; }
+    public ulong[] fmdlStrCode64s { get; private set; }
 
-    Vector4[] fmdlMaterialParameterVectors;
-    FmdlMesh[] fmdlMeshes;
-    string[] fmdlStrings;
+    public Vector4[] fmdlMaterialParameterVectors;
+    public FmdlMesh[] fmdlMeshes;
+    public string[] fmdlStrings;
+
+    public ExpFmdl(string name)
+    {
+        this.name = name;
+    } //constructor
 
     public void Read(FileStream stream)
     {
         BinaryReader reader = new BinaryReader(stream);
+
+        if (File.Exists("Assets/fmdl_dictionary.txt"))
+            Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
+
+        if (File.Exists("Assets/qar_dictionary.txt"))
+            Hashing.ReadPathDictionary("Assets/qar_dictionary.txt");
 
         ReadHeader(reader);
         ReadSectionInfo(reader);
@@ -319,6 +330,9 @@ public class ExpFmdl
 
         if (meshGroupEntriesIndex != -1)
             ReadMeshGroupEntries(reader);
+
+        if (meshInfoIndex != -1)
+            ReadMeshInfo(reader);
 
         if (materialInstancesIndex != -1)
             ReadMaterialInstances(reader);
@@ -422,7 +436,7 @@ public class ExpFmdl
                     fmdlMeshGroups = new FmdlMeshGroup[section0Info.entryCount];
                     break;
                 case (ushort)Section0BlockType.MeshGroupEntries:
-                    meshGroupsIndex = i;
+                    meshGroupEntriesIndex = i;
                     fmdlMeshGroupEntries = new FmdlMeshGroupEntry[section0Info.entryCount];
                     break;
                 case (ushort)Section0BlockType.MeshInfo:
@@ -904,7 +918,20 @@ public class ExpFmdl
         {
             FmdlMesh fmdlMesh = new FmdlMesh();
 
-            for (int j = fmdlMeshFormatInfos[i].firstVertexFormatIndex; j < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; j++)
+            fmdlMesh.vertices = new Vector3[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.boneWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.normals = new Vector4Half[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.colors = new Vector4[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.boneIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.uv = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.uv2 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.uv3 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.uv4 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.unknownWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.unknownIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
+            fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
+
+            /*for (int j = fmdlMeshFormatInfos[i].firstVertexFormatIndex; j < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; j++)
             {
                 switch (fmdlVertexFormats[j].type)
                 {
@@ -918,7 +945,7 @@ public class ExpFmdl
                         fmdlMesh.normals = new Vector4Half[fmdlMeshInfos[i].vertexCount];
                         break;
                     case 3:
-                        fmdlMesh.colors = new Color[fmdlMeshInfos[i].vertexCount];
+                        fmdlMesh.colors = new Vector4[fmdlMeshInfos[i].vertexCount];
                         break;
                     case 7:
                         fmdlMesh.boneIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
@@ -945,7 +972,7 @@ public class ExpFmdl
                         fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
                         break;
                 } //switch
-            } //for
+            } //for*/
 
             //Go to the position of the first vertex.
             reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[0].offset + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex].offset;
@@ -953,11 +980,15 @@ public class ExpFmdl
             for (int j = 0; j < fmdlMeshInfos[i].vertexCount; j++)
                 fmdlMesh.vertices[j] = new Vector3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
+            reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[1].offset + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex + 1].offset;
+
             for (int j = 0; j < fmdlMeshInfos[i].vertexCount; j++)
             {
+                long position = reader.BaseStream.Position;
+
                 for (int h = fmdlMeshFormatInfos[i].firstVertexFormatIndex; h < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; h++)
                 {
-                    reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[1].offset + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex + 1].offset + fmdlVertexFormats[h].offset;
+                    reader.BaseStream.Position = position + fmdlVertexFormats[h].offset;
 
                     switch (fmdlVertexFormats[h].type)
                     {
@@ -971,7 +1002,8 @@ public class ExpFmdl
                                 fmdlMesh.normals[j][k] = Half.ToHalf(reader.ReadUInt16());
                             break;
                         case 3:
-                            fmdlMesh.colors[j] = new Color(reader.ReadByte() / 255f, reader.ReadByte() / 255f, reader.ReadByte() / 255f, reader.ReadByte() / 255f);
+                            for (int k = 0; k < 4; k++)
+                                fmdlMesh.colors[j][k] = reader.ReadByte();
                             break;
                         case 7:
                             fmdlMesh.boneIndices[j] = new Vector4(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
@@ -1006,10 +1038,16 @@ public class ExpFmdl
                 } //for
             } //for
 
-            reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlFaceInfos[fmdlMeshInfos[i].firstFaceInfoIndex].firstFaceVertexIndex * 2;
+            reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlMeshInfos[i].firstFaceVertexIndex * 2;
+
+            fmdlMesh.triangles = new ushort[fmdlMeshInfos[i].faceVertexCount];
 
             for (int j = 0; j < fmdlMeshInfos[i].faceVertexCount; j++)
+            {
                 fmdlMesh.triangles[j] = reader.ReadUInt16();
+            } //for
+
+            fmdlMeshes[i] = fmdlMesh;
         } //for
     } //ReadBuffer
 
