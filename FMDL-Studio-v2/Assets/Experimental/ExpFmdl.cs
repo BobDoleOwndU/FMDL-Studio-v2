@@ -300,9 +300,9 @@ public class ExpFmdl
     public ulong[] fmdlPathCode64s { get; private set; }
     public ulong[] fmdlStrCode64s { get; private set; }
 
-    public Vector4[] fmdlMaterialParameterVectors;
-    public FmdlMesh[] fmdlMeshes;
-    public string[] fmdlStrings;
+    public Vector4[] fmdlMaterialParameterVectors { get; private set; }
+    public FmdlMesh[] fmdlMeshes { get; private set; }
+    public string[] fmdlStrings { get; private set; }
 
     public ExpFmdl(string name)
     {
@@ -324,73 +324,50 @@ public class ExpFmdl
 
         if (bonesIndex != -1)
             ReadBones(reader);
-
         if (meshGroupsIndex != -1)
             ReadMeshGroups(reader);
-
         if (meshGroupEntriesIndex != -1)
             ReadMeshGroupEntries(reader);
-
         if (meshInfoIndex != -1)
             ReadMeshInfo(reader);
-
         if (materialInstancesIndex != -1)
             ReadMaterialInstances(reader);
-
         if (boneGroupsIndex != -1)
             ReadBoneGroups(reader);
-
         if (texturesIndex != -1)
             ReadTextures(reader);
-
         if (materialParametersIndex != -1)
             ReadMaterialParameters(reader);
-
         if (materialsIndex != -1)
             ReadMaterials(reader);
-
         if (meshFormatInfoIndex != -1)
             ReadMeshFormatInfo(reader);
-
         if (meshFormatsIndex != -1)
             ReadMeshFormats(reader);
-
         if (vertexFormatsIndex != -1)
             ReadVertexFormats(reader);
-
         if (stringInfoIndex != -1)
             ReadStringInfo(reader);
-
         if (boundingBoxesIndex != -1)
             ReadBoundingBoxes(reader);
-
         if (bufferOffsetsIndex != -1)
             ReadBufferOffsets(reader);
-
         if (lodInfoIndex != -1)
             ReadLodInfo(reader);
-
         if (faceInfoIndex != -1)
             ReadFaceInfo(reader);
-
         if (type12Index != -1)
             ReadType12(reader);
-
         if (type14Index != -1)
             ReadType14(reader);
-
         if (pathCode64sIndex != -1)
             ReadPathCode64s(reader);
-
         if (strCode64sIndex != -1)
             ReadStrCode64s(reader);
-
         if (materialParameterFloatsIndex != -1)
             ReadMaterialParameterFloats(reader);
-
         if (bufferIndex != -1)
             ReadBuffer(reader);
-
         if (stringsIndex != -1)
             ReadStrings(reader);
     } //Read
@@ -930,49 +907,6 @@ public class ExpFmdl
             fmdlMesh.unknownWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
             fmdlMesh.unknownIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
             fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
-
-            /*for (int j = fmdlMeshFormatInfos[i].firstVertexFormatIndex; j < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; j++)
-            {
-                switch (fmdlVertexFormats[j].type)
-                {
-                    case 0:
-                        fmdlMesh.vertices = new Vector3[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 1:
-                        fmdlMesh.boneWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 2:
-                        fmdlMesh.normals = new Vector4Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 3:
-                        fmdlMesh.colors = new Vector4[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 7:
-                        fmdlMesh.boneIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 8:
-                        fmdlMesh.uv = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 9:
-                        fmdlMesh.uv2 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 0xA:
-                        fmdlMesh.uv3 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 0xB:
-                        fmdlMesh.uv4 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 0xC:
-                        fmdlMesh.unknownWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 0xD:
-                        fmdlMesh.unknownIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
-                        break;
-                    case 0xE:
-                        fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
-                        break;
-                } //switch
-            } //for*/
 
             //Go to the position of the first vertex.
             reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[0].offset + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex].offset;

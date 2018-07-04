@@ -2,6 +2,7 @@
 using UnityEditor.Experimental.AssetImporters;
 using System.IO;
 using System;
+using System.Collections.Generic;
 
 [ScriptedImporter(1, "fmdl")]
 public class ExperimentalFmdlImporter: ScriptedImporter
@@ -12,9 +13,9 @@ public class ExperimentalFmdlImporter: ScriptedImporter
         fmdl.Read(stream);
 
         bool isGZFormat = fmdl.version == 2.03f;
-        int boneCount = fmdl.fmdlBones.Length;
+        int boneCount = fmdl.fmdlBones != null ? fmdl.fmdlBones.Length : 0;
         int materialCount = fmdl.fmdlMaterialInstances.Length;
-        int textureCount = fmdl.fmdlTextures.Length;
+        int textureCount = fmdl.fmdlTextures != null ? fmdl.fmdlTextures.Length : 0;
         int meshCount = fmdl.fmdlMeshInfos.Length;
         int meshGroupCount = fmdl.fmdlMeshGroups.Length;
 
@@ -97,7 +98,26 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             if (File.Exists($"{Globals.texturePath}\\{name}"))
                 textures[i] = LoadTextureDXT($"{Globals.texturePath}\\{name}");
             else
-                textures[i] = new Texture2D(0, 0);
+            {
+                Debug.Log($"Could not find {Globals.texturePath}\\{name}");
+
+                Texture2D texture = new Texture2D(512, 512);
+
+                for (int j = 0; j < 512; j++)
+                    for (int h = 0; h < 512; h++)
+                    {
+                        Color c = new Color(0.25f, 0.25f, 0.25f);
+
+                        if(((j / 32) % 2 == 0 && (h / 32) % 2 != 0) || ((j / 32) % 2 != 0 && (h / 32) % 2 == 0))
+                            c = new Color(0.5f, 0.5f, 0.5f);
+
+                        texture.SetPixel(j, h, c);
+                    } //for
+
+                texture.Apply();
+
+                textures[i] = texture;
+            } //else
 
             ctx.AddObjectToAsset($"Texture {i}", textures[i]);
             textures[i].name = name;
@@ -190,7 +210,7 @@ public class ExperimentalFmdlImporter: ScriptedImporter
 
             ExpFmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
             ExpFmdl.FmdlMeshInfo fmdlMeshInfo = fmdl.fmdlMeshInfos[i];
-            ExpFmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex];
+            ExpFmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups != null ? fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex] : new ExpFmdl.FmdlBoneGroup();
 
             int vertexLength = fmdlMesh.vertices.Length;
             int faceLength = fmdlMesh.triangles.Length;
@@ -202,31 +222,101 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             Color[] colors = new Color[vertexLength];
             BoneWeight[] boneWeights = new BoneWeight[vertexLength];
             Vector2[] uv = new Vector2[vertexLength];
+            Vector2[] uv2 = new Vector2[vertexLength];
+            Vector2[] uv3 = new Vector2[vertexLength];
+            Vector2[] uv4 = new Vector2[vertexLength];
             int[] triangles = new int[faceLength];
-            Matrix4x4[] bindPoses = new Matrix4x4[boneCount];
+            Matrix4x4[] bindPoses;
+
+            List<Transform> usedBones = new List<Transform>(0);
+            Transform[] usedBonesArray;
 
             for (int j = 0; j < vertexLength; j++)
             {
                 vertices[j] = new Vector3(-fmdlMesh.vertices[j].x, fmdlMesh.vertices[j].y, fmdlMesh.vertices[j].z);
                 normals[j] = new Vector3(-fmdlMesh.normals[j].x, fmdlMesh.normals[j].y, fmdlMesh.normals[j].z);
                 tangents[j] = new Vector4(-fmdlMesh.tangents[j].x, fmdlMesh.tangents[j].y, fmdlMesh.tangents[j].z, fmdlMesh.tangents[j].w);
-                colors[j] = new Color(fmdlMesh.colors[j].x, fmdlMesh.colors[j].y, fmdlMesh.colors[j].z, fmdlMesh.colors[j].w);
-                boneWeights[j].weight0 = fmdlMesh.boneWeights[j].x / 255f;
-                boneWeights[j].weight1 = fmdlMesh.boneWeights[j].y / 255f;
-                boneWeights[j].weight2 = fmdlMesh.boneWeights[j].z / 255f;
-                boneWeights[j].weight3 = fmdlMesh.boneWeights[j].w / 255f;
-                boneWeights[j].boneIndex0 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].x];
-                boneWeights[j].boneIndex1 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].y];
-                boneWeights[j].boneIndex2 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].z];
-                boneWeights[j].boneIndex3 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].w];
+                colors[j] = new Color(fmdlMesh.colors[j].x / 255f, fmdlMesh.colors[j].y / 255f, fmdlMesh.colors[j].z / 255f, fmdlMesh.colors[j].w / 255f);
+                if (fmdl.fmdlBones != null)
+                {
+                    boneWeights[j].weight0 = fmdlMesh.boneWeights[j].x / 255f;
+                    boneWeights[j].weight1 = fmdlMesh.boneWeights[j].y / 255f;
+                    boneWeights[j].weight2 = fmdlMesh.boneWeights[j].z / 255f;
+                    boneWeights[j].weight3 = fmdlMesh.boneWeights[j].w / 255f;
+                    boneWeights[j].boneIndex0 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].x];
+                    boneWeights[j].boneIndex1 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].y];
+                    boneWeights[j].boneIndex2 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].z];
+                    boneWeights[j].boneIndex3 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].w];
+                } //if
                 uv[j] = new Vector2(fmdlMesh.uv[j].x, -fmdlMesh.uv[j].y);
+                uv2[j] = new Vector2(fmdlMesh.uv2[j].x, -fmdlMesh.uv2[j].y);
+                uv3[j] = new Vector2(fmdlMesh.uv3[j].x, -fmdlMesh.uv3[j].y);
+                uv4[j] = new Vector2(fmdlMesh.uv4[j].x, -fmdlMesh.uv4[j].y);
             } //for
 
             for (int j = 0; j < faceLength; j++)
                 triangles[j] = fmdlMesh.triangles[j];
+            
+            for(int j = 0; j < boneWeights.Length; j++)
+            {
+                if (boneWeights[j].weight0 > 0f)
+                {
+                    if (usedBones.Contains(bones[boneWeights[j].boneIndex0]))
+                        boneWeights[j].boneIndex0 = usedBones.IndexOf(bones[boneWeights[j].boneIndex0]);
+                    else
+                    {
+                        usedBones.Add(bones[boneWeights[j].boneIndex0]);
+                        boneWeights[j].boneIndex0 = usedBones.IndexOf(bones[boneWeights[j].boneIndex0]);
+                    } //else
+                } //if
+                else
+                    boneWeights[j].boneIndex0 = 0;
 
-            for (int j = 0; j < boneCount; j++)
-                bindPoses[j] = bones[j].worldToLocalMatrix * gameObject.transform.localToWorldMatrix;
+                if (boneWeights[j].weight1 > 0f)
+                {
+                    if (usedBones.Contains(bones[boneWeights[j].boneIndex1]))
+                        boneWeights[j].boneIndex1 = usedBones.IndexOf(bones[boneWeights[j].boneIndex1]);
+                    else
+                    {
+                        usedBones.Add(bones[boneWeights[j].boneIndex1]);
+                        boneWeights[j].boneIndex1 = usedBones.IndexOf(bones[boneWeights[j].boneIndex1]);
+                    } //else
+                } //if
+                else
+                    boneWeights[j].boneIndex1 = 0;
+
+                if (boneWeights[j].weight2 > 0f)
+                {
+                    if (usedBones.Contains(bones[boneWeights[j].boneIndex2]))
+                        boneWeights[j].boneIndex2 = usedBones.IndexOf(bones[boneWeights[j].boneIndex2]);
+                    else
+                    {
+                        usedBones.Add(bones[boneWeights[j].boneIndex2]);
+                        boneWeights[j].boneIndex2 = usedBones.IndexOf(bones[boneWeights[j].boneIndex2]);
+                    } //else
+                } //if
+                else
+                    boneWeights[j].boneIndex2 = 0;
+
+                if (boneWeights[j].weight3 > 0f)
+                {
+                    if (usedBones.Contains(bones[boneWeights[j].boneIndex3]))
+                        boneWeights[j].boneIndex3 = usedBones.IndexOf(bones[boneWeights[j].boneIndex3]);
+                    else
+                    {
+                        usedBones.Add(bones[boneWeights[j].boneIndex3]);
+                        boneWeights[j].boneIndex3 = usedBones.IndexOf(bones[boneWeights[j].boneIndex3]);
+                    } //else
+                } //if
+                else
+                    boneWeights[j].boneIndex3 = 0;
+            } //for
+
+            usedBonesArray = usedBones.ToArray();
+            bindPoses = new Matrix4x4[usedBonesArray.Length];
+
+            for (int j = 0; j < usedBonesArray.Length; j++)
+                bindPoses[j] = usedBones[j].worldToLocalMatrix * gameObject.transform.localToWorldMatrix;
 
             meshes[i].vertices = vertices;
             meshes[i].normals = normals;
@@ -237,7 +327,7 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             meshes[i].triangles = triangles;
             meshes[i].bindposes = bindPoses;
 
-            skinnedMeshRenderer.bones = bones;
+            skinnedMeshRenderer.bones = usedBonesArray;
             skinnedMeshRenderer.sharedMaterial = materials[fmdlMeshInfo.materialInstanceIndex];
             skinnedMeshRenderer.sharedMesh = meshes[i];
 
