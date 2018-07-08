@@ -219,12 +219,12 @@ public class ExperimentalFmdlImporter: ScriptedImporter
             Vector3[] vertices = new Vector3[vertexLength];
             Vector3[] normals = new Vector3[vertexLength];
             Vector4[] tangents = new Vector4[vertexLength];
-            Color[] colors = new Color[vertexLength];
-            BoneWeight[] boneWeights = new BoneWeight[vertexLength];
+            Color[] colors = fmdlMesh.colors != null ? new Color[vertexLength] : new Color[0];
+            BoneWeight[] boneWeights = fmdlMesh.boneWeights != null ? new BoneWeight[vertexLength] : new BoneWeight[0];
             Vector2[] uv = new Vector2[vertexLength];
-            Vector2[] uv2 = new Vector2[vertexLength];
-            Vector2[] uv3 = new Vector2[vertexLength];
-            Vector2[] uv4 = new Vector2[vertexLength];
+            Vector2[] uv2 = fmdlMesh.uv2 != null ? new Vector2[vertexLength] : new Vector2[0];
+            Vector2[] uv3 = fmdlMesh.uv3 != null ? new Vector2[vertexLength] : new Vector2[0];
+            Vector2[] uv4 = fmdlMesh.uv4 != null ? new Vector2[vertexLength] : new Vector2[0];
             int[] triangles = new int[faceLength];
             Matrix4x4[] bindPoses;
 
@@ -236,8 +236,9 @@ public class ExperimentalFmdlImporter: ScriptedImporter
                 vertices[j] = new Vector3(-fmdlMesh.vertices[j].x, fmdlMesh.vertices[j].y, fmdlMesh.vertices[j].z);
                 normals[j] = new Vector3(-fmdlMesh.normals[j].x, fmdlMesh.normals[j].y, fmdlMesh.normals[j].z);
                 tangents[j] = new Vector4(-fmdlMesh.tangents[j].x, fmdlMesh.tangents[j].y, fmdlMesh.tangents[j].z, fmdlMesh.tangents[j].w);
-                colors[j] = new Color(fmdlMesh.colors[j].x / 255f, fmdlMesh.colors[j].y / 255f, fmdlMesh.colors[j].z / 255f, fmdlMesh.colors[j].w / 255f);
-                if (fmdl.fmdlBones != null)
+                if(colors.Length > 0)
+                    colors[j] = new Color(fmdlMesh.colors[j].x / 255f, fmdlMesh.colors[j].y / 255f, fmdlMesh.colors[j].z / 255f, fmdlMesh.colors[j].w / 255f);
+                if (boneWeights.Length > 0)
                 {
                     boneWeights[j].weight0 = fmdlMesh.boneWeights[j].x / 255f;
                     boneWeights[j].weight1 = fmdlMesh.boneWeights[j].y / 255f;
@@ -249,9 +250,12 @@ public class ExperimentalFmdlImporter: ScriptedImporter
                     boneWeights[j].boneIndex3 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].w];
                 } //if
                 uv[j] = new Vector2(fmdlMesh.uv[j].x, -fmdlMesh.uv[j].y);
-                uv2[j] = new Vector2(fmdlMesh.uv2[j].x, -fmdlMesh.uv2[j].y);
-                uv3[j] = new Vector2(fmdlMesh.uv3[j].x, -fmdlMesh.uv3[j].y);
-                uv4[j] = new Vector2(fmdlMesh.uv4[j].x, -fmdlMesh.uv4[j].y);
+                if(uv2.Length > 0)
+                    uv2[j] = new Vector2(fmdlMesh.uv2[j].x, -fmdlMesh.uv2[j].y);
+                if (uv3.Length > 0)
+                    uv3[j] = new Vector2(fmdlMesh.uv3[j].x, -fmdlMesh.uv3[j].y);
+                if (uv4.Length > 0)
+                    uv4[j] = new Vector2(fmdlMesh.uv4[j].x, -fmdlMesh.uv4[j].y);
             } //for
 
             for (int j = 0; j < faceLength; j++)

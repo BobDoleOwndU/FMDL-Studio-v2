@@ -25,8 +25,6 @@ public class UnityModel
 
     public GameObject GetDataFromFmdl(Fmdl fmdl)
     {
-        Globals.ReadTexturePath();
-
         meshes = new UnityMesh[fmdl.section0Block3Entries.Count];
 
         GameObject fmdlGameObject = new GameObject();

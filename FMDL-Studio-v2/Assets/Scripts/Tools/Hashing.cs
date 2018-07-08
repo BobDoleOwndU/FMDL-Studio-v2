@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using UnityEngine;
 
 public static class Hashing
 {
@@ -255,6 +256,9 @@ public static class Hashing
 
     public static void ReadStringDictionary(string path)
     {
+        if (!File.Exists(path))
+            return;
+
         stringDictionary.Clear();
         stringHashDictionary.Clear();
 
@@ -267,6 +271,9 @@ public static class Hashing
 
     public static void ReadPathDictionary(string path)
     {
+        if (!File.Exists(path))
+            return;
+
         pathDictionary.Clear();
         pathHashDictionary.Clear();
 

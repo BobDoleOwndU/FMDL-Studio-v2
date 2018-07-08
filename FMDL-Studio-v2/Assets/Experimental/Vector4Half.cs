@@ -7,6 +7,14 @@ public struct Vector4Half
     public Half z;
     public Half w;
 
+    public Vector4Half(Half x, Half y, Half z, Half w)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    } //constructor
+
     public Half this[int i]
     {
         get

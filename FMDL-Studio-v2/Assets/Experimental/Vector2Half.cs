@@ -5,6 +5,12 @@ public struct Vector2Half
     public Half x;
     public Half y;
 
+    public Vector2Half(Half x, Half y)
+    {
+        this.x = x;
+        this.y = y;
+    } //constructor
+
     public Half this[int i]
     {
         get

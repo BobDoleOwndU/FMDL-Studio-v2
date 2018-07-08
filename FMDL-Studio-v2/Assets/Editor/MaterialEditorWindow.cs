@@ -9,7 +9,6 @@ public class MaterialEditorWindow : EditorWindow
     [MenuItem("FMDL Studio/Edit Material Presets", false, 200)]
     static void Init()
     {
-        Globals.ReadPresetList();
         MaterialEditorWindow window = (MaterialEditorWindow)GetWindow(typeof(MaterialEditorWindow));
         window.Show();
     } //Init

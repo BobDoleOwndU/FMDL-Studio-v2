@@ -446,12 +446,6 @@ public class Fmdl
         const string BAR_STRING = "Reading!";
         EditorUtility.DisplayProgressBar(BAR_STRING, "Starting!", 0);
 
-        if (File.Exists("Assets/fmdl_dictionary.txt"))
-            Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
-
-        if (File.Exists("Assets/qar_dictionary.txt"))
-            Hashing.ReadPathDictionary("Assets/qar_dictionary.txt");
-
         BinaryReader reader = new BinaryReader(stream, Encoding.Default);
 
         signature = reader.ReadUInt32();
@@ -1709,7 +1703,7 @@ public class Fmdl
 
                 string assetPath = AssetDatabase.GetAssetPath(texture);
 
-                if (assetPath == "")
+                if (assetPath == "" || assetPath.Contains(".fmdl"))
                     assetPath = texture.name.Substring(1);
 
                 string fileName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";

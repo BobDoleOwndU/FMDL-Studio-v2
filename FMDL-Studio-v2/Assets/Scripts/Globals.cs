@@ -8,19 +8,13 @@ public static class Globals
     public static string texturePath { get; private set; }
     public static MaterialPresetList materialPresetList = new MaterialPresetList();
 
-    public static void WriteTexturePath(string path)
+    static Globals()
     {
-        using (FileStream stream = new FileStream("settings.cfg", FileMode.Create))
-        {
-            StreamWriter writer = new StreamWriter(stream);
-            writer.AutoFlush = true;
-
-            writer.WriteLine(string.Format("TextureFolder: \"{0}\"", path));
-            stream.Close();
-        } //using
-
-        Debug.Log("Texture path set to: " + path);
-    } //WriteTexturePath
+        ReadTexturePath();
+        ReadPresetList();
+        Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
+        Hashing.ReadPathDictionary("Assets/qar_dictionary.txt");
+    } //constructor
 
     public static void ReadTexturePath()
     {
@@ -53,6 +47,21 @@ public static class Globals
         } //if
     } //ReadTexturePath
 
+    public static void WriteTexturePath(string path)
+    {
+        using (FileStream stream = new FileStream("settings.cfg", FileMode.Create))
+        {
+            StreamWriter writer = new StreamWriter(stream);
+            writer.AutoFlush = true;
+
+            writer.WriteLine(string.Format("TextureFolder: \"{0}\"", path));
+            stream.Close();
+        } //using
+
+        ReadTexturePath();
+        Debug.Log("Texture path set to: " + path);
+    } //WriteTexturePath
+
     public static void ReadPresetList()
     {
         if (File.Exists("Assets/presets.xml"))
@@ -80,5 +89,7 @@ public static class Globals
             serializer.Serialize(stream, materialPresetList);
             stream.Close();
         } //using
+
+        ReadPresetList();
     } //WriteMaterialList
 } //class

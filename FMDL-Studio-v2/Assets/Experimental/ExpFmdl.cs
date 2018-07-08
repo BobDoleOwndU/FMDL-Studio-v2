@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 public class ExpFmdl
@@ -312,12 +314,6 @@ public class ExpFmdl
     public void Read(FileStream stream)
     {
         BinaryReader reader = new BinaryReader(stream);
-
-        if (File.Exists("Assets/fmdl_dictionary.txt"))
-            Hashing.ReadStringDictionary("Assets/fmdl_dictionary.txt");
-
-        if (File.Exists("Assets/qar_dictionary.txt"))
-            Hashing.ReadPathDictionary("Assets/qar_dictionary.txt");
 
         ReadHeader(reader);
         ReadSectionInfo(reader);
@@ -895,18 +891,48 @@ public class ExpFmdl
         {
             FmdlMesh fmdlMesh = new FmdlMesh();
 
-            fmdlMesh.vertices = new Vector3[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.boneWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.normals = new Vector4Half[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.colors = new Vector4[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.boneIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.uv = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.uv2 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.uv3 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.uv4 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.unknownWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.unknownIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
-            fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
+            for (int j = fmdlMeshFormatInfos[i].firstVertexFormatIndex; j < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; j++)
+            {
+                switch (fmdlVertexFormats[j].type)
+                {
+                    case 0:
+                        fmdlMesh.vertices = new Vector3[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 1:
+                        fmdlMesh.boneWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 2:
+                        fmdlMesh.normals = new Vector4Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 3:
+                        fmdlMesh.colors = new Vector4[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 7:
+                        fmdlMesh.boneIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 8:
+                        fmdlMesh.uv = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 9:
+                        fmdlMesh.uv2 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 0xA:
+                        fmdlMesh.uv3 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 0xB:
+                        fmdlMesh.uv4 = new Vector2Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 0xC:
+                        fmdlMesh.unknownWeights = new Vector4[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 0xD:
+                        fmdlMesh.unknownIndices = new Vector4[fmdlMeshInfos[i].vertexCount];
+                        break;
+                    case 0xE:
+                        fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
+                        break;
+                } //switch
+            } //for
 
             //Go to the position of the first vertex.
             reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[0].offset + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex].offset;
@@ -993,10 +1019,772 @@ public class ExpFmdl
         {
             string s = "";
 
+            reader.BaseStream.Position = section1Offset + section1Infos[stringsIndex].offset + fmdlStringInfos[i].offset;
+
             for (int j = 0; j < fmdlStringInfos[i].length; j++)
                 s += reader.ReadChar();
 
             fmdlStrings[i] = s;
         } //for
     } //ReadStrings
+
+    public void Write(GameObject gameObject)
+    {
+        GetFmdlData(gameObject);
+    } //Write
+
+    private void GetFmdlData(GameObject gameObject)
+    {
+        FoxModel foxModel = gameObject.GetComponent<FoxModel>();
+        Transform rootBone = gameObject.transform;
+        List<Transform> bones = new List<Transform>(0);
+        List<BoxCollider> boundingBoxes = new List<BoxCollider>(0);
+        List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+        List<Material> materials = new List<Material>(0);
+        List<string> materialTypeNames = new List<string>(0);
+        List<Texture> textures = new List<Texture>(0);
+        List<Vector4> materialParameterVectors = new List<Vector4>(0);
+        List<string> strings = new List<string>(0);
+
+        foreach (Transform t in gameObject.transform)
+            if (t.gameObject.name == "[Root]")
+            {
+                rootBone = t;
+                boundingBoxes.Add(t.gameObject.GetComponent<BoxCollider>());
+                break;
+            } //if
+
+        if (rootBone == gameObject.transform)
+            throw new Exception("[Root] not found!");
+
+        GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
+        GetMeshesMaterialsTexturesAndVectors(gameObject, meshes, materials, textures, materialParameterVectors);
+
+        strings.Add("");
+
+        //Bones
+        int boneCount = bones.Count;
+
+        fmdlBones = new FmdlBone[boneCount];
+
+        for (int i = 0; i < boneCount; i++)
+        {
+            FmdlBone fmdlBone = new FmdlBone();
+            Transform bone = bones[i];
+
+            fmdlBone.nameIndex = (ushort)strings.Count;
+            strings.Add(bones[i].gameObject.name);
+
+            if (bone.parent == rootBone)
+                fmdlBone.parentIndex = -1;
+            else
+                fmdlBone.parentIndex = (short)bones.IndexOf(bone.parent);
+
+            fmdlBone.boundingBoxIndex = (ushort)boundingBoxes.IndexOf(bones[i].gameObject.GetComponent<BoxCollider>());
+            fmdlBone.unknown0 = 1;
+            fmdlBone.localPosition = bones[i].localPosition;
+            fmdlBone.worldPosition = bones[i].position;
+
+            fmdlBones[i] = fmdlBone;
+        } //for
+
+        //Mesh Groups
+        int meshGroupCount = foxModel.meshGroups.Length;
+
+        fmdlMeshGroups = new FmdlMeshGroup[meshGroupCount];
+
+        for (int i = 0; i < meshGroupCount; i++)
+        {
+            FmdlMeshGroup fmdlMeshGroup = new FmdlMeshGroup();
+            FoxMeshGroup foxMeshGroup = foxModel.meshGroups[i];
+
+            fmdlMeshGroup.nameIndex = (ushort)strings.Count;
+            fmdlMeshGroup.invisibilityFlag = foxMeshGroup.visible ? (ushort)0 : (ushort)1;
+            fmdlMeshGroup.parentIndex = foxMeshGroup.parent;
+            fmdlMeshGroup.unknown0 = -1;
+
+            fmdlMeshGroups[i] = fmdlMeshGroup;
+        } //for
+
+        //Mesh Group Entries
+        int meshCount = meshes.Count;
+        List<FmdlMeshGroupEntry> meshGroupEntries = new List<FmdlMeshGroupEntry>(0);
+        FmdlMeshGroupEntry fmdlMeshGroupEntry = new FmdlMeshGroupEntry();
+
+        for (int i = 0; i < meshCount; i++)
+        {
+            if (i == 0)
+            {
+                fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxModel.meshDefinitions[i].meshGroup;
+                fmdlMeshGroupEntry.meshCount = 1;
+                fmdlMeshGroupEntry.firstMeshIndex = 0;
+                fmdlMeshGroupEntry.index = 0;
+                fmdlMeshGroupEntry.firstFaceInfoIndex = 0;
+            } //if
+            else
+            {
+                if (foxModel.meshDefinitions[i].meshGroup == foxModel.meshDefinitions[i - 1].meshGroup)
+                    fmdlMeshGroupEntry.meshCount += 1;
+                else
+                {
+                    meshGroupEntries.Add(fmdlMeshGroupEntry);
+
+                    fmdlMeshGroupEntry = new FmdlMeshGroupEntry();
+
+                    fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxModel.meshDefinitions[i].meshGroup;
+                    fmdlMeshGroupEntry.meshCount = 1;
+                    fmdlMeshGroupEntry.firstMeshIndex = (ushort)i;
+                    fmdlMeshGroupEntry.index = (ushort)meshGroupEntries.Count;
+                    fmdlMeshGroupEntry.firstFaceInfoIndex = (ushort)i;
+                } //else
+            } //else
+        } //for
+
+        fmdlMeshGroupEntries = meshGroupEntries.ToArray();
+
+        //Mesh Info
+        fmdlMeshInfos = new FmdlMeshInfo[meshCount];
+
+        for (int i = 0; i < meshCount; i++)
+        {
+            FmdlMeshInfo fmdlMeshInfo = new FmdlMeshInfo();
+            SkinnedMeshRenderer mesh = meshes[i];
+
+            fmdlMeshInfo.alphaEnum = (byte)foxModel.meshDefinitions[i].alpha;
+            fmdlMeshInfo.shadowEnum = (byte)foxModel.meshDefinitions[i].shadow;
+            fmdlMeshInfo.materialInstanceIndex = (ushort)materials.IndexOf(mesh.sharedMaterial);
+            fmdlMeshInfo.boneGroupIndex = (ushort)i;
+            fmdlMeshInfo.index = (ushort)i;
+            fmdlMeshInfo.vertexCount = (ushort)mesh.sharedMesh.vertices.Length;
+            if (i == 0)
+                fmdlMeshInfo.firstFaceVertexIndex = 0;
+            else
+                fmdlMeshInfo.firstFaceVertexIndex = fmdlMeshInfos[i - 1].firstFaceVertexIndex + fmdlMeshInfos[i - 1].faceVertexCount;
+            fmdlMeshInfo.faceVertexCount = (uint)mesh.sharedMesh.triangles.Length;
+            fmdlMeshInfo.firstFaceInfoIndex = (ulong)i;
+
+            fmdlMeshInfos[i] = fmdlMeshInfo;
+        } //for
+
+        //Materials
+        int materialInstanceCount = materials.Count;
+
+        for (int i = 0; i < materialInstanceCount; i++)
+        {
+            string name = materials[i].shader.name;
+            name = name.Substring(name.IndexOf('/') + 1);
+
+            if (!materialTypeNames.Contains(name))
+                materialTypeNames.Add(name);
+        } //for
+
+        int materialTypeNamesCount = materialTypeNames.Count;
+
+        fmdlMaterials = new FmdlMaterial[materialTypeNamesCount];
+
+        for (int i = 0; i < materialTypeNamesCount; i++)
+        {
+            FmdlMaterial fmdlMaterial = new FmdlMaterial();
+
+            int currentStringCount = strings.Count;
+
+            fmdlMaterial.nameIndex = (ushort)currentStringCount;
+            fmdlMaterial.typeIndex = (ushort)currentStringCount;
+
+            strings.Add(materialTypeNames[i]);
+
+            fmdlMaterials[i] = fmdlMaterial;
+        } //for
+
+        //MaterialInstances
+        fmdlMaterialInstances = new FmdlMaterialInstance[materialInstanceCount];
+
+        for (int i = 0; i < materialInstanceCount; i++)
+        {
+            FmdlMaterialInstance fmdlMaterialInstance = new FmdlMaterialInstance();
+            Material material = materials[i];
+            Shader shader = material.shader;
+            int materialTextureCount = 0;
+            int materialParameterCount = 0;
+            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+
+            fmdlMaterialInstance.nameIndex = (ushort)strings.Count;
+            strings.Add(materials[i].name);
+            fmdlMaterialInstance.materialIndex = (ushort)materialTypeNames.IndexOf(shader.name.Substring(shader.name.IndexOf('/') + 1));
+
+            for (int j = 0; j < propertyCount; j++)
+            {
+                if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                    materialTextureCount++;
+                else
+                    materialParameterCount++;
+            } //for
+
+            fmdlMaterialInstance.textureCount = (byte)materialTextureCount;
+            fmdlMaterialInstance.parameterCount = (byte)materialParameterCount;
+
+            if (i == 0)
+            {
+                fmdlMaterialInstance.firstTextureIndex = 0;
+                fmdlMaterialInstance.firstParameterIndex = fmdlMaterialInstance.textureCount;
+            } //if
+            else
+            {
+                if (fmdlMaterialInstances[i - 1].firstParameterIndex >= fmdlMaterialInstances[i - 1].firstTextureIndex && fmdlMaterialInstances[i - 1].parameterCount > 0)
+                    fmdlMaterialInstance.firstTextureIndex = (ushort)(fmdlMaterialInstances[i - 1].firstParameterIndex + fmdlMaterialInstances[i - 1].parameterCount);
+                else
+                    fmdlMaterialInstance.firstTextureIndex = (ushort)(fmdlMaterialInstances[i - 1].firstTextureIndex + fmdlMaterialInstances[i - 1].textureCount);
+
+                if (fmdlMaterialInstances[i - 1].firstParameterIndex + fmdlMaterialInstances[i - 1].parameterCount >= fmdlMaterialInstance.firstTextureIndex + fmdlMaterialInstance.textureCount)
+                    fmdlMaterialInstance.firstParameterIndex = (ushort)(fmdlMaterialInstances[i - 1].firstParameterIndex + fmdlMaterialInstances[i - 1].parameterCount);
+                else
+                    fmdlMaterialInstance.firstParameterIndex = (ushort)(fmdlMaterialInstance.firstTextureIndex + fmdlMaterialInstance.textureCount);
+            } //else
+
+            fmdlMaterialInstances[i] = fmdlMaterialInstance;
+        } //for
+
+        //Bone Groups
+        fmdlBoneGroups = new FmdlBoneGroup[meshCount];
+
+        for(int i = 0; i < meshCount; i++)
+        {
+            FmdlBoneGroup fmdlBoneGroup = new FmdlBoneGroup();
+            int meshBoneCount = meshes[i].bones.Length;
+
+            fmdlBoneGroup.unknown0 = 4;
+            fmdlBoneGroup.boneIndexCount = (ushort)meshBoneCount;
+            fmdlBoneGroup.boneIndices = new ushort[meshBoneCount];
+
+            for(int j = 0; j < meshBoneCount; j++)
+                fmdlBoneGroup.boneIndices[j] = (ushort)bones.IndexOf(meshes[i].bones[j]);
+
+            fmdlBoneGroups[i] = fmdlBoneGroup;
+        } //for
+
+        //Textures
+        int textureCount = textures.Count;
+
+        fmdlTextures = new FmdlTexture[textureCount];
+
+        for(int i = 0; i < textureCount; i++)
+        {
+            FmdlTexture fmdlTexture = new FmdlTexture();
+            Texture texture = textures[i];
+            string assetPath = AssetDatabase.GetAssetPath(texture);
+
+            if (assetPath == "" || assetPath.Contains(".fmdl"))
+                assetPath = texture.name.Substring(1);
+
+            string textureName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";
+            string texturePath = $"/{Path.GetDirectoryName(assetPath)}/";
+
+            fmdlTexture.nameIndex = (ushort)strings.Count;
+            strings.Add(textureName);
+
+            if (!strings.Contains(texturePath))
+            {
+                fmdlTexture.pathIndex = (ushort)strings.Count;
+                strings.Add(texturePath);
+            } //if
+            else
+                fmdlTexture.pathIndex = (ushort)strings.IndexOf(texturePath);
+
+            fmdlTextures[i] = fmdlTexture;
+        } //for
+
+        //Material Parameters
+        List<FmdlMaterialParameter> materialParameters = new List<FmdlMaterialParameter>(0);
+
+        for(int i = 0; i < materialInstanceCount; i++)
+        {
+            Material material = materials[i];
+            Shader shader = material.shader;
+            int propertyCount = ShaderUtil.GetPropertyCount(shader);
+
+            for(int j = 0; j < propertyCount; j++)
+            {
+                FmdlMaterialParameter fmdlMaterialParameter = new FmdlMaterialParameter();
+
+                if(ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
+                {
+                    string propertyName = ShaderUtil.GetPropertyName(shader, j);
+
+                    if (!strings.Contains(propertyName))
+                    {
+                        fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
+                        strings.Add(propertyName);
+                    } //if
+                    else
+                        fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+
+                    fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture(propertyName));
+                } //if
+
+                materialParameters.Add(fmdlMaterialParameter);
+            } //for
+
+            for (int j = 0; j < propertyCount; j++)
+            {
+                FmdlMaterialParameter fmdlMaterialParameter = new FmdlMaterialParameter();
+
+                if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.Vector)
+                {
+                    string propertyName = ShaderUtil.GetPropertyName(shader, j);
+                    Vector4 vector = material.GetVector(propertyName);
+
+                    if (!strings.Contains(propertyName))
+                    {
+                        fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
+                        strings.Add(propertyName);
+                    } //if
+                    else
+                        fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+
+                    fmdlMaterialParameter.referenceIndex = (ushort)materialParameterVectors.IndexOfEqualValue(material.GetVector(propertyName));
+                } //if
+
+                materialParameters.Add(fmdlMaterialParameter);
+            } //for
+        } //for
+
+        fmdlMaterialParameters = materialParameters.ToArray();
+
+        //Mesh Format Info
+        List<FmdlVertexFormat> vertexFormats = new List<FmdlVertexFormat>(0);
+        List<FmdlMeshFormat> meshFormats = new List<FmdlMeshFormat>(0);
+        uint positionOffset = 0;
+        uint meshOffset = 0;
+
+        fmdlMeshFormatInfos = new FmdlMeshFormatInfo[meshCount];
+
+        for (int i = 0; i < meshCount; i++)
+        {
+            FmdlMeshFormatInfo fmdlMeshFormatInfo = new FmdlMeshFormatInfo();
+            fmdlMeshFormatInfo.meshFormatCount = 0;
+            fmdlMeshFormatInfo.vertexFormatCount = 0;
+            fmdlMeshFormatInfo.unknown0 = 0x100;
+            if(i == 0)
+            {
+                fmdlMeshFormatInfo.firstMeshFormatIndex = 0;
+                fmdlMeshFormatInfo.firstVertexFormatIndex = 0;
+            } //if
+            else
+            {
+                fmdlMeshFormatInfo.firstMeshFormatIndex = (ushort)(fmdlMeshFormatInfos[i - 1].firstMeshFormatIndex + fmdlMeshFormatInfos[i - 1].meshFormatCount);
+                fmdlMeshFormatInfo.firstVertexFormatIndex = (ushort)(fmdlMeshFormatInfos[i - 1].firstVertexFormatIndex + fmdlMeshFormatInfos[i - 1].vertexFormatCount);
+            } //else
+
+            Mesh mesh = meshes[i].sharedMesh;
+            FmdlMeshFormat fmdlMeshFormat2 = new FmdlMeshFormat();
+            fmdlMeshFormat2.bufferOffsetIndex = 1;
+            fmdlMeshFormat2.vertexFormatCount = 0;
+            fmdlMeshFormat2.length = 0;
+            fmdlMeshFormat2.type = 1;
+            fmdlMeshFormat2.offset = meshOffset;
+            FmdlMeshFormat fmdlMeshFormat3 = new FmdlMeshFormat();
+            fmdlMeshFormat3.bufferOffsetIndex = 1;
+            fmdlMeshFormat3.vertexFormatCount = 0;
+            fmdlMeshFormat3.length = 0;
+            fmdlMeshFormat3.type = 2;
+            fmdlMeshFormat3.offset = meshOffset;
+            FmdlMeshFormat fmdlMeshFormat4 = new FmdlMeshFormat();
+            fmdlMeshFormat4.bufferOffsetIndex = 1;
+            fmdlMeshFormat4.vertexFormatCount = 0;
+            fmdlMeshFormat4.length = 0;
+            fmdlMeshFormat4.type = 2;
+            fmdlMeshFormat4.offset = meshOffset;
+            ushort vertexOffset = 0;
+
+            if(mesh.vertices.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0;
+                fmdlVertexFormat.dataType = 1;
+                fmdlVertexFormat.offset = 0;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                FmdlMeshFormat fmdlMeshFormat = new FmdlMeshFormat();
+                fmdlMeshFormat.bufferOffsetIndex = 0;
+                fmdlMeshFormat.vertexFormatCount = 1;
+                fmdlMeshFormat.length = 0xC;
+                fmdlMeshFormat.type = 0;
+                fmdlMeshFormat.offset = positionOffset;
+
+                meshFormats.Add(fmdlMeshFormat);
+
+                fmdlMeshFormatInfo.meshFormatCount++;
+                fmdlMeshFormatInfo.vertexFormatCount++;
+
+                positionOffset += (uint)(0xC * mesh.vertices.Length);
+            } //if
+
+            if (mesh.normals.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 2;
+                fmdlVertexFormat.dataType = 6;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 8;
+
+                fmdlMeshFormat2.vertexFormatCount++;
+                fmdlMeshFormat2.length += 8;
+            } //if
+
+            if (mesh.tangents.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0xE;
+                fmdlVertexFormat.dataType = 6;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 8;
+
+                fmdlMeshFormat2.vertexFormatCount++;
+                fmdlMeshFormat2.length += 8;
+            } //if
+
+            if (mesh.colors.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 3;
+                fmdlVertexFormat.dataType = 8;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlMeshFormat3.vertexFormatCount++;
+                fmdlMeshFormat3.length += 4;
+            } //if
+
+            if (mesh.boneWeights.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 1;
+                fmdlVertexFormat.dataType = 8;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 7;
+                fmdlVertexFormat.dataType = 9;
+                fmdlVertexFormat.offset = vertexOffset;
+                vertexFormats.Add(fmdlVertexFormat);
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount += 2;
+                fmdlMeshFormat4.length += 8;
+            } //if
+
+            if (mesh.uv.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 8;
+                fmdlVertexFormat.dataType = 7;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount++;
+                fmdlMeshFormat4.length += 4;
+            } //if
+
+            if (mesh.uv2.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 9;
+                fmdlVertexFormat.dataType = 7;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount++;
+                fmdlMeshFormat4.length += 4;
+            } //if
+
+            if (mesh.uv3.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0xA;
+                fmdlVertexFormat.dataType = 7;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount++;
+                fmdlMeshFormat4.length += 4;
+            } //if
+
+            if (mesh.uv4.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0xB;
+                fmdlVertexFormat.dataType = 7;
+                fmdlVertexFormat.offset = vertexOffset;
+
+                vertexFormats.Add(fmdlVertexFormat);
+
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount++;
+                fmdlMeshFormat4.length += 4;
+            } //if
+
+            //Can't implement this. Unity doesn't support it.
+            /*if (mesh.boneWeights2.Length > 0)
+            {
+                FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0xC;
+                fmdlVertexFormat.dataType = 8;
+                fmdlVertexFormat.offset = vertexOffset;
+                vertexFormats.Add(fmdlVertexFormat);
+                vertexOffset += 4;
+
+                fmdlVertexFormat = new FmdlVertexFormat();
+                fmdlVertexFormat.type = 0xD;
+                fmdlVertexFormat.dataType = 4;
+                fmdlVertexFormat.offset = vertexOffset;
+                vertexFormats.Add(fmdlVertexFormat);
+                vertexOffset += 4;
+
+                fmdlMeshFormat4.vertexFormatCount += 2;
+                fmdlMeshFormat4.length = 8;
+            } //if
+            */
+
+            fmdlMeshFormatInfo.vertexFormatCount += (byte)(fmdlMeshFormat2.vertexFormatCount + fmdlMeshFormat3.vertexFormatCount + fmdlMeshFormat4.vertexFormatCount);
+
+            meshOffset += (uint)(mesh.vertices.Length * fmdlMeshFormatInfo.vertexFormatCount);
+
+            fmdlMeshFormat2.offset = meshOffset;
+            fmdlMeshFormat3.offset = meshOffset;
+            fmdlMeshFormat4.offset = meshOffset;
+
+            meshFormats.Add(fmdlMeshFormat2);
+            if (fmdlMeshFormat3.length > 0)
+            {
+                meshFormats.Add(fmdlMeshFormat3);
+                fmdlMeshFormatInfo.meshFormatCount++;
+            } //if
+            meshFormats.Add(fmdlMeshFormat4);
+
+            fmdlMeshFormatInfo.meshFormatCount += 2;
+
+            fmdlMeshFormatInfos[i] = fmdlMeshFormatInfo;
+        } //for
+
+        fmdlMeshFormats = meshFormats.ToArray();
+        fmdlVertexFormats = vertexFormats.ToArray();
+
+        //String Info
+        int stringCount = strings.Count;
+
+        fmdlStringInfos = new FmdlStringInfo[stringCount];
+
+        for(int i = 0; i < stringCount; i++)
+        {
+            FmdlStringInfo fmdlStringInfo = new FmdlStringInfo();
+            string fmdlString = strings[i];
+
+            fmdlStringInfo.section1BlockIndex = 3;
+            fmdlStringInfo.length = (ushort)fmdlString.Length;
+            if (i == 0)
+                fmdlStringInfo.offset = 0;
+            else
+                fmdlStringInfo.offset = fmdlStringInfos[i - 1].offset + fmdlStringInfos[i - 1].length + 1;
+
+            fmdlStringInfos[i] = fmdlStringInfo;
+        } //for
+
+        //Bounding Boxes
+        int boundingBoxCount = boundingBoxes.Count;
+
+        fmdlBoundingBoxes = new FmdlBoundingBox[boundingBoxCount];
+
+        for (int i = 0; i < boundingBoxCount; i++)
+        {
+            FmdlBoundingBox fmdlBoundingBox = new FmdlBoundingBox();
+            BoxCollider boundingBox = boundingBoxes[i];
+
+            fmdlBoundingBox.max = new Vector4(-boundingBox.bounds.max.x, boundingBox.bounds.max.y, boundingBox.bounds.max.z, 1f);
+            fmdlBoundingBox.min = new Vector4(-boundingBox.bounds.min.x, boundingBox.bounds.min.y, boundingBox.bounds.min.z, 1f);
+
+            fmdlBoundingBoxes[i] = fmdlBoundingBox;
+        } //for
+
+        //Lod Info
+        fmdlLodInfos = new FmdlLodInfo[1];
+
+        FmdlLodInfo fmdlLodInfo = new FmdlLodInfo();
+
+        fmdlLodInfo.lodCount = 1;
+        fmdlLodInfo.unknown0 = 1f;
+        fmdlLodInfo.unknown1 = 1f;
+        fmdlLodInfo.unknown2 = 1f;
+
+        fmdlLodInfos[0] = fmdlLodInfo;
+
+        //Face Info
+        fmdlFaceInfos = new FmdlFaceInfo[meshCount];
+
+        for(int i = 0; i < meshCount; i++)
+        {
+            FmdlFaceInfo fmdlFaceInfo = new FmdlFaceInfo();
+
+            if (i == 0)
+                fmdlFaceInfo.firstFaceVertexIndex = 0;
+            else
+                fmdlFaceInfo.firstFaceVertexIndex = fmdlFaceInfos[i - 1].firstFaceVertexIndex + fmdlFaceInfos[i - 1].faceVertexCount;
+
+            fmdlFaceInfo.faceVertexCount = fmdlMeshInfos[i].faceVertexCount;
+        } //for
+
+        //Type 12
+        fmdlType12s = new FmdlType12[1];
+
+        FmdlType12 fmdlType12 = new FmdlType12();
+
+        fmdlType12.unknown0 = 0;
+
+        fmdlType12s[0] = fmdlType12;
+
+        //Type 14
+        fmdlType14s = new FmdlType14[1];
+
+        FmdlType14 fmdlType14 = new FmdlType14();
+
+        fmdlType14.unknown0 = 3.33850384f;
+        fmdlType14.unknown1 = 0.8753322f;
+        fmdlType14.unknown2 = 0.200000048f;
+        fmdlType14.unknown3 = 5f;
+        fmdlType14.unknown4 = 5;
+        fmdlType14.unknown5 = 1;
+
+        fmdlType14s[0] = fmdlType14;
+
+        //Material Parameter Vectors
+        fmdlMaterialParameterVectors = materialParameterVectors.ToArray();
+
+        //Meshes
+        fmdlMeshes = new FmdlMesh[meshCount];
+
+        for(int i = 0; i < meshCount; i++)
+        {
+            FmdlMesh fmdlMesh = new FmdlMesh();
+            Mesh mesh = meshes[i].sharedMesh;
+            int vertexCount = mesh.vertices.Length;
+            int triangleCount = mesh.triangles.Length;
+
+            fmdlMesh.vertices = new Vector3[vertexCount];
+            fmdlMesh.normals = new Vector4Half[vertexCount];
+            fmdlMesh.tangents = new Vector4Half[vertexCount];
+            fmdlMesh.colors = mesh.colors.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
+            fmdlMesh.boneWeights = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
+            fmdlMesh.boneIndices = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
+            fmdlMesh.uv = new Vector2Half[vertexCount];
+            fmdlMesh.uv2 = mesh.uv2.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
+            fmdlMesh.uv3 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
+            fmdlMesh.uv4 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
+            fmdlMesh.triangles = new ushort[triangleCount];
+
+            for (int j = 0; j < vertexCount; j++)
+            {
+                fmdlMesh.vertices[j] = new Vector3(-mesh.vertices[j].x, mesh.vertices[j].y, mesh.vertices[j].z);
+                fmdlMesh.normals[j] = new Vector4Half(new Half(-mesh.normals[j].x), new Half(mesh.normals[j].y), new Half(mesh.normals[j].z), new Half(1.0f));
+                fmdlMesh.tangents[j] = new Vector4Half(new Half(-mesh.tangents[j].x), new Half(mesh.tangents[j].y), new Half(mesh.tangents[j].z), new Half(mesh.tangents[j].w));
+                if (mesh.colors.Length > 0)
+                    fmdlMesh.colors[j] = new Vector4(mesh.colors[j].r, mesh.colors[j].g, mesh.colors[j].b, mesh.colors[j].a);
+                if(mesh.boneWeights.Length > 0)
+                {
+                    fmdlMesh.boneWeights[j] = new Vector4(mesh.boneWeights[j].weight0, mesh.boneWeights[j].weight1, mesh.boneWeights[j].weight2, mesh.boneWeights[j].weight3);
+                    fmdlMesh.boneIndices[j] = new Vector4(mesh.boneWeights[j].boneIndex0, mesh.boneWeights[j].boneIndex1, mesh.boneWeights[j].boneIndex2, mesh.boneWeights[j].boneIndex3);
+                } //if
+                fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(-mesh.uv[j].y));
+                if (mesh.uv2.Length > 0)
+                {
+                    fmdlMesh.uv2[j] = new Vector2Half(new Half(mesh.uv2[j].x), new Half(-mesh.uv2[j].y));
+
+                    if (mesh.uv3.Length > 0)
+                    {
+                        fmdlMesh.uv3[j] = new Vector2Half(new Half(mesh.uv3[j].x), new Half(-mesh.uv3[j].y));
+
+                        if (mesh.uv4.Length > 0)
+                        {
+                            fmdlMesh.uv4[j] = new Vector2Half(new Half(mesh.uv4[j].x), new Half(-mesh.uv4[j].y));
+                        } //if
+                    } //if
+                } //if
+            } //for
+
+            for(int j = 0; j < triangleCount; j++)
+                fmdlMesh.triangles[j] = (ushort)mesh.triangles[j];
+        } //for
+
+        //Strings
+        fmdlStrings = strings.ToArray();
+    } //GetFmdlData
+
+    private void GetBonesAndBoundingBoxes(Transform transform, List<Transform> bones, List<BoxCollider> boundingBoxes)
+    {
+        foreach (Transform t in transform)
+        {
+            bones.Add(t);
+            boundingBoxes.Add(t.gameObject.GetComponent<BoxCollider>());
+            GetBonesAndBoundingBoxes(t, bones, boundingBoxes);
+        } //foreach
+    } //GetBones
+
+    private void GetMeshesMaterialsTexturesAndVectors(GameObject gameObject, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Vector4> vectors)
+    {
+        foreach (Transform t in gameObject.transform)
+        {
+            if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+            {
+                SkinnedMeshRenderer skinnedMeshRenderer = t.gameObject.GetComponent<SkinnedMeshRenderer>();
+                Material material = skinnedMeshRenderer.sharedMaterial;
+
+                meshes.Add(skinnedMeshRenderer);
+
+                if (!materials.Contains(material))
+                {
+                    materials.Add(material);
+                    Shader shader = material.shader;
+                    int propertyCount = ShaderUtil.GetPropertyCount(shader);
+
+                    for (int i = 0; i < propertyCount; i++)
+                        if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                        {
+                            Texture texture = material.GetTexture(ShaderUtil.GetPropertyName(shader, i));
+
+                            if (!textures.Contains(texture))
+                                textures.Add(texture);
+                        } //if
+                        else if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Vector)
+                        {
+                            Vector4 vector = material.GetVector(ShaderUtil.GetPropertyName(shader, i));
+
+                            if (!vectors.ContainsEqualValue(vector))
+                                vectors.Add(vector);
+                        } //else
+                } //if
+            } //if
+        } //foreach
+    } //GetMeshesMaterialsAndTextures
 } //ExpFmdl
