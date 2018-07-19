@@ -317,7 +317,7 @@ namespace FmdlStudio.Scripts.Classes
                 Vector4[] tangents = fmdlMesh.tangents != null ? new Vector4[vertexLength] : new Vector4[0];
                 Color[] colors = fmdlMesh.colors != null ? new Color[vertexLength] : new Color[0];
                 BoneWeight[] boneWeights = fmdlMesh.boneWeights != null ? new BoneWeight[vertexLength] : new BoneWeight[0];
-                Vector2[] uv = new Vector2[vertexLength];
+                Vector2[] uv = fmdlMesh.uv != null ? new Vector2[vertexLength] : new Vector2[0];
                 Vector2[] uv2 = fmdlMesh.uv2 != null ? new Vector2[vertexLength] : new Vector2[0];
                 Vector2[] uv3 = fmdlMesh.uv3 != null ? new Vector2[vertexLength] : new Vector2[0];
                 Vector2[] uv4 = fmdlMesh.uv4 != null ? new Vector2[vertexLength] : new Vector2[0];
@@ -346,7 +346,8 @@ namespace FmdlStudio.Scripts.Classes
                         boneWeights[j].boneIndex2 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].z];
                         boneWeights[j].boneIndex3 = fmdlBoneGroup.boneIndices[(int)fmdlMesh.boneIndices[j].w];
                     } //if
-                    uv[j] = new Vector2(fmdlMesh.uv[j].x, -fmdlMesh.uv[j].y);
+                    if (uv.Length > 0)
+                        uv[j] = new Vector2(fmdlMesh.uv[j].x, -fmdlMesh.uv[j].y);
                     if (uv2.Length > 0)
                         uv2[j] = new Vector2(fmdlMesh.uv2[j].x, -fmdlMesh.uv2[j].y);
                     if (uv3.Length > 0)
