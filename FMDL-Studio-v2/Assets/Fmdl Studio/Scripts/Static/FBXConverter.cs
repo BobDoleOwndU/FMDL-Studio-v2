@@ -92,6 +92,7 @@ namespace FmdlStudio.Scripts.Static
                 int[] triangles = meshes[i].Item2.sharedMesh.triangles;
                 Vector3[] normals = meshes[i].Item2.sharedMesh.normals;
                 Vector4[] tangents = meshes[i].Item2.sharedMesh.tangents;
+                Color[] colors = meshes[i].Item2.sharedMesh.colors;
                 Vector2[] uv = meshes[i].Item2.sharedMesh.uv;
                 Vector2[] uv2 = meshes[i].Item2.sharedMesh.uv2;
                 Vector2[] uv3 = meshes[i].Item2.sharedMesh.uv3;
@@ -99,6 +100,7 @@ namespace FmdlStudio.Scripts.Static
 
                 int vertexCount = vertices.Length;
                 int triangleCount = triangles.Length;
+                int colorCount = colors.Length;
                 int uvCount = uv.Length;
                 int uv2Count = uv2.Length;
                 int uv3Count = uv3.Length;
@@ -205,6 +207,14 @@ namespace FmdlStudio.Scripts.Static
                 fbx.Append("\n\t\t\tName: \"VertexColors\"");
                 fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
                 fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+                fbx.AppendFormat("\n\t\t\tColors: *{0} {{", colorCount * 4);
+                fbx.Append("\n\t\t\t\ta: ");
+                for (int j = 0; j < colorCount; j++)
+                {
+                    fbx.AppendFormat("{0},{1},{2},{3},", colors[j].r, colors[j].g, colors[j].b, colors[j].a);
+                } //for
+                fbx.Length--;
+                fbx.Append("\n\t\t\t}");
                 fbx.AppendFormat("\n\t\t\tColorIndex: *{0} {{", triangleCount);
                 fbx.Append("\n\t\t\t\ta: ");
                 for (int j = 0; j < triangleCount / 3; j++)
@@ -244,7 +254,7 @@ namespace FmdlStudio.Scripts.Static
                     fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv2Count * 2);
                     fbx.Append("\n\t\t\t\ta: ");
                     for (int j = 0; j < uv2Count; j++)
-                        fbx.AppendFormat("{0},{1},", uv2[j].x, -uv2[j].y);
+                        fbx.AppendFormat("{0},{1},", uv2[j].x, uv2[j].y);
                     fbx.Length--;
                     fbx.Append("\n\t\t\t}");
                     fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
@@ -266,7 +276,7 @@ namespace FmdlStudio.Scripts.Static
                         fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv3Count * 2);
                         fbx.Append("\n\t\t\t\ta: ");
                         for (int j = 0; j < uv3Count; j++)
-                            fbx.AppendFormat("{0},{1},", uv3[j].x, -uv3[j].y);
+                            fbx.AppendFormat("{0},{1},", uv3[j].x, uv3[j].y);
                         fbx.Length--;
                         fbx.Append("\n\t\t\t}");
                         fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
@@ -288,7 +298,7 @@ namespace FmdlStudio.Scripts.Static
                             fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv4Count * 2);
                             fbx.Append("\n\t\t\t\ta: ");
                             for (int j = 0; j < uv4Count; j++)
-                                fbx.AppendFormat("{0},{1},", uv4[j].x, -uv4[j].y);
+                                fbx.AppendFormat("{0},{1},", uv4[j].x, uv4[j].y);
                             fbx.Length--;
                             fbx.Append("\n\t\t\t}");
                             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);

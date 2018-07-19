@@ -9,31 +9,25 @@ using FmdlStudio.Scripts.Static;
 namespace FmdlStudio.Scripts.Classes
 {
     [ScriptedImporter(1, "fmdl")]
-    public class ExperimentalFmdlImporter : ScriptedImporter
+    public class FmdlImporter : ScriptedImporter
     {
         public override void OnImportAsset(AssetImportContext ctx)
         {
-            using (FileStream stream = new FileStream(ctx.assetPath, FileMode.Open))
+            try
             {
-                try
-                {
-                    ReadWithAssetImportContext(ctx, stream);
-                } //try
-                catch (Exception e)
-                {
-                    stream.Close();
-                    Debug.Log(e.Message);
-                    Debug.Log(e.StackTrace);
-                } //catch
-
-                stream.Close();
-            } //using
+                ReadWithAssetImportContext(ctx, ctx.assetPath);
+            } //try
+            catch (Exception e)
+            {
+                Debug.Log($"{e.Message}");
+                Debug.Log($"An exception occured{e.StackTrace}");
+            } //catch
         } //OnImportAsset
 
-        public void ReadWithoutAssetImportContext(FileStream stream)
+        public void ReadWithoutAssetImportContext(string filePath)
         {
-            ExpFmdl fmdl = new ExpFmdl(Path.GetFileNameWithoutExtension(stream.Name));
-            fmdl.Read(stream);
+            Fmdl fmdl = new Fmdl(Path.GetFileNameWithoutExtension(filePath));
+            fmdl.Read(filePath);
 
             int boneCount = fmdl.fmdlBones != null ? fmdl.fmdlBones.Length : 0;
             int materialCount = fmdl.fmdlMaterialInstances.Length;
@@ -87,10 +81,10 @@ namespace FmdlStudio.Scripts.Classes
             return (texture);
         } //LoadTextureDXT
 
-        private void ReadWithAssetImportContext(AssetImportContext ctx, FileStream stream)
+        private void ReadWithAssetImportContext(AssetImportContext ctx, string filePath)
         {
-            ExpFmdl fmdl = new ExpFmdl(Path.GetFileNameWithoutExtension(stream.Name));
-            fmdl.Read(stream);
+            Fmdl fmdl = new Fmdl(Path.GetFileNameWithoutExtension(filePath));
+            fmdl.Read(filePath);
 
             int boneCount = fmdl.fmdlBones != null ? fmdl.fmdlBones.Length : 0;
             int materialCount = fmdl.fmdlMaterialInstances.Length;
@@ -126,7 +120,7 @@ namespace FmdlStudio.Scripts.Classes
                 ctx.AddObjectToAsset($"Mesh {i}", meshes[i]);
         } //ReadWithAssetImportContext
 
-        private void Read(ExpFmdl fmdl, GameObject mainObject, FoxModel foxModel, Transform[] bones, Texture[] textures, Material[] materials, Mesh[] meshes, Transform rootBone)
+        private void Read(Fmdl fmdl, GameObject mainObject, FoxModel foxModel, Transform[] bones, Texture[] textures, Material[] materials, Mesh[] meshes, Transform rootBone)
         {
             bool isGZFormat = fmdl.version == 2.03f;
             int boneCount = fmdl.fmdlBones != null ? fmdl.fmdlBones.Length : 0;
@@ -136,7 +130,7 @@ namespace FmdlStudio.Scripts.Classes
             int meshGroupCount = fmdl.fmdlMeshGroups.Length;
 
             {
-                ExpFmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[0];
+                Fmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[0];
 
                 Bounds bounds = new Bounds();
                 bounds.SetMinMax(new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
@@ -149,8 +143,8 @@ namespace FmdlStudio.Scripts.Classes
             {
                 bones[i] = new GameObject().transform;
 
-                ExpFmdl.FmdlBone fmdlBone = fmdl.fmdlBones[i];
-                ExpFmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[fmdlBone.boundingBoxIndex];
+                Fmdl.FmdlBone fmdlBone = fmdl.fmdlBones[i];
+                Fmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[fmdlBone.boundingBoxIndex];
 
                 //Get the name.
                 if (isGZFormat)
@@ -185,7 +179,7 @@ namespace FmdlStudio.Scripts.Classes
             {
                 string name;
 
-                ExpFmdl.FmdlTexture fmdlTexture = fmdl.fmdlTextures[i];
+                Fmdl.FmdlTexture fmdlTexture = fmdl.fmdlTextures[i];
 
                 //Get the name.
                 if (isGZFormat)
@@ -230,7 +224,7 @@ namespace FmdlStudio.Scripts.Classes
                 string shaderName;
                 string materialName;
 
-                ExpFmdl.FmdlMaterialInstance fmdlMaterialInstance = fmdl.fmdlMaterialInstances[i];
+                Fmdl.FmdlMaterialInstance fmdlMaterialInstance = fmdl.fmdlMaterialInstances[i];
 
                 //Get the shader and material name.
                 if (isGZFormat)
@@ -253,7 +247,7 @@ namespace FmdlStudio.Scripts.Classes
                 {
                     string textureType;
 
-                    ExpFmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
+                    Fmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
 
                     if (isGZFormat)
                         textureType = fmdl.fmdlStrings[fmdlMaterialParameter.nameIndex];
@@ -269,7 +263,7 @@ namespace FmdlStudio.Scripts.Classes
                 {
                     string parameterName;
 
-                    ExpFmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
+                    Fmdl.FmdlMaterialParameter fmdlMaterialParameter = fmdl.fmdlMaterialParameters[j];
 
                     if (isGZFormat)
                         parameterName = fmdl.fmdlStrings[fmdlMaterialParameter.nameIndex];
@@ -285,7 +279,7 @@ namespace FmdlStudio.Scripts.Classes
                 foxModel.meshGroups[i] = new FoxMeshGroup();
                 string name;
 
-                ExpFmdl.FmdlMeshGroup fmdlMeshGroup = fmdl.fmdlMeshGroups[i];
+                Fmdl.FmdlMeshGroup fmdlMeshGroup = fmdl.fmdlMeshGroups[i];
 
                 if (isGZFormat)
                     name = fmdl.fmdlStrings[fmdlMeshGroup.nameIndex];
@@ -310,9 +304,9 @@ namespace FmdlStudio.Scripts.Classes
                 SkinnedMeshRenderer skinnedMeshRenderer = gameObject.AddComponent<SkinnedMeshRenderer>();
                 foxModel.meshDefinitions[i] = new FoxMeshDefinition();
 
-                ExpFmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
-                ExpFmdl.FmdlMeshInfo fmdlMeshInfo = fmdl.fmdlMeshInfos[i];
-                ExpFmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups != null ? fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex] : new ExpFmdl.FmdlBoneGroup();
+                Fmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
+                Fmdl.FmdlMeshInfo fmdlMeshInfo = fmdl.fmdlMeshInfos[i];
+                Fmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups != null ? fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex] : new Fmdl.FmdlBoneGroup();
 
                 int vertexLength = fmdlMesh.vertices.Length;
                 int faceLength = fmdlMesh.triangles.Length;
@@ -320,7 +314,7 @@ namespace FmdlStudio.Scripts.Classes
 
                 Vector3[] vertices = new Vector3[vertexLength];
                 Vector3[] normals = new Vector3[vertexLength];
-                Vector4[] tangents = new Vector4[vertexLength];
+                Vector4[] tangents = fmdlMesh.tangents != null ? new Vector4[vertexLength] : new Vector4[0];
                 Color[] colors = fmdlMesh.colors != null ? new Color[vertexLength] : new Color[0];
                 BoneWeight[] boneWeights = fmdlMesh.boneWeights != null ? new BoneWeight[vertexLength] : new BoneWeight[0];
                 Vector2[] uv = new Vector2[vertexLength];
@@ -337,7 +331,8 @@ namespace FmdlStudio.Scripts.Classes
                 {
                     vertices[j] = new Vector3(-fmdlMesh.vertices[j].x, fmdlMesh.vertices[j].y, fmdlMesh.vertices[j].z);
                     normals[j] = new Vector3(-fmdlMesh.normals[j].x, fmdlMesh.normals[j].y, fmdlMesh.normals[j].z);
-                    tangents[j] = new Vector4(-fmdlMesh.tangents[j].x, fmdlMesh.tangents[j].y, fmdlMesh.tangents[j].z, fmdlMesh.tangents[j].w);
+                    if (tangents.Length > 0)
+                        tangents[j] = new Vector4(-fmdlMesh.tangents[j].x, fmdlMesh.tangents[j].y, fmdlMesh.tangents[j].z, fmdlMesh.tangents[j].w);
                     if (colors.Length > 0)
                         colors[j] = new Color(fmdlMesh.colors[j].x / 255f, fmdlMesh.colors[j].y / 255f, fmdlMesh.colors[j].z / 255f, fmdlMesh.colors[j].w / 255f);
                     if (boneWeights.Length > 0)
@@ -430,6 +425,9 @@ namespace FmdlStudio.Scripts.Classes
                 meshes[i].colors = colors;
                 meshes[i].boneWeights = boneWeights;
                 meshes[i].uv = uv;
+                meshes[i].uv2 = uv2;
+                meshes[i].uv3 = uv3;
+                meshes[i].uv4 = uv4;
                 meshes[i].triangles = triangles;
                 meshes[i].bindposes = bindPoses;
 

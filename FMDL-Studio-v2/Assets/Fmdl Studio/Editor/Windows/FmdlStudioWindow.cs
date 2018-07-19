@@ -1,4 +1,5 @@
-﻿using FmdlStudio.Scripts.Static;
+﻿using FmdlStudio.Scripts.Classes;
+using FmdlStudio.Scripts.Static;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,7 +14,8 @@ namespace FmdlStudio.Editor.Windows
 
             if (!string.IsNullOrWhiteSpace(windowPath))
             {
-                FmdlImporter.FmdlRead(windowPath);
+                FmdlImporter experimentalFmdlImporter = new FmdlImporter();
+                experimentalFmdlImporter.ReadWithoutAssetImportContext(windowPath);
                 Debug.Log("Selected FMDL: " + windowPath);
             } //if
             else
@@ -45,7 +47,8 @@ namespace FmdlStudio.Editor.Windows
 
                 if (!string.IsNullOrWhiteSpace(windowPath))
                 {
-                    FmdlExporter.FmdlWrite(windowPath);
+                    Fmdl fmdl = new Fmdl(Selection.activeGameObject.name);
+                    fmdl.Write(Selection.activeGameObject, windowPath);
                     Debug.Log("Fmdl Exported to: " + windowPath);
                 } //if
                 else
