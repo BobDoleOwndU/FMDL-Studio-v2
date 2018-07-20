@@ -149,112 +149,98 @@ namespace FmdlStudio.Scripts.Static
                 fbx.Append("\n\t\t\t}");
                 fbx.Append("\n\t\t}");
 
-                //Binormals
-                fbx.Append("\n\t\tLayerElementBinormal: 0 {");
-                fbx.Append("\n\t\t\tVersion: 102");
-                fbx.Append("\n\t\t\tName: \"Binormals\"");
-                fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
-                fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
-                fbx.AppendFormat("\n\t\t\tBinormals: *{0} {{", triangleCount * 3);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount / 3; j++)
+                if (tangents.Length > 0)
                 {
-                    Vector3 binormal0 = Vector3.Cross(normals[triangles[j * 3]], new Vector3(tangents[triangles[j * 3]].x, tangents[triangles[j * 3]].y, tangents[triangles[j * 3]].z));
-                    Vector3 binormal1 = Vector3.Cross(normals[triangles[j * 3 + 2]], new Vector3(tangents[triangles[j * 3 + 2]].x, tangents[triangles[j * 3 + 2]].y, tangents[triangles[j * 3 + 2]].z));
-                    Vector3 binormal2 = Vector3.Cross(normals[triangles[j * 3 + 1]], new Vector3(tangents[triangles[j * 3 + 1]].x, tangents[triangles[j * 3 + 1]].y, tangents[triangles[j * 3 + 1]].z));
+                    //Binormals
+                    fbx.Append("\n\t\tLayerElementBinormal: 0 {");
+                    fbx.Append("\n\t\t\tVersion: 102");
+                    fbx.Append("\n\t\t\tName: \"Binormals\"");
+                    fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+                    fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+                    fbx.AppendFormat("\n\t\t\tBinormals: *{0} {{", triangleCount * 3);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < triangleCount / 3; j++)
+                    {
+                        Vector3 binormal0 = Vector3.Cross(normals[triangles[j * 3]], new Vector3(tangents[triangles[j * 3]].x, tangents[triangles[j * 3]].y, tangents[triangles[j * 3]].z));
+                        Vector3 binormal1 = Vector3.Cross(normals[triangles[j * 3 + 2]], new Vector3(tangents[triangles[j * 3 + 2]].x, tangents[triangles[j * 3 + 2]].y, tangents[triangles[j * 3 + 2]].z));
+                        Vector3 binormal2 = Vector3.Cross(normals[triangles[j * 3 + 1]], new Vector3(tangents[triangles[j * 3 + 1]].x, tangents[triangles[j * 3 + 1]].y, tangents[triangles[j * 3 + 1]].z));
 
-                    fbx.AppendFormat("{0},{1},{2},", binormal0.x, binormal0.y, -binormal0.z);
-                    fbx.AppendFormat("{0},{1},{2},", binormal1.x, binormal1.y, -binormal1.z);
-                    fbx.AppendFormat("{0},{1},{2},", binormal2.x, binormal2.y, -binormal2.z);
-                } //for
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.AppendFormat("\n\t\t\tBinormalsW: *{0} {{", triangleCount);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount; j++)
-                    fbx.Append("1,");
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t}");
+                        fbx.AppendFormat("{0},{1},{2},", binormal0.x, binormal0.y, -binormal0.z);
+                        fbx.AppendFormat("{0},{1},{2},", binormal1.x, binormal1.y, -binormal1.z);
+                        fbx.AppendFormat("{0},{1},{2},", binormal2.x, binormal2.y, -binormal2.z);
+                    } //for
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.AppendFormat("\n\t\t\tBinormalsW: *{0} {{", triangleCount);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < triangleCount; j++)
+                        fbx.Append("1,");
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.Append("\n\t\t}");
 
-                //Tangents
-                fbx.Append("\n\t\tLayerElementTangent: 0 {");
-                fbx.Append("\n\t\t\tVersion: 102");
-                fbx.Append("\n\t\t\tName: \"Tangents\"");
-                fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
-                fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
-                fbx.AppendFormat("\n\t\t\tTangents: *{0} {{", triangleCount * 3);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount / 3; j++)
-                {
-                    fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3]].x, tangents[triangles[j * 3]].y, tangents[triangles[j * 3]].z);
-                    fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3 + 2]].x, tangents[triangles[j * 3 + 2]].y, tangents[triangles[j * 3 + 2]].z);
-                    fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3 + 1]].x, tangents[triangles[j * 3 + 1]].y, tangents[triangles[j * 3 + 1]].z);
-                } //for
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.AppendFormat("\n\t\t\tTangentsW: *{0} {{", triangleCount);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount / 3; j++)
-                    fbx.AppendFormat("{0},{1},{2},", tangents[triangles[j * 3]].w, tangents[triangles[j * 3 + 2]].w, tangents[triangles[j * 3 + 1]].w);
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t}");
+                    //Tangents
+                    fbx.Append("\n\t\tLayerElementTangent: 0 {");
+                    fbx.Append("\n\t\t\tVersion: 102");
+                    fbx.Append("\n\t\t\tName: \"Tangents\"");
+                    fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+                    fbx.Append("\n\t\t\tReferenceInformationType: \"Direct\"");
+                    fbx.AppendFormat("\n\t\t\tTangents: *{0} {{", triangleCount * 3);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < triangleCount / 3; j++)
+                    {
+                        fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3]].x, tangents[triangles[j * 3]].y, tangents[triangles[j * 3]].z);
+                        fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3 + 2]].x, tangents[triangles[j * 3 + 2]].y, tangents[triangles[j * 3 + 2]].z);
+                        fbx.AppendFormat("{0},{1},{2},", -tangents[triangles[j * 3 + 1]].x, tangents[triangles[j * 3 + 1]].y, tangents[triangles[j * 3 + 1]].z);
+                    } //for
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.AppendFormat("\n\t\t\tTangentsW: *{0} {{", triangleCount);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < triangleCount / 3; j++)
+                        fbx.AppendFormat("{0},{1},{2},", tangents[triangles[j * 3]].w, tangents[triangles[j * 3 + 2]].w, tangents[triangles[j * 3 + 1]].w);
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.Append("\n\t\t}");
+                } //if
 
                 //Colours
-                fbx.Append("\n\t\tLayerElementColor: 0 {");
-                fbx.Append("\n\t\t\tVersion: 101");
-                fbx.Append("\n\t\t\tName: \"VertexColors\"");
-                fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
-                fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
-                fbx.AppendFormat("\n\t\t\tColors: *{0} {{", colorCount * 4);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < colorCount; j++)
+                if (colorCount > 0)
                 {
-                    fbx.AppendFormat("{0},{1},{2},{3},", colors[j].r, colors[j].g, colors[j].b, colors[j].a);
-                } //for
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.AppendFormat("\n\t\t\tColorIndex: *{0} {{", triangleCount);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount / 3; j++)
-                    fbx.AppendFormat("{0},{1},{2},", triangles[j * 3], triangles[j * 3 + 2], triangles[j * 3 + 1]);
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t}");
-
-                //UV Set 0
-                fbx.Append("\n\t\tLayerElementUV: 0 {");
-                fbx.Append("\n\t\t\tVersion: 101");
-                fbx.Append("\n\t\t\tName: \"UVSet0\"");
-                fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
-                fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
-                fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uvCount * 2);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < uvCount; j++)
-                    fbx.AppendFormat("{0},{1},", uv[j].x, uv[j].y);
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
-                fbx.Append("\n\t\t\t\ta: ");
-                for (int j = 0; j < triangleCount / 3; j++)
-                    fbx.AppendFormat("{0},{1},{2},", triangles[j * 3], triangles[j * 3 + 2], triangles[j * 3 + 1]);
-                fbx.Length--;
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t}");
-
-                //UV Set 1
-                if (!uv2.IsNullOrZeroes())
-                {
-                    fbx.Append("\n\t\tLayerElementUV: 1 {");
+                    fbx.Append("\n\t\tLayerElementColor: 0 {");
                     fbx.Append("\n\t\t\tVersion: 101");
-                    fbx.Append("\n\t\t\tName: \"UVSet1\"");
+                    fbx.Append("\n\t\t\tName: \"VertexColors\"");
                     fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
                     fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
-                    fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv2Count * 2);
+                    fbx.AppendFormat("\n\t\t\tColors: *{0} {{", colorCount * 4);
                     fbx.Append("\n\t\t\t\ta: ");
-                    for (int j = 0; j < uv2Count; j++)
-                        fbx.AppendFormat("{0},{1},", uv2[j].x, uv2[j].y);
+                    for (int j = 0; j < colorCount; j++)
+                    {
+                        fbx.AppendFormat("{0},{1},{2},{3},", colors[j].r, colors[j].g, colors[j].b, colors[j].a);
+                    } //for
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.AppendFormat("\n\t\t\tColorIndex: *{0} {{", triangleCount);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < triangleCount / 3; j++)
+                        fbx.AppendFormat("{0},{1},{2},", triangles[j * 3], triangles[j * 3 + 2], triangles[j * 3 + 1]);
+                    fbx.Length--;
+                    fbx.Append("\n\t\t\t}");
+                    fbx.Append("\n\t\t}");
+                } //if
+
+                //UV Set 0
+                if (!uv.IsNullOrZeroes())
+                {
+                    fbx.Append("\n\t\tLayerElementUV: 0 {");
+                    fbx.Append("\n\t\t\tVersion: 101");
+                    fbx.Append("\n\t\t\tName: \"UVSet0\"");
+                    fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+                    fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+                    fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uvCount * 2);
+                    fbx.Append("\n\t\t\t\ta: ");
+                    for (int j = 0; j < uvCount; j++)
+                        fbx.AppendFormat("{0},{1},", uv[j].x, uv[j].y);
                     fbx.Length--;
                     fbx.Append("\n\t\t\t}");
                     fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
@@ -265,18 +251,18 @@ namespace FmdlStudio.Scripts.Static
                     fbx.Append("\n\t\t\t}");
                     fbx.Append("\n\t\t}");
 
-                    //UV Set 2
-                    if (!uv3.IsNullOrZeroes())
+                    //UV Set 1
+                    if (!uv2.IsNullOrZeroes())
                     {
-                        fbx.Append("\n\t\tLayerElementUV: 2 {");
+                        fbx.Append("\n\t\tLayerElementUV: 1 {");
                         fbx.Append("\n\t\t\tVersion: 101");
-                        fbx.Append("\n\t\t\tName: \"UVSet2\"");
+                        fbx.Append("\n\t\t\tName: \"UVSet1\"");
                         fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
                         fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
-                        fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv3Count * 2);
+                        fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv2Count * 2);
                         fbx.Append("\n\t\t\t\ta: ");
-                        for (int j = 0; j < uv3Count; j++)
-                            fbx.AppendFormat("{0},{1},", uv3[j].x, uv3[j].y);
+                        for (int j = 0; j < uv2Count; j++)
+                            fbx.AppendFormat("{0},{1},", uv2[j].x, uv2[j].y);
                         fbx.Length--;
                         fbx.Append("\n\t\t\t}");
                         fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
@@ -287,18 +273,18 @@ namespace FmdlStudio.Scripts.Static
                         fbx.Append("\n\t\t\t}");
                         fbx.Append("\n\t\t}");
 
-                        //UV Set 3
-                        if (!uv4.IsNullOrZeroes())
+                        //UV Set 2
+                        if (!uv3.IsNullOrZeroes())
                         {
-                            fbx.Append("\n\t\tLayerElementUV: 3 {");
+                            fbx.Append("\n\t\tLayerElementUV: 2 {");
                             fbx.Append("\n\t\t\tVersion: 101");
-                            fbx.Append("\n\t\t\tName: \"UVSet3\"");
+                            fbx.Append("\n\t\t\tName: \"UVSet2\"");
                             fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
                             fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
-                            fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv4Count * 2);
+                            fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv3Count * 2);
                             fbx.Append("\n\t\t\t\ta: ");
-                            for (int j = 0; j < uv4Count; j++)
-                                fbx.AppendFormat("{0},{1},", uv4[j].x, uv4[j].y);
+                            for (int j = 0; j < uv3Count; j++)
+                                fbx.AppendFormat("{0},{1},", uv3[j].x, uv3[j].y);
                             fbx.Length--;
                             fbx.Append("\n\t\t\t}");
                             fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
@@ -308,6 +294,29 @@ namespace FmdlStudio.Scripts.Static
                             fbx.Length--;
                             fbx.Append("\n\t\t\t}");
                             fbx.Append("\n\t\t}");
+
+                            //UV Set 3
+                            if (!uv4.IsNullOrZeroes())
+                            {
+                                fbx.Append("\n\t\tLayerElementUV: 3 {");
+                                fbx.Append("\n\t\t\tVersion: 101");
+                                fbx.Append("\n\t\t\tName: \"UVSet3\"");
+                                fbx.Append("\n\t\t\tMappingInformationType: \"ByPolygonVertex\"");
+                                fbx.Append("\n\t\t\tReferenceInformationType: \"IndexToDirect\"");
+                                fbx.AppendFormat("\n\t\t\tUV: *{0} {{", uv4Count * 2);
+                                fbx.Append("\n\t\t\t\ta: ");
+                                for (int j = 0; j < uv4Count; j++)
+                                    fbx.AppendFormat("{0},{1},", uv4[j].x, uv4[j].y);
+                                fbx.Length--;
+                                fbx.Append("\n\t\t\t}");
+                                fbx.AppendFormat("\n\t\t\tUVIndex: *{0} {{", triangleCount);
+                                fbx.Append("\n\t\t\t\ta: ");
+                                for (int j = 0; j < triangleCount / 3; j++)
+                                    fbx.AppendFormat("{0},{1},{2},", triangles[j * 3], triangles[j * 3 + 2], triangles[j * 3 + 1]);
+                                fbx.Length--;
+                                fbx.Append("\n\t\t\t}");
+                                fbx.Append("\n\t\t}");
+                            } //if
                         } //if
                     } //if
                 } //if
@@ -330,27 +339,36 @@ namespace FmdlStudio.Scripts.Static
                 fbx.Append("\n\t\t\t\tType: \"LayerElementNormal\"");
                 fbx.Append("\n\t\t\t\tTypedIndex: 0");
                 fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t\tLayerElement:  {");
-                fbx.Append("\n\t\t\t\tType: \"LayerElementBinormal\"");
-                fbx.Append("\n\t\t\t\tTypedIndex: 0");
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t\tLayerElement:  {");
-                fbx.Append("\n\t\t\t\tType: \"LayerElementTangent\"");
-                fbx.Append("\n\t\t\t\tTypedIndex: 0");
-                fbx.Append("\n\t\t\t}");
+                if (tangents.Length > 0)
+                {
+                    fbx.Append("\n\t\t\tLayerElement:  {");
+                    fbx.Append("\n\t\t\t\tType: \"LayerElementBinormal\"");
+                    fbx.Append("\n\t\t\t\tTypedIndex: 0");
+                    fbx.Append("\n\t\t\t}");
+                    fbx.Append("\n\t\t\tLayerElement:  {");
+                    fbx.Append("\n\t\t\t\tType: \"LayerElementTangent\"");
+                    fbx.Append("\n\t\t\t\tTypedIndex: 0");
+                    fbx.Append("\n\t\t\t}");
+                } //if
                 fbx.Append("\n\t\t\tLayerElement:  {");
                 fbx.Append("\n\t\t\t\tType: \"LayerElementMaterial\"");
                 fbx.Append("\n\t\t\t\tTypedIndex: 0");
                 fbx.Append("\n\t\t\t}");
                 fbx.Append("\n\t\t\tLayerElement:  {");
-                fbx.Append("\n\t\t\t\tType: \"LayerElementColor\"");
-                fbx.Append("\n\t\t\t\tTypedIndex: 0");
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t\tLayerElement:  {");
-                fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
-                fbx.Append("\n\t\t\t\tTypedIndex: 0");
-                fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t}");
+                if (colorCount > 0)
+                {
+                    fbx.Append("\n\t\t\t\tType: \"LayerElementColor\"");
+                    fbx.Append("\n\t\t\t\tTypedIndex: 0");
+                    fbx.Append("\n\t\t\t}");
+                } //if
+                if (uvCount > 0)
+                {
+                    fbx.Append("\n\t\t\tLayerElement:  {");
+                    fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+                    fbx.Append("\n\t\t\t\tTypedIndex: 0");
+                    fbx.Append("\n\t\t\t}");
+                    fbx.Append("\n\t\t}");
+                } //if
 
                 //Layer 1
                 if (!uv2.IsNullOrZeroes())
