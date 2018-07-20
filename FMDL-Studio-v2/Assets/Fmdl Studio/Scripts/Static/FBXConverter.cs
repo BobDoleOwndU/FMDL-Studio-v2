@@ -339,6 +339,7 @@ namespace FmdlStudio.Scripts.Static
                 fbx.Append("\n\t\t\t\tType: \"LayerElementNormal\"");
                 fbx.Append("\n\t\t\t\tTypedIndex: 0");
                 fbx.Append("\n\t\t\t}");
+
                 if (tangents.Length > 0)
                 {
                     fbx.Append("\n\t\t\tLayerElement:  {");
@@ -350,58 +351,61 @@ namespace FmdlStudio.Scripts.Static
                     fbx.Append("\n\t\t\t\tTypedIndex: 0");
                     fbx.Append("\n\t\t\t}");
                 } //if
+
                 fbx.Append("\n\t\t\tLayerElement:  {");
                 fbx.Append("\n\t\t\t\tType: \"LayerElementMaterial\"");
                 fbx.Append("\n\t\t\t\tTypedIndex: 0");
                 fbx.Append("\n\t\t\t}");
-                fbx.Append("\n\t\t\tLayerElement:  {");
+
                 if (colorCount > 0)
                 {
+                    fbx.Append("\n\t\t\tLayerElement:  {");
                     fbx.Append("\n\t\t\t\tType: \"LayerElementColor\"");
                     fbx.Append("\n\t\t\t\tTypedIndex: 0");
                     fbx.Append("\n\t\t\t}");
                 } //if
-                if (uvCount > 0)
+
+                if (!uv.IsNullOrZeroes())
                 {
                     fbx.Append("\n\t\t\tLayerElement:  {");
                     fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
                     fbx.Append("\n\t\t\t\tTypedIndex: 0");
                     fbx.Append("\n\t\t\t}");
                     fbx.Append("\n\t\t}");
-                } //if
 
-                //Layer 1
-                if (!uv2.IsNullOrZeroes())
-                {
-                    fbx.Append("\n\t\tLayer: 1 {");
-                    fbx.Append("\n\t\t\tVersion: 100");
-                    fbx.Append("\n\t\t\tLayerElement:  {");
-                    fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
-                    fbx.Append("\n\t\t\t\tTypedIndex: 1");
-                    fbx.Append("\n\t\t\t}");
-                    fbx.Append("\n\t\t}");
-
-                    //Layer 2
-                    if (!uv3.IsNullOrZeroes())
+                    //Layer 1
+                    if (!uv2.IsNullOrZeroes())
                     {
-                        fbx.Append("\n\t\tLayer: 2 {");
+                        fbx.Append("\n\t\tLayer: 1 {");
                         fbx.Append("\n\t\t\tVersion: 100");
                         fbx.Append("\n\t\t\tLayerElement:  {");
                         fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
-                        fbx.Append("\n\t\t\t\tTypedIndex: 2");
+                        fbx.Append("\n\t\t\t\tTypedIndex: 1");
                         fbx.Append("\n\t\t\t}");
                         fbx.Append("\n\t\t}");
 
-                        //Layer 3
-                        if (!uv4.IsNullOrZeroes())
+                        //Layer 2
+                        if (!uv3.IsNullOrZeroes())
                         {
-                            fbx.Append("\n\t\tLayer: 3 {");
+                            fbx.Append("\n\t\tLayer: 2 {");
                             fbx.Append("\n\t\t\tVersion: 100");
                             fbx.Append("\n\t\t\tLayerElement:  {");
                             fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
-                            fbx.Append("\n\t\t\t\tTypedIndex: 3");
+                            fbx.Append("\n\t\t\t\tTypedIndex: 2");
                             fbx.Append("\n\t\t\t}");
                             fbx.Append("\n\t\t}");
+
+                            //Layer 3
+                            if (!uv4.IsNullOrZeroes())
+                            {
+                                fbx.Append("\n\t\tLayer: 3 {");
+                                fbx.Append("\n\t\t\tVersion: 100");
+                                fbx.Append("\n\t\t\tLayerElement:  {");
+                                fbx.Append("\n\t\t\t\tType: \"LayerElementUV\"");
+                                fbx.Append("\n\t\t\t\tTypedIndex: 3");
+                                fbx.Append("\n\t\t\t}");
+                                fbx.Append("\n\t\t}");
+                            } //if
                         } //if
                     } //if
                 } //if
