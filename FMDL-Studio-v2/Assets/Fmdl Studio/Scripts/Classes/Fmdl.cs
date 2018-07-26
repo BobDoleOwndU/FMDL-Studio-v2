@@ -477,7 +477,7 @@ namespace FmdlStudio.Scripts.Classes
                     stream.Close();
                     EditorUtility.ClearProgressBar();
                 } //try
-                catch(Exception e)
+                catch (Exception e)
                 {
                     stream.Close();
                     Debug.Log($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
@@ -1155,10 +1155,11 @@ namespace FmdlStudio.Scripts.Classes
                 GetFmdlData(gameObject);
                 WriteFmdlData(filePath);
             } //try
-            catch(Exception e)
+            catch (Exception e)
             {
                 Debug.Log($"{e.Message}");
                 Debug.Log($"An exception occured{e.StackTrace}");
+                EditorUtility.ClearProgressBar();
             } //catch
         } //Write
 
@@ -1200,7 +1201,7 @@ namespace FmdlStudio.Scripts.Classes
             section0BlockFlags = 0;
             section1BlockFlags = 0;
             section0BlockCount = 0;
-            section1BlockCount = 0;      
+            section1BlockCount = 0;
             section0Offset = 0;
             section0Length = 0;
             section1Offset = 0;
@@ -1367,7 +1368,10 @@ namespace FmdlStudio.Scripts.Classes
                 for (int j = 0; j < propertyCount; j++)
                 {
                     if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
-                        materialInstanceTextureCount++;
+                    {
+                        if (material.GetTexture(ShaderUtil.GetPropertyName(shader, j)))
+                            materialInstanceTextureCount++;
+                    } //if
                     else if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.Vector)
                         materialInstanceParameterCount++;
                 } //for
@@ -1470,17 +1474,20 @@ namespace FmdlStudio.Scripts.Classes
                     {
                         string propertyName = ShaderUtil.GetPropertyName(shader, j);
 
-                        if (!strings.Contains(propertyName))
+                        if (material.GetTexture(propertyName))
                         {
-                            fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
-                            strings.Add(propertyName);
+                            if (!strings.Contains(propertyName))
+                            {
+                                fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
+                                strings.Add(propertyName);
+                            } //if
+                            else
+                                fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+
+                            fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture(propertyName));
+
+                            materialParameters.Add(fmdlMaterialParameter);
                         } //if
-                        else
-                            fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
-
-                        fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture(propertyName));
-
-                        materialParameters.Add(fmdlMaterialParameter);
                     } //if
                 } //for
 
@@ -1547,7 +1554,7 @@ namespace FmdlStudio.Scripts.Classes
                     fmdlMeshFormatInfo.firstMeshFormatIndex = (ushort)(fmdlMeshFormatInfos[i - 1].firstMeshFormatIndex + fmdlMeshFormatInfos[i - 1].meshFormatCount);
                     fmdlMeshFormatInfo.firstVertexFormatIndex = (ushort)(fmdlMeshFormatInfos[i - 1].firstVertexFormatIndex + fmdlMeshFormatInfos[i - 1].vertexFormatCount);
                 } //else
-                
+
                 FmdlMeshFormat fmdlMeshFormat2 = new FmdlMeshFormat();
                 fmdlMeshFormat2.bufferOffsetIndex = 1;
                 fmdlMeshFormat2.vertexFormatCount = 0;
@@ -2321,7 +2328,7 @@ namespace FmdlStudio.Scripts.Classes
                             {
                                 Texture texture = material.GetTexture(ShaderUtil.GetPropertyName(shader, i));
 
-                                if (!textures.Contains(texture))
+                                if (texture != null && !textures.Contains(texture))
                                     textures.Add(texture);
                             } //if
                             else if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Vector)
@@ -2898,7 +2905,7 @@ namespace FmdlStudio.Scripts.Classes
                     stream.Close();
                     EditorUtility.ClearProgressBar();
                 } //try
-                catch(Exception e)
+                catch (Exception e)
                 {
                     stream.Close();
                     Debug.Log($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
