@@ -1929,18 +1929,18 @@ namespace FmdlStudio.Scripts.Classes
                         fmdlMesh.boneWeights[j] = new Vector4((byte)Math.Round(mesh.boneWeights[j].weight0 * 255), (byte)Math.Round(mesh.boneWeights[j].weight1 * 255), (byte)Math.Round(mesh.boneWeights[j].weight2 * 255), (byte)Math.Round(mesh.boneWeights[j].weight3 * 255));
                         fmdlMesh.boneIndices[j] = new Vector4(mesh.boneWeights[j].boneIndex0, mesh.boneWeights[j].boneIndex1, mesh.boneWeights[j].boneIndex2, mesh.boneWeights[j].boneIndex3);
                     } //if
-                    fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(-mesh.uv[j].y));
+                    fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(1 - mesh.uv[j].y));
                     if (mesh.uv2.Length > 0)
                     {
-                        fmdlMesh.uv2[j] = new Vector2Half(new Half(mesh.uv2[j].x), new Half(-mesh.uv2[j].y));
+                        fmdlMesh.uv2[j] = new Vector2Half(new Half(mesh.uv2[j].x), new Half(1 - mesh.uv2[j].y));
 
                         if (mesh.uv3.Length > 0)
                         {
-                            fmdlMesh.uv3[j] = new Vector2Half(new Half(mesh.uv3[j].x), new Half(-mesh.uv3[j].y));
+                            fmdlMesh.uv3[j] = new Vector2Half(new Half(mesh.uv3[j].x), new Half(1 - mesh.uv3[j].y));
 
                             if (mesh.uv4.Length > 0)
                             {
-                                fmdlMesh.uv4[j] = new Vector2Half(new Half(mesh.uv4[j].x), new Half(-mesh.uv4[j].y));
+                                fmdlMesh.uv4[j] = new Vector2Half(new Half(mesh.uv4[j].x), new Half(1 - mesh.uv4[j].y));
                             } //if
                         } //if
                     } //if

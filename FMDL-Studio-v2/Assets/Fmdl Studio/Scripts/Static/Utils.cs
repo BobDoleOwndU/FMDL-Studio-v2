@@ -15,10 +15,7 @@ namespace FmdlStudio.Scripts.Static
                 Vector4[] tangents = meshes[i].tangents;
 
                 for (int j = 0; j < tangents.Length; j++)
-                {
-                    tangents[j].y *= -1;
                     tangents[j].w *= -1;
-                } //for
 
                 meshes[i].tangents = tangents;
             } //for
