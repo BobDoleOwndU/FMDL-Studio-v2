@@ -1108,7 +1108,7 @@ namespace FmdlStudio.Scripts.Classes
                                 fmdlMesh.unknownWeights[j] = new Vector4(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
                                 break;
                             case 0xD:
-                                fmdlMesh.unknownIndices[j] = new Vector4(reader.ReadByte(), reader.ReadByte(), reader.ReadByte(), reader.ReadByte());
+                                fmdlMesh.unknownIndices[j] = new Vector4(reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadUInt16(), reader.ReadUInt16());
                                 break;
                             case 0xE:
                                 for (int k = 0; k < 4; k++)
@@ -1116,6 +1116,8 @@ namespace FmdlStudio.Scripts.Classes
                                 break;
                         } //switch
                     } //for
+
+                    reader.BaseStream.Position = position + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex + 1].length;
                 } //for
 
                 reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlMeshInfos[i].firstFaceVertexIndex * 2;
