@@ -44066,6 +44066,7 @@
 /Assets/tpp/pack/player/motion/player2_facial_ddf_helispace
 /Assets/tpp/pack/player/motion/player2_facial_ddm_helispace
 /Assets/tpp/pack/player/motion/player2_facial_ocelot
+/Assets/tpp/pack/player/motion/player2_facial_quiet
 /Assets/tpp/pack/player/motion/player2_facial_snake
 /Assets/tpp/pack/player/motion/player2_facial_snake_helispace
 /Assets/tpp/pack/player/motion/player2_location_motion
@@ -44115,6 +44116,7 @@
 /Assets/tpp/pack/player/parts/plparts_normal_scarf
 /Assets/tpp/pack/player/parts/plparts_ocelot
 /Assets/tpp/pack/player/parts/plparts_parasite
+/Assets/tpp/pack/player/parts/plparts_quiet
 /Assets/tpp/pack/player/parts/plparts_rai0_main0_def_v00
 /Assets/tpp/pack/player/parts/plparts_raiden
 /Assets/tpp/pack/player/parts/plparts_silver
@@ -44961,6 +44963,7 @@
 /Assets/tpp/sound/asset/common_bank_01_add02
 /Assets/tpp/sound/asset/cutscene_common
 /Assets/tpp/sound/asset/cypr_title
+/Assets/tpp/sound/asset/day1080_fob_add
 /Assets/tpp/sound/asset/env_afgh_common
 /Assets/tpp/sound/asset/env_afgh_location
 /Assets/tpp/sound/asset/env_common

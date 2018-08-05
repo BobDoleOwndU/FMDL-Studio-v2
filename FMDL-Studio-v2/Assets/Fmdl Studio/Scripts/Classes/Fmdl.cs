@@ -1413,6 +1413,9 @@ namespace FmdlStudio.Scripts.Classes
                     FmdlBoneGroup fmdlBoneGroup = new FmdlBoneGroup();
                     int meshBoneCount = meshes[i].bones.Length;
 
+                    if (meshBoneCount > 32)
+                        throw new Exception("A mesh cannot be weighted to more than 32 bones!");
+
                     fmdlBoneGroup.unknown0 = 4;
                     fmdlBoneGroup.boneIndexCount = (ushort)meshBoneCount;
                     fmdlBoneGroup.boneIndices = new ushort[meshBoneCount];
@@ -1729,7 +1732,7 @@ namespace FmdlStudio.Scripts.Classes
                     vertexOffset += 4;
 
                     fmdlMeshFormat4.vertexFormatCount++;
-                    fmdlMeshFormat4.length += 4;
+                    meshFormatLength += 4;
                 } //if
 
                 //Can't implement this. Unity doesn't support it.
@@ -1764,7 +1767,7 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMeshFormat4.length = meshFormatLength;
 
                 meshFormats.Add(fmdlMeshFormat2);
-                if (fmdlMeshFormat3.length > 0)
+                if (fmdlMeshFormat3.vertexFormatCount > 0)
                 {
                     meshFormats.Add(fmdlMeshFormat3);
                     fmdlMeshFormatInfo.meshFormatCount++;
