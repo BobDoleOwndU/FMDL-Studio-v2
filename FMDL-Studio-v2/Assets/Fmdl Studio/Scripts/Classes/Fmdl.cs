@@ -1167,7 +1167,7 @@ namespace FmdlStudio.Scripts.Classes
 
         private void GetFmdlData(GameObject gameObject)
         {
-            FoxModel foxModel = gameObject.GetComponent<FoxModel>();
+            FoxModel foxModel = gameObject.GetComponent<FoxModel>();// ? gameObject.GetComponent<FoxModel>() : null;
             Transform rootBone = gameObject.transform;
             List<Transform> bones = new List<Transform>(0);
             List<BoxCollider> boundingBoxes = new List<BoxCollider>(0);
@@ -1178,16 +1178,32 @@ namespace FmdlStudio.Scripts.Classes
             List<Vector4> materialParameterVectors = new List<Vector4>(0);
             List<string> strings = new List<string>(0);
 
+            if(foxModel == null)
+            {
+                EditorUtility.DisplayDialog("FoxModel not found!", "The model does not contain a FoxModel component!", "Ok");
+                throw new Exception("FoxModel not found!");
+            } //if
+
             foreach (Transform t in gameObject.transform)
                 if (t.gameObject.name == "[Root]")
                 {
                     rootBone = t;
+
+                    if(!t.gameObject.GetComponent<BoxCollider>())
+                    {
+                        EditorUtility.DisplayDialog("Bounding boxes not found!", "Bounding boxes are missing! Make sure they've been generated!", "Ok");
+                        throw new Exception("Bounding boxes not found!");
+                    } //if
+
                     boundingBoxes.Add(t.gameObject.GetComponent<BoxCollider>());
                     break;
                 } //if
 
             if (rootBone == gameObject.transform)
+            {
+                EditorUtility.DisplayDialog("[Root] not found!", "The [Root] object was not found in the model!", "Ok");
                 throw new Exception("[Root] not found!");
+            } //if
 
             GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
             GetMeshesMaterialsTexturesAndVectors(gameObject, meshes, materials, textures, materialParameterVectors);
@@ -1249,6 +1265,13 @@ namespace FmdlStudio.Scripts.Classes
 
                 fmdlMeshGroup.nameIndex = (ushort)strings.Count;
                 strings.Add(foxMeshGroup.name);
+
+                if(i == 0 && foxMeshGroup.name != "MESH_ROOT")
+                {
+                    EditorUtility.DisplayDialog("MESH_ROOT missing!", "MESH_ROOT is missing from the mesh groups or is not the first mesh group!", "Ok");
+                    throw new Exception("MESH_ROOT missing!");
+                } //if
+
                 fmdlMeshGroup.invisibilityFlag = foxMeshGroup.visible ? (ushort)0 : (ushort)1;
                 fmdlMeshGroup.parentIndex = foxMeshGroup.parent;
                 fmdlMeshGroup.unknown0 = -1;
@@ -1414,7 +1437,10 @@ namespace FmdlStudio.Scripts.Classes
                     int meshBoneCount = meshes[i].bones.Length;
 
                     if (meshBoneCount > 32)
+                    {
+                        EditorUtility.DisplayDialog("Bone Group has more than 32 bones!", "A mesh cannot be weighted to more than 32 bones!", "Ok");
                         throw new Exception("A mesh cannot be weighted to more than 32 bones!");
+                    } //if
 
                     fmdlBoneGroup.unknown0 = 4;
                     fmdlBoneGroup.boneIndexCount = (ushort)meshBoneCount;
@@ -2313,6 +2339,8 @@ namespace FmdlStudio.Scripts.Classes
 
         private void GetMeshesMaterialsTexturesAndVectors(GameObject gameObject, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Vector4> vectors)
         {
+            string errors = "";
+
             foreach (Transform t in gameObject.transform)
             {
                 if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
@@ -2327,6 +2355,9 @@ namespace FmdlStudio.Scripts.Classes
                         materials.Add(material);
                         Shader shader = material.shader;
                         int propertyCount = ShaderUtil.GetPropertyCount(shader);
+
+                        if (!shader.name.Contains("FoxShaders"))
+                            errors += $"{skinnedMeshRenderer.name}\n";
 
                         for (int i = 0; i < propertyCount; i++)
                             if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
@@ -2346,6 +2377,12 @@ namespace FmdlStudio.Scripts.Classes
                     } //if
                 } //if
             } //foreach
+
+            if(!string.IsNullOrWhiteSpace(errors))
+            {
+                EditorUtility.DisplayDialog("Invalid Shader!", $"The following meshes are not using Fox shaders:\n{errors}", "Ok");
+                throw new Exception("Invalid Shader!");
+            } //if
         } //GetMeshesMaterialsAndTextures
 
         private void WriteFmdlData(string filePath)

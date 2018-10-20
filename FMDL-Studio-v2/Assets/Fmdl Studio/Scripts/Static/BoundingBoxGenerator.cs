@@ -88,17 +88,17 @@ namespace FmdlStudio.Scripts.Static
             Vector3 max = collider.bounds.max;
             Vector3 min = collider.bounds.min;
 
-            if (vertex.x > max.x || max.x == 9999f)
+            if (vertex.x > max.x || max.x == 9999f || float.IsNaN(max.x))
                 max.x = vertex.x;
-            if (vertex.y > max.y || max.y == 9999f)
+            if (vertex.y > max.y || max.y == 9999f || float.IsNaN(max.y))
                 max.y = vertex.y;
-            if (vertex.z > max.z || max.z == 9999f)
+            if (vertex.z > max.z || max.z == 9999f || float.IsNaN(max.z))
                 max.z = vertex.z;
-            if (vertex.x < min.x || min.x == -9999f)
+            if (vertex.x < min.x || min.x == -9999f || float.IsNaN(min.x))
                 min.x = vertex.x;
-            if (vertex.y < min.y || min.y == -9999f)
+            if (vertex.y < min.y || min.y == -9999f || float.IsNaN(min.y))
                 min.y = vertex.y;
-            if (vertex.z < min.z || min.z == -9999f)
+            if (vertex.z < min.z || min.z == -9999f || float.IsNaN(min.z))
                 min.z = vertex.z;
 
             Bounds bounds = new Bounds();

@@ -25,6 +25,10 @@ namespace FmdlStudio.Scripts.MonoBehaviours
                 {
                     meshGroups[i] = new FoxMeshGroup();
                     meshGroups[i].name = meshGroupNames[i];
+                    if (i == 0)
+                        meshGroups[i].parent = -1;
+                    else
+                        meshGroups[i].parent = 0;
                 } //for
 
                 meshDefinitions = new FoxMeshDefinition[meshes.Count];
