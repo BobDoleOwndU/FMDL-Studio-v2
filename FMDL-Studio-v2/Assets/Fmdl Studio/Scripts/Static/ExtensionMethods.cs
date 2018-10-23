@@ -50,5 +50,40 @@ namespace FmdlStudio.Scripts.Static
 
             return true;
         } //IsNullOrZeroes
+
+        //Vector3[]
+        public static Vector3 Max(this Vector3[] array)
+        {
+            Vector3 max = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+
+            foreach (Vector3 v in array)
+            {
+                if (v.x > max.x)
+                    max.x = v.x;
+                if (v.y > max.y)
+                    max.y = v.y;
+                if (v.z > max.z)
+                    max.z = v.z;
+            } //foreach
+
+            return max;
+        } //Max
+
+        public static Vector3 Min(this Vector3[] array)
+        {
+            Vector3 min = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+
+            foreach (Vector3 v in array)
+            {
+                if (v.x < min.x)
+                    min.x = v.x;
+                if (v.y < min.y)
+                    min.y = v.y;
+                if (v.z < min.z)
+                    min.z = v.z;
+            } //foreach
+
+            return min;
+        } //Max
     } //class
 } //namespace

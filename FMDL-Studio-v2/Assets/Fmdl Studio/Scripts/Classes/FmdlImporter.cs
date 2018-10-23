@@ -169,7 +169,9 @@ namespace FmdlStudio.Scripts.Classes
 
                 //Set up the bounding box.
                 Bounds bounds = new Bounds();
-                bounds.SetMinMax(new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
+
+                //The x min and max are swapped here on purpose! The max value will end up as the smallest value and the min value will end up as the largest value if they aren't swapped here!
+                bounds.SetMinMax(new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
                 BoxCollider boxCollider = bones[i].gameObject.AddComponent<BoxCollider>();
                 boxCollider.center = bones[i].InverseTransformPoint(bounds.center);
                 boxCollider.size = bounds.size;

@@ -9,18 +9,14 @@ namespace FmdlStudio.Scripts.Static
         {
             List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
             Transform root = transform;
+            Vector3 absoluteMax = new Vector3(float.MinValue, float.MinValue, float.MinValue);
+            Vector3 absoluteMin = new Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+            int meshCount;
 
             foreach (Transform t in transform)
             {
                 if (t.gameObject.name == "[Root]")
                 {
-                    BoxCollider collider = t.gameObject.AddComponent<BoxCollider>();
-                    Bounds bounds = new Bounds();
-                    bounds.SetMinMax(new Vector3(9999f, 9999f, 9999f), new Vector3(-9999f, -9999f, -9999f));
-
-                    collider.center = t.InverseTransformPoint(bounds.center);
-                    collider.size = bounds.size;
-
                     root = t;
                     break;
                 } //if
@@ -29,7 +25,36 @@ namespace FmdlStudio.Scripts.Static
             InitializeBoundingBoxes(root);
             GetMeshes(transform, meshes);
             SetBoundingBoxByMeshes(meshes);
-            SetBoundingBoxByChild(root);
+            VerifyBoundingBoxes(root);
+
+            meshCount = meshes.Count;
+
+            for(int i = 0; i < meshCount; i++)
+            {
+                Mesh mesh = meshes[i].sharedMesh;
+                Vector3 max = mesh.vertices.Max();
+                Vector3 min = mesh.vertices.Min();
+
+                if (absoluteMax.x < max.x)
+                    absoluteMax.x = max.x;
+                if (absoluteMax.y < max.y)
+                    absoluteMax.y = max.y;
+                if (absoluteMax.z < max.z)
+                    absoluteMax.z = max.z;
+                if (absoluteMin.x > min.x)
+                    absoluteMin.x = min.x;
+                if (absoluteMin.y > min.y)
+                    absoluteMin.y = min.y;
+                if (absoluteMin.z > min.z)
+                    absoluteMin.z = min.z;
+            } //for
+
+            BoxCollider collider = root.gameObject.AddComponent<BoxCollider>();
+            Bounds bounds = new Bounds();
+            bounds.SetMinMax(absoluteMin, absoluteMax);
+            collider.center = root.InverseTransformPoint(bounds.center);
+            collider.size = bounds.size;
+
             Debug.Log("Bounding boxes generated!");
         } //GenerateBoundingBoxes
 
@@ -39,7 +64,7 @@ namespace FmdlStudio.Scripts.Static
             {
                 BoxCollider collider = t.gameObject.AddComponent<BoxCollider>();
                 Bounds bounds = new Bounds();
-                bounds.SetMinMax(new Vector3(9999f, 9999f, 9999f), new Vector3(-9999f, -9999f, -9999f));
+                bounds.SetMinMax(new Vector3(-9999f, -9999f, -9999f), new Vector3(9999f, 9999f, 9999f));
 
                 collider.center = t.InverseTransformPoint(bounds.center);
                 collider.size = bounds.size;
@@ -108,51 +133,46 @@ namespace FmdlStudio.Scripts.Static
             collider.size = bounds.size;
         } //SetBoundingBoxByVertex
 
-        private static void SetBoundingBoxByChild(Transform transform)
+        private static void VerifyBoundingBoxes(Transform transform)
         {
-            BoxCollider collider = transform.gameObject.GetComponent<BoxCollider>();
-            Vector3 max = collider.bounds.max;
-            Vector3 min = collider.bounds.min;
-
-            foreach (Transform t in transform)
+            foreach(Transform t in transform)
             {
-                SetBoundingBoxByChild(t);
-                BoxCollider childCollider = t.gameObject.GetComponent<BoxCollider>();
-                Vector3 childMax = childCollider.bounds.max;
-                Vector3 childMin = childCollider.bounds.min;
+                BoxCollider collider = t.GetComponent<BoxCollider>();
+                Bounds bounds = new Bounds();
+                Vector3 min = new Vector3();
+                Vector3 max = new Vector3();
 
-                if (childMax.x > max.x || max.x == 9999f)
-                    max.x = childMax.x;
-                if (childMax.y > max.y || max.y == 9999f)
-                    max.y = childMax.y;
-                if (childMax.z > max.z || max.z == 9999f)
-                    max.z = childMax.z;
-                if (childMin.x < min.x || min.x == -9999f)
-                    min.x = childMin.x;
-                if (childMin.y < min.y || min.y == -9999f)
-                    min.y = childMin.y;
-                if (childMin.z < min.z || min.z == -9999f)
-                    min.z = childMin.z;
+                if (collider.bounds.max.x == 9999f)
+                    max.x = 0;
+                else
+                    max.x = collider.bounds.max.x;
+                if (collider.bounds.max.y == 9999f)
+                    max.y = 0;
+                else
+                    max.y = collider.bounds.max.y;
+                if (collider.bounds.max.z == 9999f)
+                    max.z = 0;
+                else
+                    max.z = collider.bounds.max.z;
+                if (collider.bounds.min.x == -9999f)
+                    min.x = 0;
+                else
+                    min.x = collider.bounds.min.x;
+                if (collider.bounds.min.y == -9999f)
+                    min.y = 0;
+                else
+                    min.y = collider.bounds.min.y;
+                if (collider.bounds.min.z == -9999f)
+                    min.z = 0;
+                else
+                    min.z = collider.bounds.min.z;
+
+                bounds.SetMinMax(min, max);
+                collider.center = t.InverseTransformPoint(bounds.center);
+                collider.size = bounds.size;
+
+                VerifyBoundingBoxes(t);
             } //foreach
-
-            if (max.x == 9999f)
-                max.x = 0;
-            if (max.y == 9999f)
-                max.y = 0;
-            if (max.z == 9999f)
-                max.z = 0;
-            if (min.x == -9999f)
-                min.x = 0;
-            if (min.y == -9999f)
-                min.y = 0;
-            if (min.z == -9999f)
-                min.z = 0;
-
-            Bounds bounds = new Bounds();
-            bounds.SetMinMax(min, max);
-
-            collider.center = transform.InverseTransformPoint(bounds.center);
-            collider.size = bounds.size;
-        } //SetBoundingBoxByChild
+        } //VerifyBoundingBoxes
     } //BoundingBoxGenerator
 } //namespace

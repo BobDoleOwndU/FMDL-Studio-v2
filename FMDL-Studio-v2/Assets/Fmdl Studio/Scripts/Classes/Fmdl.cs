@@ -1844,9 +1844,10 @@ namespace FmdlStudio.Scripts.Classes
             {
                 FmdlBoundingBox fmdlBoundingBox = new FmdlBoundingBox();
                 BoxCollider boundingBox = boundingBoxes[i];
-
-                fmdlBoundingBox.max = new Vector4(-boundingBox.bounds.max.x, boundingBox.bounds.max.y, boundingBox.bounds.max.z, 1f);
-                fmdlBoundingBox.min = new Vector4(-boundingBox.bounds.min.x, boundingBox.bounds.min.y, boundingBox.bounds.min.z, 1f);
+                
+                //The x min and max are swapped here on purpose! The max value will end up as the smallest value and the min value will end up as the largest value if they aren't swapped here!
+                fmdlBoundingBox.max = new Vector4(-boundingBox.bounds.min.x, boundingBox.bounds.max.y, boundingBox.bounds.max.z, 1f);
+                fmdlBoundingBox.min = new Vector4(-boundingBox.bounds.max.x, boundingBox.bounds.min.y, boundingBox.bounds.min.z, 1f);
 
                 fmdlBoundingBoxes[i] = fmdlBoundingBox;
             } //for
