@@ -1167,7 +1167,7 @@ namespace FmdlStudio.Scripts.Classes
 
         private void GetFmdlData(GameObject gameObject)
         {
-            FoxModel foxModel = gameObject.GetComponent<FoxModel>();// ? gameObject.GetComponent<FoxModel>() : null;
+            FoxModel foxModel = gameObject.GetComponent<FoxModel>();
             Transform rootBone = gameObject.transform;
             List<Transform> bones = new List<Transform>(0);
             List<BoxCollider> boundingBoxes = new List<BoxCollider>(0);

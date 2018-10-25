@@ -197,7 +197,7 @@ namespace FmdlStudio.Scripts.Classes
                     textures[i] = LoadTextureDXT($"{Globals.texturePath}\\{name}");
                 else
                 {
-                    Debug.Log($"Could not find {Globals.texturePath}\\{name}");
+                    Debug.LogWarning($"Could not find {Globals.texturePath}\\{name}");
 
                     Texture2D texture = new Texture2D(512, 512);
 
@@ -216,8 +216,7 @@ namespace FmdlStudio.Scripts.Classes
 
                     textures[i] = texture;
                 } //else
-
-                //ctx.AddObjectToAsset($"Texture {i}", textures[i]);
+                
                 textures[i].name = name;
             } //for
 
@@ -240,8 +239,17 @@ namespace FmdlStudio.Scripts.Classes
                     materialName = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialInstance.nameIndex]);
                 } //else
 
-                materials[i] = new Material(Shader.Find($"FoxShaders/{shaderName}"));
-                //ctx.AddObjectToAsset($"Material {i}", materials[i]);
+                //Some ombs models have broken, unused, materials in them. Try catch here is necessary to handle them.
+                try
+                {
+                    materials[i] = new Material(Shader.Find($"FoxShaders/{shaderName}"));
+                } //try
+                catch
+                {
+                    materials[i] = new Material(Shader.Find($"FoxShaders/fox3DDF_Blin_LNM"));
+                    Debug.LogWarning($"Material {materialName} trying to use missing shader: {shaderName}! Defaulting to fox3DDF_Blin_LNM!");
+                } //catch
+                
                 materials[i].name = materialName;
 
                 //Link textures.
@@ -300,7 +308,6 @@ namespace FmdlStudio.Scripts.Classes
             for (int i = 0; i < meshCount; i++)
             {
                 meshes[i] = new Mesh();
-                //ctx.AddObjectToAsset($"Mesh {i}", meshes[i]);
                 GameObject gameObject = new GameObject();
                 gameObject.transform.parent = mainObject.transform;
                 SkinnedMeshRenderer skinnedMeshRenderer = gameObject.AddComponent<SkinnedMeshRenderer>();
