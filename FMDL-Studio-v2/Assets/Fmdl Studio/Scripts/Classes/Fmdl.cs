@@ -1945,7 +1945,7 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMesh.boneIndices = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
                 fmdlMesh.uv = new Vector2Half[vertexCount];
                 fmdlMesh.uv2 = mesh.uv2.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
-                fmdlMesh.uv3 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
+                fmdlMesh.uv3 = mesh.uv3.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv4 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.triangles = new ushort[triangleCount];
 
