@@ -19,8 +19,8 @@ namespace FmdlStudio.Scripts.Classes
             } //try
             catch (Exception e)
             {
-                Debug.Log($"{e.Message}");
-                Debug.Log($"An exception occured{e.StackTrace}");
+                Debug.LogError($"{e.Message}");
+                Debug.LogError($"An exception occured{e.StackTrace}");
             } //catch
         } //OnImportAsset
 
@@ -264,8 +264,8 @@ namespace FmdlStudio.Scripts.Classes
                     else
                         textureType = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialParameter.nameIndex]);
 
-                    materials[i].SetTexture(textureType, textures[fmdlMaterialParameter.referenceIndex]);
-                    materials[i].SetTextureScale(textureType, new Vector2(1, -1)); //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
+                    materials[i].SetTexture($"_{textureType}", textures[fmdlMaterialParameter.referenceIndex]);
+                    materials[i].SetTextureScale($"_{textureType}", new Vector2(1, -1)); //Have to flip textures here because Texture2D.LoadRawData is bugged an imports DDS files upside down.
                 } //for
 
                 //Set parameters.
@@ -280,7 +280,7 @@ namespace FmdlStudio.Scripts.Classes
                     else
                         parameterName = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdlMaterialParameter.nameIndex]);
 
-                    materials[i].SetVector(parameterName, fmdl.fmdlMaterialParameterVectors[fmdlMaterialParameter.referenceIndex]);
+                    materials[i].SetVector($"_{parameterName}", fmdl.fmdlMaterialParameterVectors[fmdlMaterialParameter.referenceIndex]);
                 } //for
             } //for
 
@@ -444,6 +444,7 @@ namespace FmdlStudio.Scripts.Classes
                 skinnedMeshRenderer.bones = usedBonesArray;
                 skinnedMeshRenderer.sharedMaterial = materials[fmdlMeshInfo.materialInstanceIndex];
                 skinnedMeshRenderer.sharedMesh = meshes[i];
+                skinnedMeshRenderer.rootBone = mainObject.transform;
 
                 foxModel.meshDefinitions[i].mesh = meshes[i];
                 foxModel.meshDefinitions[i].meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;

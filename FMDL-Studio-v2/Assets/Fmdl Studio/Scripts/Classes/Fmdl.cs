@@ -480,8 +480,8 @@ namespace FmdlStudio.Scripts.Classes
                 catch (Exception e)
                 {
                     stream.Close();
-                    Debug.Log($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
-                    Debug.Log($"An exception occured{e.StackTrace}");
+                    Debug.LogError($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
+                    Debug.LogError($"An exception occured{e.StackTrace}");
                     EditorUtility.ClearProgressBar();
                 } //catch
             } //using
@@ -1159,8 +1159,8 @@ namespace FmdlStudio.Scripts.Classes
             } //try
             catch (Exception e)
             {
-                Debug.Log($"{e.Message}");
-                Debug.Log($"An exception occured{e.StackTrace}");
+                Debug.LogError($"{e.Message}");
+                Debug.LogError($"An exception occured{e.StackTrace}");
                 EditorUtility.ClearProgressBar();
             } //catch
         } //Write
@@ -1503,9 +1503,9 @@ namespace FmdlStudio.Scripts.Classes
 
                     if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.TexEnv)
                     {
-                        string propertyName = ShaderUtil.GetPropertyName(shader, j);
+                        string propertyName = ShaderUtil.GetPropertyName(shader, j).Substring(1);
 
-                        if (material.GetTexture(propertyName))
+                        if (material.GetTexture($"_{propertyName}"))
                         {
                             if (!strings.Contains(propertyName))
                             {
@@ -1515,7 +1515,7 @@ namespace FmdlStudio.Scripts.Classes
                             else
                                 fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
 
-                            fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture(propertyName));
+                            fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture($"_{propertyName}"));
 
                             materialParameters.Add(fmdlMaterialParameter);
                         } //if
@@ -1528,7 +1528,7 @@ namespace FmdlStudio.Scripts.Classes
 
                     if (ShaderUtil.GetPropertyType(shader, j) == ShaderUtil.ShaderPropertyType.Vector)
                     {
-                        string propertyName = ShaderUtil.GetPropertyName(shader, j);
+                        string propertyName = ShaderUtil.GetPropertyName(shader, j).Substring(1);
 
                         if (!strings.Contains(propertyName))
                         {
@@ -1538,7 +1538,7 @@ namespace FmdlStudio.Scripts.Classes
                         else
                             fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
 
-                        fmdlMaterialParameter.referenceIndex = (ushort)materialParameterVectors.IndexOfEqualValue(material.GetVector(propertyName));
+                        fmdlMaterialParameter.referenceIndex = (ushort)materialParameterVectors.IndexOfEqualValue(material.GetVector($"_{propertyName}"));
 
                         materialParameters.Add(fmdlMaterialParameter);
                     } //if
@@ -2951,8 +2951,8 @@ namespace FmdlStudio.Scripts.Classes
                 catch (Exception e)
                 {
                     stream.Close();
-                    Debug.Log($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
-                    Debug.Log($"An exception occured{e.StackTrace}");
+                    Debug.LogError($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
+                    Debug.LogError($"An exception occured{e.StackTrace}");
                     EditorUtility.ClearProgressBar();
                 } //catch
             } //using
