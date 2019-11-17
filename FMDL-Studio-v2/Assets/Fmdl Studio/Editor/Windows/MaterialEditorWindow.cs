@@ -9,6 +9,7 @@ namespace FmdlStudio.Editor.Windows
     {
         private Vector2 scrollPos;
         private int selected = 0;
+        private string materialName = "";
 
         [MenuItem("FMDL Studio/Edit Material Presets", false, 200)]
         static void Init()
@@ -80,6 +81,8 @@ namespace FmdlStudio.Editor.Windows
 
             selected = EditorGUILayout.Popup(selected, matNames);
 
+            materialName = EditorGUILayout.TextField("Rename Material", materialName);
+
             EditorGUILayout.LabelField(Globals.materialPresetList.materialPresets[selected].name, EditorStyles.boldLabel);
             GUILayout.BeginHorizontal();
             Globals.materialPresetList.materialPresets[selected].name = EditorGUILayout.TextField("Preset Name", Globals.materialPresetList.materialPresets[selected].name);
@@ -122,17 +125,25 @@ namespace FmdlStudio.Editor.Windows
                 if (g.GetComponent<MeshRenderer>())
                 {
                     MeshRenderer renderer = g.GetComponent<MeshRenderer>();
-                    renderer.sharedMaterial.shader = Shader.Find($"FoxShaders/{Globals.materialPresetList.materialPresets[selected].type}");
-                    //m.name = renderer.sharedMaterial.name;
+                    Material sharedMaterial = renderer.sharedMaterial;
+
+                    sharedMaterial.shader = Shader.Find($"FoxShaders/{Globals.materialPresetList.materialPresets[selected].type}");
+
+                    if (!string.IsNullOrEmpty(materialName))
+                        sharedMaterial.name = materialName;
 
                     foreach (MaterialPreset.MaterialPresetParameter f in Globals.materialPresetList.materialPresets[selected].materialParameters)
-                        renderer.sharedMaterial.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
+                        sharedMaterial.SetVector(f.name, new Vector4(f.values[0], f.values[1], f.values[2], f.values[3]));
                 } //if
                 else if (g.GetComponent<SkinnedMeshRenderer>())
                 {
                     SkinnedMeshRenderer renderer = g.GetComponent<SkinnedMeshRenderer>();
                     Material m = new Material(Shader.Find($"FoxShaders/{Globals.materialPresetList.materialPresets[selected].type}"));
-                    m.name = renderer.sharedMaterial.name;
+
+                    if (!string.IsNullOrEmpty(materialName))
+                        m.name = materialName;
+                    else
+                        m.name = renderer.sharedMaterial.name;
 
                     foreach (MaterialPreset.MaterialPresetParameter f in Globals.materialPresetList.materialPresets[selected].materialParameters)
                     {
