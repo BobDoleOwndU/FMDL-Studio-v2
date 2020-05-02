@@ -1,4 +1,5 @@
-﻿using FmdlStudio.Scripts.Classes;
+﻿using Assets.Fmdl_Studio.Scripts.Experimental;
+using FmdlStudio.Scripts.Classes;
 using FmdlStudio.Scripts.Static;
 using UnityEditor;
 using UnityEngine;
@@ -20,6 +21,22 @@ namespace FmdlStudio.Editor.Windows
             } //if
             else
                 Debug.Log("No path selected.");
+        } //ImportFMDLOption
+
+        [MenuItem("FMDL Studio/Convert to COLLADA", false, 4)]
+        public static void ExportCOLLADAOption()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                string filePath = EditorUtility.SaveFilePanel("Export To COLLADA", "", Selection.activeGameObject.name, "dae");
+
+                if (!string.IsNullOrWhiteSpace(filePath))
+                    COLLADAConverter.ConvertToCOLLADA(filePath);
+                else
+                    Debug.Log("No path selected.");
+            } //if
+            else
+                Debug.Log("No objects selected.");
         } //ImportFMDLOption
 
         [MenuItem("FMDL Studio/Convert to FBX", false, 1)]
