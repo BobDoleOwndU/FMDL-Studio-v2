@@ -31,7 +31,7 @@ namespace FmdlStudio.Editor.Windows
                 string filePath = EditorUtility.SaveFilePanel("Export To COLLADA", "", Selection.activeGameObject.name, "dae");
 
                 if (!string.IsNullOrWhiteSpace(filePath))
-                    COLLADAConverter.ConvertToCOLLADA(filePath);
+                    COLLADAConverter.ConvertToCOLLADA(Selection.activeGameObject, filePath);
                 else
                     Debug.Log("No path selected.");
             } //if
