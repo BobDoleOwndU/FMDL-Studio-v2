@@ -1266,11 +1266,11 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMeshGroup.nameIndex = (ushort)strings.Count;
                 strings.Add(foxMeshGroup.name);
 
-                if(i == 0 && foxMeshGroup.name != "MESH_ROOT")
+                /*if(i == 0 && foxMeshGroup.name != "MESH_ROOT")
                 {
                     EditorUtility.DisplayDialog("MESH_ROOT missing!", "MESH_ROOT is missing from the mesh groups or is not the first mesh group!", "Ok");
                     throw new Exception("MESH_ROOT missing!");
-                } //if
+                } //if*/
 
                 fmdlMeshGroup.invisibilityFlag = foxMeshGroup.visible ? (ushort)0 : (ushort)1;
                 fmdlMeshGroup.parentIndex = foxMeshGroup.parent;

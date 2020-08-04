@@ -195,6 +195,51 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 collada.Library_geometries.Geometry.Add(geometry);
             } //foreach
 
+            //Library Controllers
+            collada.Library_controllers = new Library_controllers();
+            collada.Library_controllers.Controller = new List<Controller>(0);
+
+            foreach (SkinnedMeshRenderer m in meshes)
+            {
+                Controller controller = new Controller();
+                controller.Id = $"{m.name}_Controller";
+                controller.Skin = new Skin();
+                controller.Skin._Source = $"#{m.name}";
+                //controller.Skin.Bind_shape_matrix = m.localToWorldMatrix.ToString();
+                //controller.Skin.Source = new List<Source>(0);
+
+                //Joints
+                //Source joints = new Source();
+                //joints.Id = $"{m.name}_Joints";
+
+                collada.Library_controllers.Controller.Add(controller);
+            } //foreach
+
+            //Library Visual Scenes
+            collada.Library_visual_scenes = new Library_visual_scenes();
+            collada.Library_visual_scenes.Visual_scene = new Visual_scene();
+            collada.Library_visual_scenes.Visual_scene.Id = gameObject.name;
+            collada.Library_visual_scenes.Visual_scene.Name = gameObject.name;
+
+            collada.Library_visual_scenes.Visual_scene.Node = new List<Node>(0);
+
+            foreach (SkinnedMeshRenderer m in meshes)
+            {
+                Node node = new Node();
+                node.Id = m.name;
+                node.Name = m.name;
+                node.Type = "NODE";
+                node.Instance_controller = new Instance_controller();
+                node.Instance_controller.Url = $"{m.name}_Controller";
+
+                collada.Library_visual_scenes.Visual_scene.Node.Add(node);
+            } //foreach
+
+            //Scene
+            collada.Scene = new Scene();
+            collada.Scene.Instance_visual_scene = new Instance_visual_scene();
+            collada.Scene.Instance_visual_scene.Url = $"#{gameObject.name}";
+
             using (FileStream stream = new FileStream(filepath, FileMode.Create))
             {
                 try

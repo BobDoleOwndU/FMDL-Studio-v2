@@ -155,7 +155,7 @@ namespace FmdlStudio.Scripts.Classes
                 try
                 {
                     UInt64.Parse(bones[i].gameObject.name, System.Globalization.NumberStyles.HexNumber);
-                    bones[i].name = $"SKL_{Int32.Parse(bones[i - 1].name.Substring(4, 3)) + 1}_UNKNOWN ({bones[i].name})";
+                    bones[i].name = $"SKL_{(Int32.Parse(bones[i - 1].name.Substring(4, 3)) + 1).ToString("000")}_UNKNOWN ({bones[i].name})";
                 } //try
                 catch { }
 
