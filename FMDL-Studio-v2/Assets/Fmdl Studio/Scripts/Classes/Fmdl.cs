@@ -1960,6 +1960,36 @@ namespace FmdlStudio.Scripts.Classes
                     {
                         fmdlMesh.boneWeights[j] = new Vector4((byte)Math.Round(mesh.boneWeights[j].weight0 * 255), (byte)Math.Round(mesh.boneWeights[j].weight1 * 255), (byte)Math.Round(mesh.boneWeights[j].weight2 * 255), (byte)Math.Round(mesh.boneWeights[j].weight3 * 255));
                         fmdlMesh.boneIndices[j] = new Vector4(mesh.boneWeights[j].boneIndex0, mesh.boneWeights[j].boneIndex1, mesh.boneWeights[j].boneIndex2, mesh.boneWeights[j].boneIndex3);
+
+                        //Verify that the weights equal 255.
+                        short weightTotal = 0;
+
+                        for (int h = 0; h < 4; h++)
+                            weightTotal += (short)fmdlMesh.boneWeights[j][h];
+
+                        if (weightTotal != 255)
+                        {
+                            if (weightTotal > 255)
+                            {
+                                int largestWeight = 0;
+
+                                for (int h = 0; h < 4; h++)
+                                    if (fmdlMesh.boneWeights[j][h] > fmdlMesh.boneWeights[j][largestWeight])
+                                        largestWeight = h;
+
+                                fmdlMesh.boneWeights[j][largestWeight]--;
+                            }
+                            else
+                            {
+                                int smallestNonZeroWeight = 0;
+
+                                for (int h = 0; h < 4; h++)
+                                    if (fmdlMesh.boneWeights[j][h] < fmdlMesh.boneWeights[j][smallestNonZeroWeight] && fmdlMesh.boneWeights[j][h] != 0)
+                                        smallestNonZeroWeight = h;
+
+                                fmdlMesh.boneWeights[j][smallestNonZeroWeight]++;
+                            } //else
+                        } //if
                     } //if
                     fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(1 - mesh.uv[j].y));
                     if (mesh.uv2.Length > 0)
