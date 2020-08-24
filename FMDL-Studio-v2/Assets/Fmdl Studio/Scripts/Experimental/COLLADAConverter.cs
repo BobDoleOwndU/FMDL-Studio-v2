@@ -168,7 +168,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 vertex.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(vertex);
 
-                Xml2CSharp.Input normal = new Xml2CSharp.Input();
+                /*Xml2CSharp.Input normal = new Xml2CSharp.Input();
                 normal.Semantic = "NORMAL";
                 normal.Source = $"#{normals.Id}";
                 normal.Offset = "1";
@@ -178,8 +178,8 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 texcoord.Semantic = "TEXCOORD";
                 texcoord.Source = $"#{uvs0.Id}";
                 texcoord.Set = "0";
-                texcoord.Offset = "1";
-                geometry.Mesh.Triangles.Input.Add(texcoord);
+                texcoord.Offset = "2";
+                geometry.Mesh.Triangles.Input.Add(texcoord);*/
 
                 StringBuilder trianglesArr = new StringBuilder();
 
@@ -249,9 +249,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 StringBuilder matArr = new StringBuilder();
 
-                foreach (Transform t in m.bones)
+                foreach (Matrix4x4 mtx in m.sharedMesh.bindposes)
                 {
-                    matArr.Append($"{t.localToWorldMatrix.m00} {t.localToWorldMatrix.m01} {t.localToWorldMatrix.m02} {t.localToWorldMatrix.m03} {t.localToWorldMatrix.m10} {t.localToWorldMatrix.m11} {t.localToWorldMatrix.m12} {t.localToWorldMatrix.m13} {t.localToWorldMatrix.m20} {t.localToWorldMatrix.m21} {t.localToWorldMatrix.m22} {t.localToWorldMatrix.m23} {t.localToWorldMatrix.m30} {t.localToWorldMatrix.m31} {t.localToWorldMatrix.m32} {t.localToWorldMatrix.m33} ");
+                    matArr.Append($"{mtx.m00} {mtx.m01} {mtx.m02} {mtx.m03} {mtx.m10} {mtx.m11} {mtx.m12} {mtx.m13} {mtx.m20} {mtx.m21} {mtx.m22} {mtx.m23} {mtx.m30} {mtx.m31} {mtx.m32} {mtx.m33} ");
                 } //foreach
 
                 matArr.Length--;
@@ -274,9 +274,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Weights
                 Source weights = new Source();
-                weights.Id = $"#{m.name}_Weights";
+                weights.Id = $"{m.name}_Weights";
                 weights.Float_array = new Float_array();
-                weights.Float_array.Id = $"#{m.name}_WeightArr";
+                weights.Float_array.Id = $"{m.name}_WeightArr";
 
                 List<int> usedWeights = new List<int>(0);
                 List<float> uniqueWeights = new List<float>(0);
@@ -345,7 +345,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 weights.Float_array.Text = floats.ToString();
                 weights.Technique_common = new Technique_common();
                 weights.Technique_common.Accessor = new Accessor();
-                weights.Technique_common.Accessor.Source = $"{m.name}_WeightArr";
+                weights.Technique_common.Accessor.Source = $"#{m.name}_WeightArr";
                 weights.Technique_common.Accessor.Count = uniqueWeights.Count.ToString();
                 weights.Technique_common.Accessor.Param = new List<Param>(0);
 
@@ -370,6 +370,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Vertex Weights
                 controller.Skin.Vertex_weights = new Vertex_weights();
+                controller.Skin.Vertex_weights.Count = $"{vertexCount}";
                 controller.Skin.Vertex_weights.Input = new List<Xml2CSharp.Input>(0);
 
                 Xml2CSharp.Input jointInput1 = new Xml2CSharp.Input();
@@ -439,6 +440,16 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
             collada.Library_visual_scenes.Visual_scene.Node = new List<Node>(0);
 
+            //Bone Zone
+            foreach (Transform t in gameObject.transform)
+            {
+                if (t.name == "[Root]")
+                {
+                    GetBones(t, collada.Library_visual_scenes.Visual_scene.Node);
+                    break;
+                } //if
+            } //foreach
+
             foreach (SkinnedMeshRenderer m in meshes)
             {
                 Node node = new Node();
@@ -446,7 +457,8 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 node.Name = m.name;
                 node.Type = "NODE";
                 node.Instance_controller = new Instance_controller();
-                node.Instance_controller.Url = $"{m.name}_Controller";
+                node.Instance_controller.Url = $"#{m.name}_Controller";
+                node.Instance_controller.Skeleton = "#[Root]";
 
                 collada.Library_visual_scenes.Visual_scene.Node.Add(node);
             } //foreach
@@ -461,7 +473,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 try
                 {
                     xmlSerializer.Serialize(stream, collada);
-                    Debug.Log("Export successful! Please note that this does not currently output valid COLLADA files. It is just for debugging purposes.");
+                    Debug.Log("Export successful! Please note that this exporter is still incomplete and is intended for debugging purposes.");
                 } //try
                 finally
                 {
@@ -470,18 +482,27 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             } //using
         } //ConvertToCOLLADA
 
-        private static List<Transform> GetBones(Transform transform)
+        private static void GetBones(Transform transform, List<Node> nodes)
         {
-            List<Transform> bones = new List<Transform>(0);
+            Node node = new Node();
+            node.Id = transform.name;
+            node.Name = transform.name;
+            node.Sid = transform.name;
+            node.Type = "JOINT";
+
+            if(transform.localPosition != new Vector3(0, 0, 0))
+            {
+                node.Translate = $"{transform.localPosition.x} {transform.localPosition.y} {transform.localPosition.z}";
+            } //if
+
+            node.SubNode = new List<Node>(0);
 
             foreach(Transform t in transform)
             {
-                bones.Add(t);
-
-                GetBones(t);
+                GetBones(t, node.SubNode);
             } //foreach
 
-            return bones;
+            nodes.Add(node);
         } //GetBones
 
         private static List<SkinnedMeshRenderer> GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
