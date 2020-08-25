@@ -55,7 +55,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 foreach(Vector3 v in m.sharedMesh.vertices)
                 {
-                    posArr.Append($"{v.x} {v.y} {v.z} ");
+                    posArr.Append($"{-v.x} {v.y} {v.z} ");
                 } //foreach
 
                 posArr.Length--;
@@ -94,12 +94,12 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 foreach (Vector3 v in m.sharedMesh.normals)
                 {
-                    normArr.Append($"{v.x} {v.y} {v.z} ");
+                    normArr.Append($"{-v.x} {v.y} {v.z} ");
                 } //foreach
 
                 normArr.Length--;
 
-                normals.Float_array.Text = posArr.ToString();
+                normals.Float_array.Text = normArr.ToString();
                 normals.Technique_common = new Technique_common();
                 normals.Technique_common.Accessor = new Accessor();
                 normals.Technique_common.Accessor.Source = $"#{normals.Float_array.Id}";
@@ -168,25 +168,28 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 vertex.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(vertex);
 
-                /*Xml2CSharp.Input normal = new Xml2CSharp.Input();
+                Xml2CSharp.Input normal = new Xml2CSharp.Input();
                 normal.Semantic = "NORMAL";
                 normal.Source = $"#{normals.Id}";
-                normal.Offset = "1";
+                normal.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(normal);
 
                 Xml2CSharp.Input texcoord = new Xml2CSharp.Input();
                 texcoord.Semantic = "TEXCOORD";
                 texcoord.Source = $"#{uvs0.Id}";
                 texcoord.Set = "0";
-                texcoord.Offset = "2";
-                geometry.Mesh.Triangles.Input.Add(texcoord);*/
+                texcoord.Offset = "0";
+                geometry.Mesh.Triangles.Input.Add(texcoord);
 
                 StringBuilder trianglesArr = new StringBuilder();
 
-                foreach(int i in m.sharedMesh.triangles)
+                //flip triangles
+                int triangleCount = m.sharedMesh.triangles.Length;
+
+                for (int i = 0; i < triangleCount; i += 3)
                 {
-                    trianglesArr.Append($"{i} ");
-                } //foreach
+                    trianglesArr.Append($"{m.sharedMesh.triangles[i + 1]} {m.sharedMesh.triangles[i]} {m.sharedMesh.triangles[i + 2]} ");
+                } //for
 
                 trianglesArr.Length--;
 
@@ -205,7 +208,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 controller.Id = $"{m.name}_Controller";
                 controller.Skin = new Skin();
                 controller.Skin._Source = $"#{m.name}";
-                controller.Skin.Bind_shape_matrix = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
+                controller.Skin.Bind_shape_matrix = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {-m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
                 controller.Skin.Source = new List<Source>(0);
 
                 //Joints
@@ -251,7 +254,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 foreach (Matrix4x4 mtx in m.sharedMesh.bindposes)
                 {
-                    matArr.Append($"{mtx.m00} {mtx.m01} {mtx.m02} {mtx.m03} {mtx.m10} {mtx.m11} {mtx.m12} {mtx.m13} {mtx.m20} {mtx.m21} {mtx.m22} {mtx.m23} {mtx.m30} {mtx.m31} {mtx.m32} {mtx.m33} ");
+                    matArr.Append($"{mtx.m00} {mtx.m01} {mtx.m02} {-mtx.m03} {mtx.m10} {mtx.m11} {mtx.m12} {mtx.m13} {mtx.m20} {mtx.m21} {mtx.m22} {mtx.m23} {mtx.m30} {mtx.m31} {mtx.m32} {mtx.m33} ");
                 } //foreach
 
                 matArr.Length--;
@@ -492,7 +495,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
             if(transform.localPosition != new Vector3(0, 0, 0))
             {
-                node.Translate = $"{transform.localPosition.x} {transform.localPosition.y} {transform.localPosition.z}";
+                node.Translate = $"{-transform.localPosition.x} {transform.localPosition.y} {transform.localPosition.z}";
             } //if
 
             node.SubNode = new List<Node>(0);
