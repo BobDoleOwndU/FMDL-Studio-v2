@@ -39,16 +39,16 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             foreach (SkinnedMeshRenderer m in meshes)
             {
                 Geometry geometry = new Geometry();
-                geometry.Id = m.name;
-                geometry.Name = m.name;
+                geometry.Id = m.name.Replace(' ', '_');
+                geometry.Name = m.name.Replace(' ', '_');
                 geometry.Mesh = new Xml2CSharp.Mesh();
                 geometry.Mesh.Source = new List<Source>(0);
 
                 //Positions
                 Source positions = new Source();
-                positions.Id = $"{m.name}_Positions";
+                positions.Id = $"{m.name.Replace(' ', '_')}_Positions";
                 positions.Float_array = new Float_array();
-                positions.Float_array.Id = $"{m.name}_PosArr";
+                positions.Float_array.Id = $"{m.name.Replace(' ', '_')}_PosArr";
                 positions.Float_array.Count = (m.sharedMesh.vertexCount * 3).ToString();
 
                 StringBuilder posArr = new StringBuilder();
@@ -85,9 +85,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Normals
                 Source normals = new Source();
-                normals.Id = $"{m.name}_Normals";
+                normals.Id = $"{m.name.Replace(' ', '_')}_Normals";
                 normals.Float_array = new Float_array();
-                normals.Float_array.Id = $"{m.name}_NormArr";
+                normals.Float_array.Id = $"{m.name.Replace(' ', '_')}_NormArr";
                 normals.Float_array.Count = (m.sharedMesh.normals.Length * 3).ToString();
 
                 StringBuilder normArr = new StringBuilder();
@@ -114,43 +114,160 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 geometry.Mesh.Source.Add(normals);
 
                 //UVs0
-                Source uvs0 = new Source();
-                uvs0.Id = $"{m.name}_UVs0";
-                uvs0.Float_array = new Float_array();
-                uvs0.Float_array.Id = $"{m.name}_UVArr0";
-                uvs0.Float_array.Count = (m.sharedMesh.uv.Length * 2).ToString();
-
-                StringBuilder uvArr0 = new StringBuilder();
-
-                foreach (Vector2 v in m.sharedMesh.uv)
+                if (m.sharedMesh.uv.Length > 0)
                 {
-                    uvArr0.Append($"{v.x} {v.y} ");
-                } //foreach
+                    Source uvs0 = new Source();
+                    uvs0.Id = $"{m.name.Replace(' ', '_')}_UVs0";
+                    uvs0.Float_array = new Float_array();
+                    uvs0.Float_array.Id = $"{m.name.Replace(' ', '_')}_UVArr0";
+                    uvs0.Float_array.Count = (m.sharedMesh.uv.Length * 2).ToString();
 
-                uvArr0.Length--;
+                    StringBuilder uvArr0 = new StringBuilder();
 
-                uvs0.Float_array.Text = uvArr0.ToString();
-                uvs0.Technique_common = new Technique_common();
-                uvs0.Technique_common.Accessor = new Accessor();
-                uvs0.Technique_common.Accessor.Source = $"#{uvs0.Float_array.Id}";
-                uvs0.Technique_common.Accessor.Count = m.sharedMesh.uv.Length.ToString();
-                uvs0.Technique_common.Accessor.Stride = "2";
+                    foreach (Vector2 v in m.sharedMesh.uv)
+                    {
+                        uvArr0.Append($"{v.x} {v.y} ");
+                    } //foreach
 
-                Param s = new Param();
-                Param t = new Param();
-                s.Name = "S";
-                t.Name = "T";
-                s.Type = "float";
-                t.Type = "float";
-                uvs0.Technique_common.Accessor.Param = new List<Param>(0);
-                uvs0.Technique_common.Accessor.Param.Add(s);
-                uvs0.Technique_common.Accessor.Param.Add(t);
+                    uvArr0.Length--;
 
-                geometry.Mesh.Source.Add(uvs0);
+                    uvs0.Float_array.Text = uvArr0.ToString();
+                    uvs0.Technique_common = new Technique_common();
+                    uvs0.Technique_common.Accessor = new Accessor();
+                    uvs0.Technique_common.Accessor.Source = $"#{uvs0.Float_array.Id}";
+                    uvs0.Technique_common.Accessor.Count = m.sharedMesh.uv.Length.ToString();
+                    uvs0.Technique_common.Accessor.Stride = "2";
+
+                    Param s = new Param();
+                    Param t = new Param();
+                    s.Name = "S";
+                    t.Name = "T";
+                    s.Type = "float";
+                    t.Type = "float";
+                    uvs0.Technique_common.Accessor.Param = new List<Param>(0);
+                    uvs0.Technique_common.Accessor.Param.Add(s);
+                    uvs0.Technique_common.Accessor.Param.Add(t);
+
+                    geometry.Mesh.Source.Add(uvs0);
+                } //if
+
+                //UVs1
+                /*if (m.sharedMesh.uv2.Length > 0)
+                {
+                    Source uvs1 = new Source();
+                    uvs1.Id = $"{m.name.Replace(' ', '_')}_UVs1";
+                    uvs1.Float_array = new Float_array();
+                    uvs1.Float_array.Id = $"{m.name.Replace(' ', '_')}_UVArr1";
+                    uvs1.Float_array.Count = (m.sharedMesh.uv.Length * 2).ToString();
+
+                    StringBuilder uvArr1 = new StringBuilder();
+
+                    foreach (Vector2 v in m.sharedMesh.uv2)
+                    {
+                        uvArr1.Append($"{v.x} {v.y} ");
+                    } //foreach
+
+                    uvArr1.Length--;
+
+                    uvs1.Float_array.Text = uvArr1.ToString();
+                    uvs1.Technique_common = new Technique_common();
+                    uvs1.Technique_common.Accessor = new Accessor();
+                    uvs1.Technique_common.Accessor.Source = $"#{uvs1.Float_array.Id}";
+                    uvs1.Technique_common.Accessor.Count = m.sharedMesh.uv2.Length.ToString();
+                    uvs1.Technique_common.Accessor.Stride = "2";
+
+                    Param s = new Param();
+                    Param t = new Param();
+                    s.Name = "S";
+                    t.Name = "T";
+                    s.Type = "float";
+                    t.Type = "float";
+                    uvs1.Technique_common.Accessor.Param = new List<Param>(0);
+                    uvs1.Technique_common.Accessor.Param.Add(s);
+                    uvs1.Technique_common.Accessor.Param.Add(t);
+
+                    geometry.Mesh.Source.Add(uvs1);
+                } //if
+
+                //UVs2
+                if (m.sharedMesh.uv3.Length > 0)
+                {
+                    Source uvs2 = new Source();
+                    uvs2.Id = $"{m.name.Replace(' ', '_')}_UVs2";
+                    uvs2.Float_array = new Float_array();
+                    uvs2.Float_array.Id = $"{m.name.Replace(' ', '_')}_UVArr2";
+                    uvs2.Float_array.Count = (m.sharedMesh.uv3.Length * 2).ToString();
+
+                    StringBuilder uvArr2 = new StringBuilder();
+
+                    foreach (Vector2 v in m.sharedMesh.uv3)
+                    {
+                        uvArr2.Append($"{v.x} {v.y} ");
+                    } //foreach
+
+                    uvArr2.Length--;
+
+                    uvs2.Float_array.Text = uvArr2.ToString();
+                    uvs2.Technique_common = new Technique_common();
+                    uvs2.Technique_common.Accessor = new Accessor();
+                    uvs2.Technique_common.Accessor.Source = $"#{uvs2.Float_array.Id}";
+                    uvs2.Technique_common.Accessor.Count = m.sharedMesh.uv3.Length.ToString();
+                    uvs2.Technique_common.Accessor.Stride = "2";
+
+                    Param s = new Param();
+                    Param t = new Param();
+                    s.Name = "S";
+                    t.Name = "T";
+                    s.Type = "float";
+                    t.Type = "float";
+                    uvs2.Technique_common.Accessor.Param = new List<Param>(0);
+                    uvs2.Technique_common.Accessor.Param.Add(s);
+                    uvs2.Technique_common.Accessor.Param.Add(t);
+
+                    geometry.Mesh.Source.Add(uvs2);
+                } //if
+
+                //UVs3
+                if (m.sharedMesh.uv4.Length > 0)
+                {
+                    Source uvs3 = new Source();
+                    uvs3.Id = $"{m.name.Replace(' ', '_')}_UVs3";
+                    uvs3.Float_array = new Float_array();
+                    uvs3.Float_array.Id = $"{m.name.Replace(' ', '_')}_UVArr3";
+                    uvs3.Float_array.Count = (m.sharedMesh.uv4.Length * 2).ToString();
+
+                    StringBuilder uvArr3 = new StringBuilder();
+
+                    foreach (Vector2 v in m.sharedMesh.uv4)
+                    {
+                        uvArr3.Append($"{v.x} {v.y} ");
+                    } //foreach
+
+                    uvArr3.Length--;
+
+                    uvs3.Float_array.Text = uvArr3.ToString();
+                    uvs3.Technique_common = new Technique_common();
+                    uvs3.Technique_common.Accessor = new Accessor();
+                    uvs3.Technique_common.Accessor.Source = $"#{uvs3.Float_array.Id}";
+                    uvs3.Technique_common.Accessor.Count = m.sharedMesh.uv4.Length.ToString();
+                    uvs3.Technique_common.Accessor.Stride = "2";
+
+                    Param s = new Param();
+                    Param t = new Param();
+                    s.Name = "S";
+                    t.Name = "T";
+                    s.Type = "float";
+                    t.Type = "float";
+                    uvs3.Technique_common.Accessor.Param = new List<Param>(0);
+                    uvs3.Technique_common.Accessor.Param.Add(s);
+                    uvs3.Technique_common.Accessor.Param.Add(t);
+
+                    geometry.Mesh.Source.Add(uvs3);
+                } //if*/
 
                 //Vertices
                 geometry.Mesh.Vertices = new Vertices();
-                geometry.Mesh.Vertices.Id = $"{m.name}_Vertices";
+                geometry.Mesh.Vertices.Id = $"{m.name.Replace(' ', '_')}_Vertices";
                 geometry.Mesh.Vertices.Input = new Xml2CSharp.Input();
                 geometry.Mesh.Vertices.Input.Semantic = "POSITION";
                 geometry.Mesh.Vertices.Input.Source = $"#{positions.Id}";
@@ -176,10 +293,31 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 Xml2CSharp.Input texcoord = new Xml2CSharp.Input();
                 texcoord.Semantic = "TEXCOORD";
-                texcoord.Source = $"#{uvs0.Id}";
+                texcoord.Source = $"#{m.name.Replace(' ', '_')}_UVs0";
                 texcoord.Set = "0";
                 texcoord.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(texcoord);
+
+                /*Xml2CSharp.Input texcoord1 = new Xml2CSharp.Input();
+                texcoord1.Semantic = "TEXCOORD";
+                texcoord1.Source = $"#{m.name.Replace(' ', '_')}_UVs1";
+                texcoord1.Set = "1";
+                texcoord1.Offset = "0";
+                geometry.Mesh.Triangles.Input.Add(texcoord1);
+
+                Xml2CSharp.Input texcoord2 = new Xml2CSharp.Input();
+                texcoord2.Semantic = "TEXCOORD";
+                texcoord2.Source = $"#{m.name.Replace(' ', '_')}_UVs2";
+                texcoord2.Set = "1";
+                texcoord2.Offset = "0";
+                geometry.Mesh.Triangles.Input.Add(texcoord2);
+
+                Xml2CSharp.Input texcoord3 = new Xml2CSharp.Input();
+                texcoord3.Semantic = "TEXCOORD";
+                texcoord3.Source = $"#{m.name.Replace(' ', '_')}_UVs3";
+                texcoord3.Set = "1";
+                texcoord3.Offset = "0";
+                geometry.Mesh.Triangles.Input.Add(texcoord3);*/
 
                 StringBuilder trianglesArr = new StringBuilder();
 
@@ -205,17 +343,17 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             foreach (SkinnedMeshRenderer m in meshes)
             {
                 Controller controller = new Controller();
-                controller.Id = $"{m.name}_Controller";
+                controller.Id = $"{m.name.Replace(' ', '_')}_Controller";
                 controller.Skin = new Skin();
-                controller.Skin._Source = $"#{m.name}";
+                controller.Skin._Source = $"#{m.name.Replace(' ', '_')}";
                 controller.Skin.Bind_shape_matrix = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {-m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
                 controller.Skin.Source = new List<Source>(0);
 
                 //Joints
                 Source joints = new Source();
-                joints.Id = $"{m.name}_Joints";
+                joints.Id = $"{m.name.Replace(' ', '_')}_Joints";
                 joints.Name_array = new Name_array();
-                joints.Name_array.Id = $"{m.name}_JointArr";
+                joints.Name_array.Id = $"{m.name.Replace(' ', '_')}_JointArr";
                 joints.Name_array.Count = m.bones.Length.ToString();
 
                 StringBuilder jointArr = new StringBuilder();
@@ -231,7 +369,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 joints.Technique_common = new Technique_common();
                 joints.Technique_common.Accessor = new Accessor();
-                joints.Technique_common.Accessor.Source = $"#{m.name}_JointArr";
+                joints.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_JointArr";
                 joints.Technique_common.Accessor.Count = m.bones.Length.ToString();
                 joints.Technique_common.Accessor.Param = new List<Param>(0);
 
@@ -245,9 +383,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Matrices
                 Source matrices = new Source();
-                matrices.Id = $"{m.name}_Matrices";
+                matrices.Id = $"{m.name.Replace(' ', '_')}_Matrices";
                 matrices.Float_array = new Float_array();
-                matrices.Float_array.Id = $"{m.name}_MatArr";
+                matrices.Float_array.Id = $"{m.name.Replace(' ', '_')}_MatArr";
                 matrices.Float_array.Count = (m.bones.Length * 16).ToString();
 
                 StringBuilder matArr = new StringBuilder();
@@ -263,7 +401,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 matrices.Technique_common = new Technique_common();
                 matrices.Technique_common.Accessor = new Accessor();
-                matrices.Technique_common.Accessor.Source = $"#{m.name}_MatArr";
+                matrices.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_MatArr";
                 matrices.Technique_common.Accessor.Count = m.bones.Length.ToString();
                 matrices.Technique_common.Accessor.Stride = "16";
                 matrices.Technique_common.Accessor.Param = new List<Param>(0);
@@ -277,9 +415,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Weights
                 Source weights = new Source();
-                weights.Id = $"{m.name}_Weights";
+                weights.Id = $"{m.name.Replace(' ', '_')}_Weights";
                 weights.Float_array = new Float_array();
-                weights.Float_array.Id = $"{m.name}_WeightArr";
+                weights.Float_array.Id = $"{m.name.Replace(' ', '_')}_WeightArr";
 
                 List<int> usedWeights = new List<int>(0);
                 List<float> uniqueWeights = new List<float>(0);
@@ -348,7 +486,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 weights.Float_array.Text = floats.ToString();
                 weights.Technique_common = new Technique_common();
                 weights.Technique_common.Accessor = new Accessor();
-                weights.Technique_common.Accessor.Source = $"#{m.name}_WeightArr";
+                weights.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_WeightArr";
                 weights.Technique_common.Accessor.Count = uniqueWeights.Count.ToString();
                 weights.Technique_common.Accessor.Param = new List<Param>(0);
 
@@ -363,12 +501,12 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 Xml2CSharp.Input jointInput = new Xml2CSharp.Input();
                 jointInput.Semantic = "JOINT";
-                jointInput.Source = $"#{m.name}_Joints";
+                jointInput.Source = $"#{m.name.Replace(' ', '_')}_Joints";
                 controller.Skin.Joints.Input.Add(jointInput);
 
                 Xml2CSharp.Input matrixInput = new Xml2CSharp.Input();
                 matrixInput.Semantic = "INV_BIND_MATRIX";
-                matrixInput.Source = $"#{m.name}_Matrices";
+                matrixInput.Source = $"#{m.name.Replace(' ', '_')}_Matrices";
                 controller.Skin.Joints.Input.Add(matrixInput);
 
                 //Vertex Weights
@@ -379,13 +517,13 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 Xml2CSharp.Input jointInput1 = new Xml2CSharp.Input();
                 jointInput1.Semantic = "JOINT";
                 jointInput1.Offset = "0";
-                jointInput1.Source = $"#{m.name}_Joints";
+                jointInput1.Source = $"#{m.name.Replace(' ', '_')}_Joints";
                 controller.Skin.Vertex_weights.Input.Add(jointInput1);
 
                 Xml2CSharp.Input weightInput = new Xml2CSharp.Input();
                 weightInput.Semantic = "WEIGHT";
                 weightInput.Offset = "1";
-                weightInput.Source = $"#{m.name}_Weights";
+                weightInput.Source = $"#{m.name.Replace(' ', '_')}_Weights";
                 controller.Skin.Vertex_weights.Input.Add(weightInput);
 
                 StringBuilder vCount = new StringBuilder();
@@ -456,11 +594,11 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             foreach (SkinnedMeshRenderer m in meshes)
             {
                 Node node = new Node();
-                node.Id = m.name;
-                node.Name = m.name;
+                node.Id = m.name.Replace(' ', '_');
+                node.Name = m.name.Replace(' ', '_');
                 node.Type = "NODE";
                 node.Instance_controller = new Instance_controller();
-                node.Instance_controller.Url = $"#{m.name}_Controller";
+                node.Instance_controller.Url = $"#{m.name.Replace(' ', '_')}_Controller";
                 node.Instance_controller.Skeleton = "#[Root]";
 
                 collada.Library_visual_scenes.Visual_scene.Node.Add(node);
