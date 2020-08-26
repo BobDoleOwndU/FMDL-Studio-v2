@@ -152,7 +152,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 } //if
 
                 //UVs1
-                /*if (m.sharedMesh.uv2.Length > 0)
+                if (m.sharedMesh.uv2.Length > 0)
                 {
                     Source uvs1 = new Source();
                     uvs1.Id = $"{m.name.Replace(' ', '_')}_UVs1";
@@ -263,7 +263,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                     uvs3.Technique_common.Accessor.Param.Add(t);
 
                     geometry.Mesh.Source.Add(uvs3);
-                } //if*/
+                } //if
 
                 //Vertices
                 geometry.Mesh.Vertices = new Vertices();
@@ -291,33 +291,45 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 normal.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(normal);
 
-                Xml2CSharp.Input texcoord = new Xml2CSharp.Input();
-                texcoord.Semantic = "TEXCOORD";
-                texcoord.Source = $"#{m.name.Replace(' ', '_')}_UVs0";
-                texcoord.Set = "0";
-                texcoord.Offset = "0";
-                geometry.Mesh.Triangles.Input.Add(texcoord);
+                if(m.sharedMesh.uv.Length > 0)
+                {
+                    Xml2CSharp.Input texcoord = new Xml2CSharp.Input();
+                    texcoord.Semantic = "TEXCOORD";
+                    texcoord.Source = $"#{m.name.Replace(' ', '_')}_UVs0";
+                    texcoord.Set = "0";
+                    texcoord.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(texcoord);
+                } //if
 
-                /*Xml2CSharp.Input texcoord1 = new Xml2CSharp.Input();
-                texcoord1.Semantic = "TEXCOORD";
-                texcoord1.Source = $"#{m.name.Replace(' ', '_')}_UVs1";
-                texcoord1.Set = "1";
-                texcoord1.Offset = "0";
-                geometry.Mesh.Triangles.Input.Add(texcoord1);
+                if (m.sharedMesh.uv2.Length > 0)
+                {
+                    Xml2CSharp.Input texcoord1 = new Xml2CSharp.Input();
+                    texcoord1.Semantic = "TEXCOORD";
+                    texcoord1.Source = $"#{m.name.Replace(' ', '_')}_UVs1";
+                    texcoord1.Set = "1";
+                    texcoord1.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(texcoord1);
+                } //if
 
-                Xml2CSharp.Input texcoord2 = new Xml2CSharp.Input();
-                texcoord2.Semantic = "TEXCOORD";
-                texcoord2.Source = $"#{m.name.Replace(' ', '_')}_UVs2";
-                texcoord2.Set = "1";
-                texcoord2.Offset = "0";
-                geometry.Mesh.Triangles.Input.Add(texcoord2);
+                if (m.sharedMesh.uv3.Length > 0)
+                {
+                    Xml2CSharp.Input texcoord2 = new Xml2CSharp.Input();
+                    texcoord2.Semantic = "TEXCOORD";
+                    texcoord2.Source = $"#{m.name.Replace(' ', '_')}_UVs2";
+                    texcoord2.Set = "2";
+                    texcoord2.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(texcoord2);
+                } //if
 
-                Xml2CSharp.Input texcoord3 = new Xml2CSharp.Input();
-                texcoord3.Semantic = "TEXCOORD";
-                texcoord3.Source = $"#{m.name.Replace(' ', '_')}_UVs3";
-                texcoord3.Set = "1";
-                texcoord3.Offset = "0";
-                geometry.Mesh.Triangles.Input.Add(texcoord3);*/
+                if (m.sharedMesh.uv4.Length > 0)
+                {
+                    Xml2CSharp.Input texcoord3 = new Xml2CSharp.Input();
+                    texcoord3.Semantic = "TEXCOORD";
+                    texcoord3.Source = $"#{m.name.Replace(' ', '_')}_UVs3";
+                    texcoord3.Set = "3";
+                    texcoord3.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(texcoord3);
+                } //if
 
                 StringBuilder trianglesArr = new StringBuilder();
 
@@ -360,7 +372,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 foreach(Transform t in m.bones)
                 {
-                    jointArr.Append($"{t.name} ");
+                    jointArr.Append($"{t.name.Replace(' ', '_')} ");
                 } //foreach
 
                 jointArr.Length--;
@@ -626,9 +638,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
         private static void GetBones(Transform transform, List<Node> nodes)
         {
             Node node = new Node();
-            node.Id = transform.name;
-            node.Name = transform.name;
-            node.Sid = transform.name;
+            node.Id = transform.name.Replace(' ', '_');
+            node.Name = transform.name.Replace(' ', '_');
+            node.Sid = transform.name.Replace(' ', '_');
             node.Type = "JOINT";
 
             if(transform.localPosition != new Vector3(0, 0, 0))
