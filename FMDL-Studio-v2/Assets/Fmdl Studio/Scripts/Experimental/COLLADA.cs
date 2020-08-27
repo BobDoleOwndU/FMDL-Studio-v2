@@ -148,11 +148,20 @@ namespace Xml2CSharp
         public Texture Texture { get; set; }
     }
 
+    [XmlRoot(ElementName = "index_of_refraction", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+    public class Index_of_refraction
+    {
+        [XmlElement(ElementName = "float", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public string Float { get; set; }
+    }
+
     [XmlRoot(ElementName = "phong", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
     public class Phong
     {
         [XmlElement(ElementName = "diffuse", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
         public Diffuse Diffuse { get; set; }
+        [XmlElement(ElementName = "index_of_refraction", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public Index_of_refraction Index_of_refraction { get; set; }
     }
 
     [XmlRoot(ElementName = "technique", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]

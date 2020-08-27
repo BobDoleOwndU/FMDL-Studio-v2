@@ -123,6 +123,9 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                     effect.Profile_COMMON.Technique.Phong.Diffuse.Texture.Texcoord = "TEXCOORD0";
                 } //if
 
+                effect.Profile_COMMON.Technique.Phong.Index_of_refraction = new Index_of_refraction();
+                effect.Profile_COMMON.Technique.Phong.Index_of_refraction.Float = "0";
+
                 collada.Library_effects.Effect.Add(effect);
             } //foreach
 
@@ -733,7 +736,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 try
                 {
                     xmlSerializer.Serialize(stream, collada);
-                    Debug.Log("Export successful! Please note that this exporter is still incomplete and is intended for debugging purposes.");
+                    Debug.Log("Export successful!");
                 } //try
                 finally
                 {
