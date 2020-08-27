@@ -126,6 +126,8 @@ namespace Xml2CSharp
         public string Wrap_t { get; set; }
         [XmlElement(ElementName = "minfilter", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
         public string Minfilter { get; set; }
+        [XmlElement(ElementName = "mipfilter", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public string Mipfilter { get; set; }
         [XmlElement(ElementName = "magfilter", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
         public string Magfilter { get; set; }
     }

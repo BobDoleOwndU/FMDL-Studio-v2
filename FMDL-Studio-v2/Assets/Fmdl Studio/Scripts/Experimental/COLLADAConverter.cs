@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FmdlStudio.Scripts.Static;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
@@ -16,7 +17,10 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             //namespaces.Add("xmlns", "http://www.collada.org/2008/03/COLLADASchema");
 
             List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
-            GetMeshes(gameObject.transform, meshes);
+            List<UnityEngine.Material> materials = new List<UnityEngine.Material>(0);
+            List<UnityEngine.Texture> textures = new List<UnityEngine.Texture>(0);
+
+            GetMeshes(gameObject.transform, meshes, materials, textures);
 
             COLLADA collada = new COLLADA();
             collada.Version = "1.5.0";
@@ -31,6 +35,96 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             collada.Asset.Unit.Meter = "1";
             collada.Asset.Unit.Name = "meter";
             collada.Asset.Up_axis = "Y_UP";
+
+            //Library Images
+            collada.Library_images = new Library_images();
+            collada.Library_images.Image = new List<Image>(0);
+
+            foreach (UnityEngine.Texture t in textures)
+            {
+                string textureName = Path.GetFileNameWithoutExtension(t.name);
+
+                Image image = new Image();
+                image.Id = $"{textureName}-image";
+                image.Name = textureName;
+                image.Init_from = new Init_from();
+                image.Init_from.Ref = $"/{Globals.texturePath}/{t.name}";
+
+                collada.Library_images.Image.Add(image);
+            } //foreach
+
+            //Library Materials
+            collada.Library_materials = new Library_materials();
+            collada.Library_materials.Material = new List<Xml2CSharp.Material>(0);
+
+            foreach (UnityEngine.Material m in materials)
+            {
+                Xml2CSharp.Material material = new Xml2CSharp.Material();
+                material.Id = m.name;
+                material.Instance_effect = new Instance_effect();
+                material.Instance_effect.Url = $"#{m.name}-fx";
+
+                collada.Library_materials.Material.Add(material);
+            } //foreach
+
+            //Library Effects
+            collada.Library_effects = new Library_effects();
+            collada.Library_effects.Effect = new List<Effect>(0);
+
+            foreach (UnityEngine.Material m in materials)
+            {
+                Effect effect = new Effect();
+                effect.Id = $"{m.name}-fx";
+                effect.Name = m.name;
+                effect.Profile_COMMON = new Profile_COMMON();
+                effect.Profile_COMMON.Newparam = new List<Newparam>(0);
+
+                if (m.HasProperty("_Base_Tex_SRGB"))
+                {
+                    UnityEngine.Texture texture = m.GetTexture("_Base_Tex_SRGB");
+                    string textureName = Path.GetFileNameWithoutExtension(texture.name);
+
+                    Newparam newparam0 = new Newparam();
+                    newparam0.Sid = $"{textureName}-surface";
+                    newparam0.Surface = new Surface();
+                    newparam0.Surface.Type = "2D";
+                    newparam0.Surface.Init_from = new Init_from();
+                    newparam0.Surface.Init_from.Ref = $"{textureName}-image";
+
+                    effect.Profile_COMMON.Newparam.Add(newparam0);
+
+                    Newparam newparam1 = new Newparam();
+                    newparam1.Sid = $"{textureName}-sampler";
+                    newparam1.Sampler2D = new Sampler2D();
+                    newparam1.Sampler2D.Source = $"{textureName}-surface";
+                    newparam1.Sampler2D.Instance_image = new Instance_image();
+                    newparam1.Sampler2D.Instance_image.Url = $"#{textureName}-image";
+                    newparam1.Sampler2D.Wrap_s = "CLAMP";
+                    newparam1.Sampler2D.Wrap_t = "CLAMP";
+                    newparam1.Sampler2D.Minfilter = "NEAREST";
+                    newparam1.Sampler2D.Mipfilter = "NEAREST";
+                    newparam1.Sampler2D.Magfilter = "LINEAR";
+
+                    effect.Profile_COMMON.Newparam.Add(newparam1);
+                } //if
+
+                effect.Profile_COMMON.Technique = new Technique();
+                effect.Profile_COMMON.Technique.Sid = "COMMON";
+                effect.Profile_COMMON.Technique.Phong = new Phong();
+
+                if (m.HasProperty("_Base_Tex_SRGB"))
+                {
+                    UnityEngine.Texture texture = m.GetTexture("_Base_Tex_SRGB");
+                    string textureName = Path.GetFileNameWithoutExtension(texture.name);
+
+                    effect.Profile_COMMON.Technique.Phong.Diffuse = new Diffuse();
+                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture = new Xml2CSharp.Texture();
+                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture._texture = $"{textureName}-sampler";
+                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture.Texcoord = "TEXCOORD0";
+                } //if
+
+                collada.Library_effects.Effect.Add(effect);
+            } //foreach
 
             //Library Geometries
             collada.Library_geometries = new Library_geometries();
@@ -53,7 +147,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 StringBuilder posArr = new StringBuilder();
 
-                foreach(Vector3 v in m.sharedMesh.vertices)
+                foreach (Vector3 v in m.sharedMesh.vertices)
                 {
                     posArr.Append($"{-v.x} {v.y} {v.z} ");
                 } //foreach
@@ -274,7 +368,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 //Triangles
                 geometry.Mesh.Triangles = new Triangles();
-                geometry.Mesh.Triangles.Material = ""; //FIX LATER
+                geometry.Mesh.Triangles.Material = m.sharedMaterial.name;
                 geometry.Mesh.Triangles.Count = m.sharedMesh.triangles.Length.ToString();
 
                 geometry.Mesh.Triangles.Input = new List<Xml2CSharp.Input>(0);
@@ -291,7 +385,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 normal.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(normal);
 
-                if(m.sharedMesh.uv.Length > 0)
+                if (m.sharedMesh.uv.Length > 0)
                 {
                     Xml2CSharp.Input texcoord = new Xml2CSharp.Input();
                     texcoord.Semantic = "TEXCOORD";
@@ -370,7 +464,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 StringBuilder jointArr = new StringBuilder();
 
-                foreach(Transform t in m.bones)
+                foreach (Transform t in m.bones)
                 {
                     jointArr.Append($"{t.name.Replace(' ', '_')} ");
                 } //foreach
@@ -441,11 +535,11 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                     BoneWeight b = m.sharedMesh.boneWeights[i];
                     int weightCount = 0;
 
-                    if(b.weight0 != 0)
+                    if (b.weight0 != 0)
                     {
                         weightCount++;
 
-                        if(!uniqueWeights.Contains(b.weight0))
+                        if (!uniqueWeights.Contains(b.weight0))
                         {
                             uniqueWeights.Add(b.weight0);
                         } //if
@@ -487,8 +581,8 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 weights.Float_array.Count = uniqueWeights.Count.ToString();
 
                 StringBuilder floats = new StringBuilder();
-                
-                foreach(float f in uniqueWeights)
+
+                foreach (float f in uniqueWeights)
                 {
                     floats.Append($"{f} ");
                 } //foreach
@@ -540,7 +634,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 StringBuilder vCount = new StringBuilder();
 
-                foreach(int i in usedWeights)
+                foreach (int i in usedWeights)
                 {
                     vCount.Append($"{i} ");
                 } //foreach
@@ -551,7 +645,7 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
                 StringBuilder v = new StringBuilder();
 
-                for(int i = 0; i < vertexCount; i++)
+                for (int i = 0; i < vertexCount; i++)
                 {
                     BoneWeight b = m.sharedMesh.boneWeights[i];
 
@@ -612,6 +706,19 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 node.Instance_controller = new Instance_controller();
                 node.Instance_controller.Url = $"#{m.name.Replace(' ', '_')}_Controller";
                 node.Instance_controller.Skeleton = "#[Root]";
+                node.Instance_controller.Bind_material = new Bind_material();
+                node.Instance_controller.Bind_material.Technique_common = new Technique_common();
+                node.Instance_controller.Bind_material.Technique_common.Instance_material = new Instance_material();
+                node.Instance_controller.Bind_material.Technique_common.Instance_material.Symbol = m.sharedMaterial.name;
+                node.Instance_controller.Bind_material.Technique_common.Instance_material.Target = $"#{m.sharedMaterial.name}";
+                node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input = new List<Bind_vertex_input>(0);
+
+                Bind_vertex_input bvi = new Bind_vertex_input();
+                bvi.Semantic = "TEXCOORD0";
+                bvi.Input_semantic = "TEXCOORD";
+                bvi.Input_set = "0";
+
+                node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input.Add(bvi);
 
                 collada.Library_visual_scenes.Visual_scene.Node.Add(node);
             } //foreach
@@ -643,14 +750,14 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             node.Sid = transform.name.Replace(' ', '_');
             node.Type = "JOINT";
 
-            if(transform.localPosition != new Vector3(0, 0, 0))
+            if (transform.localPosition != new Vector3(0, 0, 0))
             {
                 node.Translate = $"{-transform.localPosition.x} {transform.localPosition.y} {transform.localPosition.z}";
             } //if
 
             node.SubNode = new List<Node>(0);
 
-            foreach(Transform t in transform)
+            foreach (Transform t in transform)
             {
                 GetBones(t, node.SubNode);
             } //foreach
@@ -658,17 +765,40 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
             nodes.Add(node);
         } //GetBones
 
-        private static List<SkinnedMeshRenderer> GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes)
+        private static void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<UnityEngine.Material> materials, List<UnityEngine.Texture> textures)
         {
-            foreach(Transform t in transform)
+            foreach (Transform t in transform)
             {
-                if(t.GetComponent<SkinnedMeshRenderer>())
+                if (t.GetComponent<SkinnedMeshRenderer>())
                 {
-                    meshes.Add(t.GetComponent<SkinnedMeshRenderer>());
+                    SkinnedMeshRenderer mesh = t.gameObject.GetComponent<SkinnedMeshRenderer>();
+
+                    meshes.Add(t.gameObject.GetComponent<SkinnedMeshRenderer>());
+
+                    UnityEngine.Material material = mesh.sharedMaterial;
+
+                    if (!materials.Contains(material))
+                    {
+                        materials.Add(material);
+
+                        if (material.HasProperty("_Base_Tex_SRGB"))
+                        {
+                            if (!textures.Contains(material.GetTexture("_Base_Tex_SRGB")))
+                            {
+                                textures.Add(material.GetTexture("_Base_Tex_SRGB"));
+                            } //if
+                        } //if
+
+                        if (material.HasProperty("_Base_Tex_SRGB"))
+                        {
+                            if (!textures.Contains(material.GetTexture("_Base_Tex_SRGB")))
+                            {
+                                textures.Add(material.GetTexture("_Base_Tex_SRGB"));
+                            } //if
+                        } //if
+                    } //if
                 } //if
             } //foreach
-
-            return meshes;
         } //GetMeshes
     } //COLLADAConverter
 } //namespace
