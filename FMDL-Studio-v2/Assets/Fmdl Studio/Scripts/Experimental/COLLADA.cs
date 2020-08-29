@@ -398,8 +398,12 @@ namespace Xml2CSharp
         public List<Node> SubNode { get; set; }
         [XmlElement(ElementName = "rotate", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
         public string Rotate { get; set; }
+        [XmlElement(ElementName = "matrix", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public Matrix Matrix { get; set; }
         [XmlElement(ElementName = "instance_controller", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
         public Instance_controller Instance_controller { get; set; }
+        [XmlElement(ElementName = "instance_geometry", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public Instance_geometry Instance_geometry { get; set; }
     }
 
     [XmlRoot(ElementName = "bind_vertex_input", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
@@ -440,6 +444,24 @@ namespace Xml2CSharp
         public Bind_material Bind_material { get; set; }
         [XmlAttribute(AttributeName = "url")]
         public string Url { get; set; }
+    }
+
+    [XmlRoot(ElementName = "instance_geometry", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+    public class Instance_geometry
+    {
+        [XmlElement(ElementName = "bind_material", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+        public Bind_material Bind_material { get; set; }
+        [XmlAttribute(AttributeName = "url")]
+        public string Url { get; set; }
+    }
+
+    [XmlRoot(ElementName = "matrix", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]
+    public class Matrix
+    {
+        [XmlAttribute(AttributeName = "sid")]
+        public string Sid { get; set; }
+        [XmlText]
+        public string Text { get; set; }
     }
 
     [XmlRoot(ElementName = "visual_scene", Namespace = "http://www.collada.org/2008/03/COLLADASchema")]

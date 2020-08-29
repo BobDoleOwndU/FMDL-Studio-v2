@@ -451,235 +451,238 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
 
             foreach (SkinnedMeshRenderer m in meshes)
             {
-                Controller controller = new Controller();
-                controller.Id = $"{m.name.Replace(' ', '_')}_Controller";
-                controller.Skin = new Skin();
-                controller.Skin._Source = $"#{m.name.Replace(' ', '_')}";
-                controller.Skin.Bind_shape_matrix = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {-m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
-                controller.Skin.Source = new List<Source>(0);
-
-                //Joints
-                Source joints = new Source();
-                joints.Id = $"{m.name.Replace(' ', '_')}_Joints";
-                joints.Name_array = new Name_array();
-                joints.Name_array.Id = $"{m.name.Replace(' ', '_')}_JointArr";
-                joints.Name_array.Count = m.bones.Length.ToString();
-
-                StringBuilder jointArr = new StringBuilder();
-
-                foreach (Transform t in m.bones)
+                if (m.bones.Length > 0)
                 {
-                    jointArr.Append($"{t.name.Replace(' ', '_')} ");
-                } //foreach
+                    Controller controller = new Controller();
+                    controller.Id = $"{m.name.Replace(' ', '_')}_Controller";
+                    controller.Skin = new Skin();
+                    controller.Skin._Source = $"#{m.name.Replace(' ', '_')}";
+                    controller.Skin.Bind_shape_matrix = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {-m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
+                    controller.Skin.Source = new List<Source>(0);
 
-                jointArr.Length--;
+                    //Joints
+                    Source joints = new Source();
+                    joints.Id = $"{m.name.Replace(' ', '_')}_Joints";
+                    joints.Name_array = new Name_array();
+                    joints.Name_array.Id = $"{m.name.Replace(' ', '_')}_JointArr";
+                    joints.Name_array.Count = m.bones.Length.ToString();
 
-                joints.Name_array.Text = jointArr.ToString();
+                    StringBuilder jointArr = new StringBuilder();
 
-                joints.Technique_common = new Technique_common();
-                joints.Technique_common.Accessor = new Accessor();
-                joints.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_JointArr";
-                joints.Technique_common.Accessor.Count = m.bones.Length.ToString();
-                joints.Technique_common.Accessor.Param = new List<Param>(0);
-
-                Param joint = new Param();
-                joint.Name = "JOINT";
-                joint.Type = "Name";
-
-                joints.Technique_common.Accessor.Param.Add(joint);
-
-                controller.Skin.Source.Add(joints);
-
-                //Matrices
-                Source matrices = new Source();
-                matrices.Id = $"{m.name.Replace(' ', '_')}_Matrices";
-                matrices.Float_array = new Float_array();
-                matrices.Float_array.Id = $"{m.name.Replace(' ', '_')}_MatArr";
-                matrices.Float_array.Count = (m.bones.Length * 16).ToString();
-
-                StringBuilder matArr = new StringBuilder();
-
-                foreach (Matrix4x4 mtx in m.sharedMesh.bindposes)
-                {
-                    matArr.Append($"{mtx.m00} {mtx.m01} {mtx.m02} {-mtx.m03} {mtx.m10} {mtx.m11} {mtx.m12} {mtx.m13} {mtx.m20} {mtx.m21} {mtx.m22} {mtx.m23} {mtx.m30} {mtx.m31} {mtx.m32} {mtx.m33} ");
-                } //foreach
-
-                matArr.Length--;
-
-                matrices.Float_array.Text = matArr.ToString();
-
-                matrices.Technique_common = new Technique_common();
-                matrices.Technique_common.Accessor = new Accessor();
-                matrices.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_MatArr";
-                matrices.Technique_common.Accessor.Count = m.bones.Length.ToString();
-                matrices.Technique_common.Accessor.Stride = "16";
-                matrices.Technique_common.Accessor.Param = new List<Param>(0);
-
-                Param matrix = new Param();
-                matrix.Type = "float4x4";
-
-                matrices.Technique_common.Accessor.Param.Add(matrix);
-
-                controller.Skin.Source.Add(matrices);
-
-                //Weights
-                Source weights = new Source();
-                weights.Id = $"{m.name.Replace(' ', '_')}_Weights";
-                weights.Float_array = new Float_array();
-                weights.Float_array.Id = $"{m.name.Replace(' ', '_')}_WeightArr";
-
-                List<int> usedWeights = new List<int>(0);
-                List<float> uniqueWeights = new List<float>(0);
-
-                int vertexCount = m.sharedMesh.vertexCount;
-
-                for (int i = 0; i < vertexCount; i++)
-                {
-                    BoneWeight b = m.sharedMesh.boneWeights[i];
-                    int weightCount = 0;
-
-                    if (b.weight0 != 0)
+                    foreach (Transform t in m.bones)
                     {
-                        weightCount++;
+                        jointArr.Append($"{t.name.Replace(' ', '_')} ");
+                    } //foreach
 
-                        if (!uniqueWeights.Contains(b.weight0))
+                    jointArr.Length--;
+
+                    joints.Name_array.Text = jointArr.ToString();
+
+                    joints.Technique_common = new Technique_common();
+                    joints.Technique_common.Accessor = new Accessor();
+                    joints.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_JointArr";
+                    joints.Technique_common.Accessor.Count = m.bones.Length.ToString();
+                    joints.Technique_common.Accessor.Param = new List<Param>(0);
+
+                    Param joint = new Param();
+                    joint.Name = "JOINT";
+                    joint.Type = "Name";
+
+                    joints.Technique_common.Accessor.Param.Add(joint);
+
+                    controller.Skin.Source.Add(joints);
+
+                    //Matrices
+                    Source matrices = new Source();
+                    matrices.Id = $"{m.name.Replace(' ', '_')}_Matrices";
+                    matrices.Float_array = new Float_array();
+                    matrices.Float_array.Id = $"{m.name.Replace(' ', '_')}_MatArr";
+                    matrices.Float_array.Count = (m.bones.Length * 16).ToString();
+
+                    StringBuilder matArr = new StringBuilder();
+
+                    foreach (Matrix4x4 mtx in m.sharedMesh.bindposes)
+                    {
+                        matArr.Append($"{mtx.m00} {mtx.m01} {mtx.m02} {-mtx.m03} {mtx.m10} {mtx.m11} {mtx.m12} {mtx.m13} {mtx.m20} {mtx.m21} {mtx.m22} {mtx.m23} {mtx.m30} {mtx.m31} {mtx.m32} {mtx.m33} ");
+                    } //foreach
+
+                    matArr.Length--;
+
+                    matrices.Float_array.Text = matArr.ToString();
+
+                    matrices.Technique_common = new Technique_common();
+                    matrices.Technique_common.Accessor = new Accessor();
+                    matrices.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_MatArr";
+                    matrices.Technique_common.Accessor.Count = m.bones.Length.ToString();
+                    matrices.Technique_common.Accessor.Stride = "16";
+                    matrices.Technique_common.Accessor.Param = new List<Param>(0);
+
+                    Param matrix = new Param();
+                    matrix.Type = "float4x4";
+
+                    matrices.Technique_common.Accessor.Param.Add(matrix);
+
+                    controller.Skin.Source.Add(matrices);
+
+                    //Weights
+                    Source weights = new Source();
+                    weights.Id = $"{m.name.Replace(' ', '_')}_Weights";
+                    weights.Float_array = new Float_array();
+                    weights.Float_array.Id = $"{m.name.Replace(' ', '_')}_WeightArr";
+
+                    List<int> usedWeights = new List<int>(0);
+                    List<float> uniqueWeights = new List<float>(0);
+
+                    int vertexCount = m.sharedMesh.vertexCount;
+
+                    for (int i = 0; i < vertexCount; i++)
+                    {
+                        BoneWeight b = m.sharedMesh.boneWeights[i];
+                        int weightCount = 0;
+
+                        if (b.weight0 != 0)
                         {
-                            uniqueWeights.Add(b.weight0);
+                            weightCount++;
+
+                            if (!uniqueWeights.Contains(b.weight0))
+                            {
+                                uniqueWeights.Add(b.weight0);
+                            } //if
                         } //if
-                    } //if
 
-                    if (b.weight1 != 0)
-                    {
-                        weightCount++;
-
-                        if (!uniqueWeights.Contains(b.weight1))
+                        if (b.weight1 != 0)
                         {
-                            uniqueWeights.Add(b.weight1);
+                            weightCount++;
+
+                            if (!uniqueWeights.Contains(b.weight1))
+                            {
+                                uniqueWeights.Add(b.weight1);
+                            } //if
                         } //if
-                    } //if
 
-                    if (b.weight2 != 0)
-                    {
-                        weightCount++;
-
-                        if (!uniqueWeights.Contains(b.weight2))
+                        if (b.weight2 != 0)
                         {
-                            uniqueWeights.Add(b.weight2);
+                            weightCount++;
+
+                            if (!uniqueWeights.Contains(b.weight2))
+                            {
+                                uniqueWeights.Add(b.weight2);
+                            } //if
                         } //if
-                    } //if
 
-                    if (b.weight3 != 0)
-                    {
-                        weightCount++;
-
-                        if (!uniqueWeights.Contains(b.weight3))
+                        if (b.weight3 != 0)
                         {
-                            uniqueWeights.Add(b.weight3);
+                            weightCount++;
+
+                            if (!uniqueWeights.Contains(b.weight3))
+                            {
+                                uniqueWeights.Add(b.weight3);
+                            } //if
                         } //if
-                    } //if
 
-                    usedWeights.Add(weightCount);
-                } //for
+                        usedWeights.Add(weightCount);
+                    } //for
 
-                weights.Float_array.Count = uniqueWeights.Count.ToString();
+                    weights.Float_array.Count = uniqueWeights.Count.ToString();
 
-                StringBuilder floats = new StringBuilder();
+                    StringBuilder floats = new StringBuilder();
 
-                foreach (float f in uniqueWeights)
-                {
-                    floats.Append($"{f} ");
-                } //foreach
-
-                floats.Length--;
-
-                weights.Float_array.Text = floats.ToString();
-                weights.Technique_common = new Technique_common();
-                weights.Technique_common.Accessor = new Accessor();
-                weights.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_WeightArr";
-                weights.Technique_common.Accessor.Count = uniqueWeights.Count.ToString();
-                weights.Technique_common.Accessor.Param = new List<Param>(0);
-
-                Param flt = new Param();
-                flt.Type = "float";
-
-                controller.Skin.Source.Add(weights);
-
-                //Skin Joints
-                controller.Skin.Joints = new Joints();
-                controller.Skin.Joints.Input = new List<Xml2CSharp.Input>(0);
-
-                Xml2CSharp.Input jointInput = new Xml2CSharp.Input();
-                jointInput.Semantic = "JOINT";
-                jointInput.Source = $"#{m.name.Replace(' ', '_')}_Joints";
-                controller.Skin.Joints.Input.Add(jointInput);
-
-                Xml2CSharp.Input matrixInput = new Xml2CSharp.Input();
-                matrixInput.Semantic = "INV_BIND_MATRIX";
-                matrixInput.Source = $"#{m.name.Replace(' ', '_')}_Matrices";
-                controller.Skin.Joints.Input.Add(matrixInput);
-
-                //Vertex Weights
-                controller.Skin.Vertex_weights = new Vertex_weights();
-                controller.Skin.Vertex_weights.Count = $"{vertexCount}";
-                controller.Skin.Vertex_weights.Input = new List<Xml2CSharp.Input>(0);
-
-                Xml2CSharp.Input jointInput1 = new Xml2CSharp.Input();
-                jointInput1.Semantic = "JOINT";
-                jointInput1.Offset = "0";
-                jointInput1.Source = $"#{m.name.Replace(' ', '_')}_Joints";
-                controller.Skin.Vertex_weights.Input.Add(jointInput1);
-
-                Xml2CSharp.Input weightInput = new Xml2CSharp.Input();
-                weightInput.Semantic = "WEIGHT";
-                weightInput.Offset = "1";
-                weightInput.Source = $"#{m.name.Replace(' ', '_')}_Weights";
-                controller.Skin.Vertex_weights.Input.Add(weightInput);
-
-                StringBuilder vCount = new StringBuilder();
-
-                foreach (int i in usedWeights)
-                {
-                    vCount.Append($"{i} ");
-                } //foreach
-
-                vCount.Length--;
-
-                controller.Skin.Vertex_weights.Vcount = vCount.ToString();
-
-                StringBuilder v = new StringBuilder();
-
-                for (int i = 0; i < vertexCount; i++)
-                {
-                    BoneWeight b = m.sharedMesh.boneWeights[i];
-
-                    switch (usedWeights[i])
+                    foreach (float f in uniqueWeights)
                     {
-                        case 1:
-                            v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
-                            break;
-                        case 2:
-                            v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
-                            v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
-                            break;
-                        case 3:
-                            v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
-                            v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
-                            v.Append($"{b.boneIndex2} {uniqueWeights.IndexOf(b.weight2)} ");
-                            break;
-                        case 4:
-                            v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
-                            v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
-                            v.Append($"{b.boneIndex2} {uniqueWeights.IndexOf(b.weight2)} ");
-                            v.Append($"{b.boneIndex3} {uniqueWeights.IndexOf(b.weight3)} ");
-                            break;
-                    } //switch
-                } //for
+                        floats.Append($"{f} ");
+                    } //foreach
 
-                v.Length--;
+                    floats.Length--;
 
-                controller.Skin.Vertex_weights.V = v.ToString();
+                    weights.Float_array.Text = floats.ToString();
+                    weights.Technique_common = new Technique_common();
+                    weights.Technique_common.Accessor = new Accessor();
+                    weights.Technique_common.Accessor.Source = $"#{m.name.Replace(' ', '_')}_WeightArr";
+                    weights.Technique_common.Accessor.Count = uniqueWeights.Count.ToString();
+                    weights.Technique_common.Accessor.Param = new List<Param>(0);
 
-                collada.Library_controllers.Controller.Add(controller);
+                    Param flt = new Param();
+                    flt.Type = "float";
+
+                    controller.Skin.Source.Add(weights);
+
+                    //Skin Joints
+                    controller.Skin.Joints = new Joints();
+                    controller.Skin.Joints.Input = new List<Xml2CSharp.Input>(0);
+
+                    Xml2CSharp.Input jointInput = new Xml2CSharp.Input();
+                    jointInput.Semantic = "JOINT";
+                    jointInput.Source = $"#{m.name.Replace(' ', '_')}_Joints";
+                    controller.Skin.Joints.Input.Add(jointInput);
+
+                    Xml2CSharp.Input matrixInput = new Xml2CSharp.Input();
+                    matrixInput.Semantic = "INV_BIND_MATRIX";
+                    matrixInput.Source = $"#{m.name.Replace(' ', '_')}_Matrices";
+                    controller.Skin.Joints.Input.Add(matrixInput);
+
+                    //Vertex Weights
+                    controller.Skin.Vertex_weights = new Vertex_weights();
+                    controller.Skin.Vertex_weights.Count = $"{vertexCount}";
+                    controller.Skin.Vertex_weights.Input = new List<Xml2CSharp.Input>(0);
+
+                    Xml2CSharp.Input jointInput1 = new Xml2CSharp.Input();
+                    jointInput1.Semantic = "JOINT";
+                    jointInput1.Offset = "0";
+                    jointInput1.Source = $"#{m.name.Replace(' ', '_')}_Joints";
+                    controller.Skin.Vertex_weights.Input.Add(jointInput1);
+
+                    Xml2CSharp.Input weightInput = new Xml2CSharp.Input();
+                    weightInput.Semantic = "WEIGHT";
+                    weightInput.Offset = "1";
+                    weightInput.Source = $"#{m.name.Replace(' ', '_')}_Weights";
+                    controller.Skin.Vertex_weights.Input.Add(weightInput);
+
+                    StringBuilder vCount = new StringBuilder();
+
+                    foreach (int i in usedWeights)
+                    {
+                        vCount.Append($"{i} ");
+                    } //foreach
+
+                    vCount.Length--;
+
+                    controller.Skin.Vertex_weights.Vcount = vCount.ToString();
+
+                    StringBuilder v = new StringBuilder();
+
+                    for (int i = 0; i < vertexCount; i++)
+                    {
+                        BoneWeight b = m.sharedMesh.boneWeights[i];
+
+                        switch (usedWeights[i])
+                        {
+                            case 1:
+                                v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
+                                break;
+                            case 2:
+                                v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
+                                v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
+                                break;
+                            case 3:
+                                v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
+                                v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
+                                v.Append($"{b.boneIndex2} {uniqueWeights.IndexOf(b.weight2)} ");
+                                break;
+                            case 4:
+                                v.Append($"{b.boneIndex0} {uniqueWeights.IndexOf(b.weight0)} ");
+                                v.Append($"{b.boneIndex1} {uniqueWeights.IndexOf(b.weight1)} ");
+                                v.Append($"{b.boneIndex2} {uniqueWeights.IndexOf(b.weight2)} ");
+                                v.Append($"{b.boneIndex3} {uniqueWeights.IndexOf(b.weight3)} ");
+                                break;
+                        } //switch
+                    } //for
+
+                    v.Length--;
+
+                    controller.Skin.Vertex_weights.V = v.ToString();
+
+                    collada.Library_controllers.Controller.Add(controller);
+                } //if
             } //foreach
 
             //Library Visual Scenes
@@ -706,22 +709,47 @@ namespace Assets.Fmdl_Studio.Scripts.Experimental
                 node.Id = m.name.Replace(' ', '_');
                 node.Name = m.name.Replace(' ', '_');
                 node.Type = "NODE";
-                node.Instance_controller = new Instance_controller();
-                node.Instance_controller.Url = $"#{m.name.Replace(' ', '_')}_Controller";
-                node.Instance_controller.Skeleton = "#[Root]";
-                node.Instance_controller.Bind_material = new Bind_material();
-                node.Instance_controller.Bind_material.Technique_common = new Technique_common();
-                node.Instance_controller.Bind_material.Technique_common.Instance_material = new Instance_material();
-                node.Instance_controller.Bind_material.Technique_common.Instance_material.Symbol = m.sharedMaterial.name;
-                node.Instance_controller.Bind_material.Technique_common.Instance_material.Target = $"#{m.sharedMaterial.name}";
-                node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input = new List<Bind_vertex_input>(0);
 
-                Bind_vertex_input bvi = new Bind_vertex_input();
-                bvi.Semantic = "TEXCOORD0";
-                bvi.Input_semantic = "TEXCOORD";
-                bvi.Input_set = "0";
+                if (m.bones.Length > 0)
+                {
+                    node.Instance_controller = new Instance_controller();
+                    node.Instance_controller.Url = $"#{m.name.Replace(' ', '_')}_Controller";
+                    node.Instance_controller.Skeleton = "#[Root]";
+                    node.Instance_controller.Bind_material = new Bind_material();
+                    node.Instance_controller.Bind_material.Technique_common = new Technique_common();
+                    node.Instance_controller.Bind_material.Technique_common.Instance_material = new Instance_material();
+                    node.Instance_controller.Bind_material.Technique_common.Instance_material.Symbol = m.sharedMaterial.name;
+                    node.Instance_controller.Bind_material.Technique_common.Instance_material.Target = $"#{m.sharedMaterial.name}";
+                    node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input = new List<Bind_vertex_input>(0);
 
-                node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input.Add(bvi);
+                    Bind_vertex_input bvi = new Bind_vertex_input();
+                    bvi.Semantic = "TEXCOORD0";
+                    bvi.Input_semantic = "TEXCOORD";
+                    bvi.Input_set = "0";
+
+                    node.Instance_controller.Bind_material.Technique_common.Instance_material.Bind_vertex_input.Add(bvi);
+                } //if
+                else
+                {
+                    node.Matrix = new Matrix();
+                    node.Matrix.Sid = "transform";
+                    node.Matrix.Text = $"{m.localToWorldMatrix.m00} {m.localToWorldMatrix.m01} {m.localToWorldMatrix.m02} {-m.localToWorldMatrix.m03} {m.localToWorldMatrix.m10} {m.localToWorldMatrix.m11} {m.localToWorldMatrix.m12} {m.localToWorldMatrix.m13} {m.localToWorldMatrix.m20} {m.localToWorldMatrix.m21} {m.localToWorldMatrix.m22} {m.localToWorldMatrix.m23} {m.localToWorldMatrix.m30} {m.localToWorldMatrix.m31} {m.localToWorldMatrix.m32} {m.localToWorldMatrix.m33}";
+                    node.Instance_geometry = new Instance_geometry();
+                    node.Instance_geometry.Url = $"#{m.name.Replace(' ', '_')}";
+                    node.Instance_geometry.Bind_material = new Bind_material();
+                    node.Instance_geometry.Bind_material.Technique_common = new Technique_common();
+                    node.Instance_geometry.Bind_material.Technique_common.Instance_material = new Instance_material();
+                    node.Instance_geometry.Bind_material.Technique_common.Instance_material.Symbol = m.sharedMaterial.name;
+                    node.Instance_geometry.Bind_material.Technique_common.Instance_material.Target = $"#{m.sharedMaterial.name}";
+                    node.Instance_geometry.Bind_material.Technique_common.Instance_material.Bind_vertex_input = new List<Bind_vertex_input>(0);
+
+                    Bind_vertex_input bvi = new Bind_vertex_input();
+                    bvi.Semantic = "TEXCOORD0";
+                    bvi.Input_semantic = "TEXCOORD";
+                    bvi.Input_set = "0";
+
+                    node.Instance_geometry.Bind_material.Technique_common.Instance_material.Bind_vertex_input.Add(bvi);
+                } //else
 
                 collada.Library_visual_scenes.Visual_scene.Node.Add(node);
             } //foreach
