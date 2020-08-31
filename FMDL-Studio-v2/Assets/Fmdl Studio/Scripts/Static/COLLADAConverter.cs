@@ -1,12 +1,11 @@
-﻿using FmdlStudio.Scripts.Static;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
 using UnityEngine;
 using Xml2CSharp;
 
-namespace Assets.Fmdl_Studio.Scripts.Experimental
+namespace FmdlStudio.Scripts.Static
 {
     public static class COLLADAConverter
     {

@@ -1,5 +1,4 @@
-﻿using Assets.Fmdl_Studio.Scripts.Experimental;
-using FmdlStudio.Scripts.Classes;
+﻿using FmdlStudio.Scripts.Classes;
 using FmdlStudio.Scripts.Static;
 using UnityEditor;
 using UnityEngine;
@@ -23,7 +22,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No path selected.");
         } //ImportFMDLOption
 
-        [MenuItem("FMDL Studio/Convert to COLLADA", false, 4)]
+        [MenuItem("FMDL Studio/Convert to COLLADA", false, 1)]
         public static void ExportCOLLADAOption()
         {
             if (Selection.activeGameObject != null)
@@ -38,22 +37,6 @@ namespace FmdlStudio.Editor.Windows
             else
                 Debug.Log("No objects selected.");
         } //ImportFMDLOption
-
-        [MenuItem("FMDL Studio/Convert to FBX", false, 1)]
-        public static void ExportFBXOption()
-        {
-            if (Selection.activeGameObject != null)
-            {
-                string filePath = EditorUtility.SaveFilePanel("Export To FBX", "", Selection.activeGameObject.name, "fbx");
-
-                if (!string.IsNullOrWhiteSpace(filePath))
-                    FBXConverter.ConvertToFBX(Selection.activeGameObject, filePath);
-                else
-                    Debug.Log("No path selected.");
-            } //if
-            else
-                Debug.Log("No objects selected.");
-        } //ExportFBXOption
 
         [MenuItem("FMDL Studio/Export FMDL", false, 2)]
         public static void ExportFMDLOption()
@@ -74,6 +57,22 @@ namespace FmdlStudio.Editor.Windows
             else
                 Debug.Log("No objects selected.");
         } //ExportFMDLOption
+
+        [MenuItem("FMDL Studio/Convert to FBX (Legacy)", false, 3)]
+        public static void ExportFBXOption()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                string filePath = EditorUtility.SaveFilePanel("Export To FBX", "", Selection.activeGameObject.name, "fbx");
+
+                if (!string.IsNullOrWhiteSpace(filePath))
+                    FBXConverter.ConvertToFBX(Selection.activeGameObject, filePath);
+                else
+                    Debug.Log("No path selected.");
+            } //if
+            else
+                Debug.Log("No objects selected.");
+        } //ExportFBXOption
 
         [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]
         public static void SetTextureFolder()
