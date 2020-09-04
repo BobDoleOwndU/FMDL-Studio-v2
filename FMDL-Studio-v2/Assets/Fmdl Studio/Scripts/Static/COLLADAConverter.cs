@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
@@ -11,6 +12,9 @@ namespace FmdlStudio.Scripts.Static
     {
         public static void ConvertToCOLLADA(GameObject gameObject, string filepath)
         {
+            Globals.ReadTexturePath();
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
+
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(COLLADA));
             //XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
             //namespaces.Add("xmlns", "http://www.collada.org/2008/03/COLLADASchema");

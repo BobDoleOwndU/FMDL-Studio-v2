@@ -1939,7 +1939,7 @@ namespace FmdlStudio.Scripts.Classes
 
                 fmdlMesh.vertices = new Vector3[vertexCount];
                 fmdlMesh.normals = new Vector4Half[vertexCount];
-                fmdlMesh.tangents = new Vector4Half[vertexCount];
+                fmdlMesh.tangents = mesh.tangents.Length > 0 ? new Vector4Half[vertexCount] : new Vector4Half[0];
                 fmdlMesh.colors = mesh.colors.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
                 fmdlMesh.boneWeights = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
                 fmdlMesh.boneIndices = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
@@ -1953,7 +1953,8 @@ namespace FmdlStudio.Scripts.Classes
                 {
                     fmdlMesh.vertices[j] = new Vector3(-mesh.vertices[j].x, mesh.vertices[j].y, mesh.vertices[j].z);
                     fmdlMesh.normals[j] = new Vector4Half(new Half(-mesh.normals[j].x), new Half(mesh.normals[j].y), new Half(mesh.normals[j].z), new Half(1.0f));
-                    fmdlMesh.tangents[j] = new Vector4Half(new Half(-mesh.tangents[j].x), new Half(mesh.tangents[j].y), new Half(mesh.tangents[j].z), new Half(mesh.tangents[j].w));
+                    if (mesh.tangents.Length > 0)
+                        fmdlMesh.tangents[j] = new Vector4Half(new Half(-mesh.tangents[j].x), new Half(mesh.tangents[j].y), new Half(mesh.tangents[j].z), new Half(mesh.tangents[j].w));
                     if (mesh.colors.Length > 0)
                         fmdlMesh.colors[j] = new Vector4((byte)Math.Round(mesh.colors[j].r * 255), (byte)Math.Round(mesh.colors[j].g * 255), (byte)Math.Round(mesh.colors[j].b * 255), (byte)Math.Round(mesh.colors[j].a * 255));
                     if (mesh.boneWeights.Length > 0)
