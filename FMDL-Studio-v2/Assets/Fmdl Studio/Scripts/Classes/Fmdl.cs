@@ -1208,7 +1208,7 @@ namespace FmdlStudio.Scripts.Classes
             GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
             GetMeshesMaterialsTexturesAndVectors(gameObject, meshes, materials, textures, materialParameterVectors);
 
-            bones.Sort((x, y) => x.name.CompareTo(y.name));
+            //bones.Sort((x, y) => x.name.CompareTo(y.name));
 
             strings.Add("");
 

@@ -16,8 +16,6 @@ namespace FmdlStudio.Scripts.Static
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(COLLADA));
-            //XmlSerializerNamespaces namespaces = new XmlSerializerNamespaces();
-            //namespaces.Add("xmlns", "http://www.collada.org/2008/03/COLLADASchema");
 
             List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
             List<UnityEngine.Material> materials = new List<UnityEngine.Material>(0);
@@ -85,30 +83,34 @@ namespace FmdlStudio.Scripts.Static
                 if (m.HasProperty("_Base_Tex_SRGB"))
                 {
                     UnityEngine.Texture texture = m.GetTexture("_Base_Tex_SRGB");
-                    string textureName = Path.GetFileNameWithoutExtension(texture.name);
 
-                    Newparam newparam0 = new Newparam();
-                    newparam0.Sid = $"{textureName}-surface";
-                    newparam0.Surface = new Surface();
-                    newparam0.Surface.Type = "2D";
-                    newparam0.Surface.Init_from = new Init_from();
-                    newparam0.Surface.Init_from.Ref = $"{textureName}-image";
+                    if (texture != null)
+                    {
+                        string textureName = Path.GetFileNameWithoutExtension(texture.name);
 
-                    effect.Profile_COMMON.Newparam.Add(newparam0);
+                        Newparam newparam0 = new Newparam();
+                        newparam0.Sid = $"{textureName}-surface";
+                        newparam0.Surface = new Surface();
+                        newparam0.Surface.Type = "2D";
+                        newparam0.Surface.Init_from = new Init_from();
+                        newparam0.Surface.Init_from.Ref = $"{textureName}-image";
 
-                    Newparam newparam1 = new Newparam();
-                    newparam1.Sid = $"{textureName}-sampler";
-                    newparam1.Sampler2D = new Sampler2D();
-                    newparam1.Sampler2D.Source = $"{textureName}-surface";
-                    newparam1.Sampler2D.Instance_image = new Instance_image();
-                    newparam1.Sampler2D.Instance_image.Url = $"#{textureName}-image";
-                    newparam1.Sampler2D.Wrap_s = "CLAMP";
-                    newparam1.Sampler2D.Wrap_t = "CLAMP";
-                    newparam1.Sampler2D.Minfilter = "NEAREST";
-                    newparam1.Sampler2D.Mipfilter = "NEAREST";
-                    newparam1.Sampler2D.Magfilter = "LINEAR";
+                        effect.Profile_COMMON.Newparam.Add(newparam0);
 
-                    effect.Profile_COMMON.Newparam.Add(newparam1);
+                        Newparam newparam1 = new Newparam();
+                        newparam1.Sid = $"{textureName}-sampler";
+                        newparam1.Sampler2D = new Sampler2D();
+                        newparam1.Sampler2D.Source = $"{textureName}-surface";
+                        newparam1.Sampler2D.Instance_image = new Instance_image();
+                        newparam1.Sampler2D.Instance_image.Url = $"#{textureName}-image";
+                        newparam1.Sampler2D.Wrap_s = "CLAMP";
+                        newparam1.Sampler2D.Wrap_t = "CLAMP";
+                        newparam1.Sampler2D.Minfilter = "NEAREST";
+                        newparam1.Sampler2D.Mipfilter = "NEAREST";
+                        newparam1.Sampler2D.Magfilter = "LINEAR";
+
+                        effect.Profile_COMMON.Newparam.Add(newparam1);
+                    } //if
                 } //if
 
                 effect.Profile_COMMON.Technique = new Technique();
@@ -118,12 +120,16 @@ namespace FmdlStudio.Scripts.Static
                 if (m.HasProperty("_Base_Tex_SRGB"))
                 {
                     UnityEngine.Texture texture = m.GetTexture("_Base_Tex_SRGB");
-                    string textureName = Path.GetFileNameWithoutExtension(texture.name);
 
-                    effect.Profile_COMMON.Technique.Phong.Diffuse = new Diffuse();
-                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture = new Xml2CSharp.Texture();
-                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture._texture = $"{textureName}-sampler";
-                    effect.Profile_COMMON.Technique.Phong.Diffuse.Texture.Texcoord = "TEXCOORD0";
+                    if (texture != null)
+                    {
+                        string textureName = Path.GetFileNameWithoutExtension(texture.name);
+
+                        effect.Profile_COMMON.Technique.Phong.Diffuse = new Diffuse();
+                        effect.Profile_COMMON.Technique.Phong.Diffuse.Texture = new Xml2CSharp.Texture();
+                        effect.Profile_COMMON.Technique.Phong.Diffuse.Texture._texture = $"{textureName}-sampler";
+                        effect.Profile_COMMON.Technique.Phong.Diffuse.Texture.Texcoord = "TEXCOORD0";
+                    } //if
                 } //if
 
                 effect.Profile_COMMON.Technique.Phong.Index_of_refraction = new Index_of_refraction();
@@ -817,17 +823,14 @@ namespace FmdlStudio.Scripts.Static
 
                         if (material.HasProperty("_Base_Tex_SRGB"))
                         {
-                            if (!textures.Contains(material.GetTexture("_Base_Tex_SRGB")))
-                            {
-                                textures.Add(material.GetTexture("_Base_Tex_SRGB"));
-                            } //if
-                        } //if
+                            UnityEngine.Texture texture = material.GetTexture("_Base_Tex_SRGB");
 
-                        if (material.HasProperty("_Base_Tex_SRGB"))
-                        {
-                            if (!textures.Contains(material.GetTexture("_Base_Tex_SRGB")))
+                            if (texture != null)
                             {
-                                textures.Add(material.GetTexture("_Base_Tex_SRGB"));
+                                if (!textures.Contains(texture))
+                                {
+                                    textures.Add(material.GetTexture("_Base_Tex_SRGB"));
+                                } //if
                             } //if
                         } //if
                     } //if
