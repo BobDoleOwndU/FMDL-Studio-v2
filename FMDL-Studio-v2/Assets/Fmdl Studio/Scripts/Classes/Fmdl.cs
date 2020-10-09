@@ -1150,6 +1150,22 @@ namespace FmdlStudio.Scripts.Classes
             } //for
         } //ReadStrings
 
+        public List<Transform> SortIfValid(List<Transform> list)
+        {
+            List<Transform> sortedList = list.GetRange(0, list.Count);
+
+            sortedList.Sort((x, y) => x.name.CompareTo(y.name));
+
+            foreach(Transform t in sortedList)
+            {
+                //If any item comes before its parent in the list, the sorting is invalid.
+                if (sortedList.IndexOf(t) < sortedList.IndexOf(t.parent))
+                    return list;
+            } //foreach
+
+            return sortedList;
+        } //SortIfValid
+
         public void Write(GameObject gameObject, string filePath)
         {
             try
@@ -1208,7 +1224,7 @@ namespace FmdlStudio.Scripts.Classes
             GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
             GetMeshesMaterialsTexturesAndVectors(gameObject, meshes, materials, textures, materialParameterVectors);
 
-            //bones.Sort((x, y) => x.name.CompareTo(y.name));
+            bones = SortIfValid(bones);
 
             strings.Add("");
 

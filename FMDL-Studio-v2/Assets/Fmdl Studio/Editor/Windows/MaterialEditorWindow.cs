@@ -11,7 +11,7 @@ namespace FmdlStudio.Editor.Windows
         private int selected = 0;
         private string materialName = "";
 
-        [MenuItem("FMDL Studio/Edit Material Presets", false, 200)]
+        [MenuItem("FMDL Studio/Edit Material Presets", false, 201)]
         static void Init()
         {
             MaterialEditorWindow window = (MaterialEditorWindow)GetWindow(typeof(MaterialEditorWindow));

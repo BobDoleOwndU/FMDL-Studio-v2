@@ -1,5 +1,6 @@
 ﻿using FmdlStudio.Scripts.Classes;
 using FmdlStudio.Scripts.Static;
+using System.IO;
 using UnityEditor;
 using UnityEngine;
 
@@ -30,7 +31,16 @@ namespace FmdlStudio.Editor.Windows
                 string filePath = EditorUtility.SaveFilePanel("Export To COLLADA", "", Selection.activeGameObject.name, "dae");
 
                 if (!string.IsNullOrWhiteSpace(filePath))
+                {
                     COLLADAConverter.ConvertToCOLLADA(Selection.activeGameObject, filePath);
+
+                    if (!string.IsNullOrEmpty(Globals.GetFbxConverterPath()))
+                    {
+                        string fbxPath = $"{Path.GetDirectoryName(filePath)}\\{Path.GetFileNameWithoutExtension(filePath)}.fbx";
+
+                        System.Diagnostics.Process.Start(Globals.GetFbxConverterPath(), $"{filePath} {fbxPath} /sffCOLLADA /dffFBX");
+                    } //if
+                } //if
                 else
                     Debug.Log("No path selected.");
             } //if
@@ -74,20 +84,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No objects selected.");
         } //ExportFBXOption
 
-        [MenuItem("FMDL Studio/Set Texture Folder", false, 100)]
-        public static void SetTextureFolder()
-        {
-            string windowPath = EditorUtility.OpenFolderPanel("Select Texture Folder", "", "");
-
-            if (!string.IsNullOrEmpty(windowPath))
-            {
-                Globals.WriteTexturePath(windowPath);
-            } //if
-            else
-                Debug.Log("No folder selected.");
-        } //SetTextureFolder
-
-        [MenuItem("FMDL Studio/Generate Bounding Boxes", false, 101)]
+        [MenuItem("FMDL Studio/Generate Bounding Boxes", false, 100)]
         public static void GenerateBoundingBoxes()
         {
             if (Selection.activeGameObject != null)
@@ -98,7 +95,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No objects selected.");
         } //GenerateBoundingBoxes
 
-        [MenuItem("FMDL Studio/Fix Tangents", false, 102)]
+        [MenuItem("FMDL Studio/Fix Tangents", false, 101)]
         public static void FixTangents()
         {
             if (Selection.activeGameObject != null)
@@ -108,5 +105,31 @@ namespace FmdlStudio.Editor.Windows
             else
                 Debug.Log("No objects selected.");
         } //FixTangents
+
+        [MenuItem("FMDL Studio/Set Texture Folder", false, 200)]
+        public static void SetTextureFolder()
+        {
+            string windowPath = EditorUtility.OpenFolderPanel("Select Texture Folder", "", "");
+
+            if (!string.IsNullOrEmpty(windowPath))
+            {
+                Globals.SetTexturePath(windowPath);
+            } //if
+            else
+                Debug.Log("No folder selected.");
+        } //SetTextureFolder
+
+        [MenuItem("FMDL Studio/Set FBX Converter Path", false, 202)]
+        public static void SetFbxConverterPath()
+        {
+            string filePath = EditorUtility.OpenFilePanel("Select FbxConverter.exe", "", "exe");
+
+            if (!string.IsNullOrEmpty(filePath))
+            {
+                Globals.SetFbxConverterPath(filePath);
+            } //if
+            else
+                Debug.Log("No folder selected.");
+        } //SetTextureFolder
     } //class
 } //namespace

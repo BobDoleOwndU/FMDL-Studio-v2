@@ -12,7 +12,7 @@ namespace FmdlStudio.Scripts.Static
     {
         public static void ConvertToCOLLADA(GameObject gameObject, string filepath)
         {
-            Globals.ReadTexturePath();
+            Globals.ReadSettings();
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(COLLADA));
@@ -49,7 +49,7 @@ namespace FmdlStudio.Scripts.Static
                 image.Id = $"{textureName}-image";
                 image.Name = textureName;
                 image.Init_from = new Init_from();
-                image.Init_from.Ref = $"/{Globals.texturePath}/{t.name}";
+                image.Init_from.Ref = $"/{Globals.GetTexturePath()}/{t.name}";
 
                 collada.Library_images.Image.Add(image);
             } //foreach

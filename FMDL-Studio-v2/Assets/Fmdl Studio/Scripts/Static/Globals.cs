@@ -1,5 +1,4 @@
 ﻿using FmdlStudio.Scripts.Classes;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using UnityEngine;
@@ -8,60 +7,63 @@ namespace FmdlStudio.Scripts.Static
 {
     public static class Globals
     {
-        public static string texturePath { get; private set; }
+        private static Settings settings = new Settings();
         public static MaterialPresetList materialPresetList = new MaterialPresetList();
 
         static Globals()
         {
-            ReadTexturePath();
+            ReadSettings();
             ReadPresetList();
         } //constructor
 
-        public static void ReadTexturePath()
+        public static string GetTexturePath()
         {
-            if (File.Exists("settings.cfg"))
+            return settings.texturePath;
+        } //GetTexturePath
+
+        public static void SetTexturePath(string path)
+        {
+            settings.texturePath = path;
+
+            WriteSettings();
+        } //SetTexturePath
+
+        public static string GetFbxConverterPath()
+        {
+            return settings.fbxConverterPath;
+        } //GetFbxConverterPath
+
+        public static void SetFbxConverterPath(string path)
+        {
+            settings.fbxConverterPath = path;
+
+            WriteSettings();
+        } //SetFbxConverterPath
+
+        public static void ReadSettings()
+        {
+            if (File.Exists("settings.xml"))
             {
-                using (FileStream stream = new FileStream("settings.cfg", FileMode.Open))
+                XmlSerializer xmlSerializer = new XmlSerializer(typeof(Settings));
+
+                using (FileStream stream = new FileStream("settings.xml", FileMode.Open))
                 {
-                    StreamReader reader = new StreamReader(stream);
-                    List<string> lines = new List<string>(0);
-
-                    while (!reader.EndOfStream)
-                    {
-                        lines.Add(reader.ReadLine());
-                    } //while
-
-                    foreach (string s in lines)
-                    {
-                        if (s.Contains("TextureFolder:"))
-                        {
-                            int pathStart = s.IndexOf('"');
-                            int pathEnd = s.LastIndexOf('"');
-
-                            texturePath = s.Substring(pathStart + 1, pathEnd - pathStart - 1);
-                            break;
-                        } //if
-                    } //if
-
+                    settings = (Settings)xmlSerializer.Deserialize(stream);
                     stream.Close();
                 } //using
             } //if
-        } //ReadTexturePath
+        } //ReadSettings
 
-        public static void WriteTexturePath(string path)
+        public static void WriteSettings()
         {
-            using (FileStream stream = new FileStream("settings.cfg", FileMode.Create))
-            {
-                StreamWriter writer = new StreamWriter(stream);
-                writer.AutoFlush = true;
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(Settings));
 
-                writer.WriteLine(string.Format("TextureFolder: \"{0}\"", path));
+            using (FileStream stream = new FileStream("settings.xml", FileMode.Create))
+            {
+                xmlSerializer.Serialize(stream, settings);
                 stream.Close();
             } //using
-
-            ReadTexturePath();
-            Debug.Log("Texture path set to: " + path);
-        } //WriteTexturePath
+        } //WriteSettings
 
         public static void ReadPresetList()
         {
@@ -77,7 +79,7 @@ namespace FmdlStudio.Scripts.Static
             } //if
             else
                 Debug.Log("Could not find presets.xml");
-        } //ReadMaterialList
+        } //ReadPresetList
 
         public static void WritePresetList()
         {
@@ -92,6 +94,6 @@ namespace FmdlStudio.Scripts.Static
             } //using
 
             ReadPresetList();
-        } //WriteMaterialList
+        } //WritePresetList
     } //class
 } //namespace

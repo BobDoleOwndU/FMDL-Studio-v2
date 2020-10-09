@@ -41,7 +41,7 @@ namespace FmdlStudio.Scripts.Static
 
         public static void ConvertToFBX(GameObject gameObject, string filePath)
         {
-            Globals.ReadTexturePath();
+            Globals.ReadSettings();
             CultureInfo.DefaultThreadCurrentCulture = CultureInfo.CreateSpecificCulture("en-US");
 
             Clear();
@@ -610,10 +610,10 @@ namespace FmdlStudio.Scripts.Static
                 fbx.AppendFormat("\n\tVideo: {0}, \"Video::{1}\", \"Clip\" {{", videos[i], texture.name);
                 fbx.Append("\n\t\tType: \"Clip\"");
                 fbx.Append("\n\t\tProperties70:  {");
-                fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", Globals.texturePath + "\\" + texture.name);
+                fbx.AppendFormat("\n\t\t\tP: \"Path\", \"KString\", \"XRefUrl\", \"\", \"{0}\"", Globals.GetTexturePath() + "\\" + texture.name);
                 fbx.Append("\n\t\t}");
                 fbx.Append("\n\t\tUseMipMap: 0");
-                fbx.AppendFormat("\n\t\tFilename: \"{0}\"", Globals.texturePath + "\\" + texture.name);
+                fbx.AppendFormat("\n\t\tFilename: \"{0}\"", Globals.GetTexturePath() + "\\" + texture.name);
                 //fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + texture.name);
                 fbx.Append("\n\t}");
             } //for
@@ -634,7 +634,7 @@ namespace FmdlStudio.Scripts.Static
                 fbx.Append("\n\t\t\tP: \"UseMaterial\", \"bool\", \"\", \"\",1");
                 fbx.Append("\n\t\t}");
                 fbx.AppendFormat("\n\t\tMedia: \"Video::{0}\"", texture.Item2.name);
-                fbx.AppendFormat("\n\t\tFileName: \"{0}\"", Globals.texturePath + "\\" + texture.Item2.name);
+                fbx.AppendFormat("\n\t\tFileName: \"{0}\"", Globals.GetTexturePath() + "\\" + texture.Item2.name);
                 //fbx.AppendFormat("\n\t\tRelativeFilename: \"{0}\"", gameObject.name + "\\" + texture.Item2.name);
                 fbx.Append("\n\t\tModelUVTranslation: 0,0");
                 fbx.Append("\n\t\tModelUVScaling: 1,1");
