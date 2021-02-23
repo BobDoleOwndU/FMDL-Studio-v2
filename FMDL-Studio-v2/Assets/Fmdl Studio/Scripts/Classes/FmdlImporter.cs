@@ -38,7 +38,6 @@ namespace FmdlStudio.Scripts.Classes
             GameObject mainObject = new GameObject(fmdl.name);
             FoxModel foxModel = mainObject.AddComponent<FoxModel>();
             foxModel.meshGroups = new FoxMeshGroup[meshGroupCount];
-            foxModel.meshDefinitions = new FoxMeshDefinition[meshCount];
             Transform[] bones = new Transform[boneCount];
             Texture[] textures = new Texture[textureCount];
             Material[] materials = new Material[materialCount];
@@ -95,7 +94,6 @@ namespace FmdlStudio.Scripts.Classes
             GameObject mainObject = new GameObject(fmdl.name);
             FoxModel foxModel = mainObject.AddComponent<FoxModel>();
             foxModel.meshGroups = new FoxMeshGroup[meshGroupCount];
-            foxModel.meshDefinitions = new FoxMeshDefinition[meshCount];
             Transform[] bones = new Transform[boneCount];
             Texture[] textures = new Texture[textureCount];
             Material[] materials = new Material[materialCount];
@@ -311,7 +309,6 @@ namespace FmdlStudio.Scripts.Classes
                 GameObject gameObject = new GameObject();
                 gameObject.transform.parent = mainObject.transform;
                 SkinnedMeshRenderer skinnedMeshRenderer = gameObject.AddComponent<SkinnedMeshRenderer>();
-                foxModel.meshDefinitions[i] = new FoxMeshDefinition();
                 FoxMesh foxMesh = gameObject.AddComponent<FoxMesh>();
 
                 Fmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
@@ -447,19 +444,14 @@ namespace FmdlStudio.Scripts.Classes
                 skinnedMeshRenderer.sharedMesh = meshes[i];
                 skinnedMeshRenderer.rootBone = mainObject.transform;
 
-                foxModel.meshDefinitions[i].mesh = meshes[i];
-                foxModel.meshDefinitions[i].meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
-                foxModel.meshDefinitions[i].alpha = (FoxMeshDefinition.Alpha)fmdlMeshInfo.alphaEnum;
-                foxModel.meshDefinitions[i].shadow = (FoxMeshDefinition.Shadow)fmdlMeshInfo.shadowEnum;
-
                 foxMesh.meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
                 foxMesh.alpha = (FoxMesh.Alpha)fmdlMeshInfo.alphaEnum;
                 foxMesh.shadow = (FoxMesh.Shadow)fmdlMeshInfo.shadowEnum;
 
                 if (isGZFormat)
-                    name = fmdl.fmdlStrings[fmdl.fmdlMeshGroups[foxModel.meshDefinitions[i].meshGroup].nameIndex];
+                    name = fmdl.fmdlStrings[fmdl.fmdlMeshGroups[foxMesh.meshGroup].nameIndex];
                 else
-                    name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdl.fmdlMeshGroups[foxModel.meshDefinitions[i].meshGroup].nameIndex]);
+                    name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdl.fmdlMeshGroups[foxMesh.meshGroup].nameIndex]);
 
                 gameObject.name = $"{i} - {name}";
             } //for

@@ -1309,9 +1309,11 @@ namespace FmdlStudio.Scripts.Classes
 
             for (int i = 0; i < meshCount; i++)
             {
+                FoxMesh foxMesh = meshes[i].GetComponent<FoxMesh>();
+
                 if (i == 0)
                 {
-                    fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxModel.meshDefinitions[i].meshGroup;
+                    fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxMesh.meshGroup;
                     fmdlMeshGroupEntry.meshCount = 1;
                     fmdlMeshGroupEntry.firstMeshIndex = 0;
                     fmdlMeshGroupEntry.index = 0;
@@ -1319,7 +1321,7 @@ namespace FmdlStudio.Scripts.Classes
                 } //if
                 else
                 {
-                    if (foxModel.meshDefinitions[i].meshGroup == foxModel.meshDefinitions[i - 1].meshGroup)
+                    if (foxMesh.meshGroup == meshes[i - 1].GetComponent<FoxMesh>().meshGroup)
                         fmdlMeshGroupEntry.meshCount += 1;
                     else
                     {
@@ -1327,7 +1329,7 @@ namespace FmdlStudio.Scripts.Classes
 
                         fmdlMeshGroupEntry = new FmdlMeshGroupEntry();
 
-                        fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxModel.meshDefinitions[i].meshGroup;
+                        fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxMesh.meshGroup;
                         fmdlMeshGroupEntry.meshCount = 1;
                         fmdlMeshGroupEntry.firstMeshIndex = (ushort)i;
                         fmdlMeshGroupEntry.index = (ushort)meshGroupEntries.Count;
@@ -1347,9 +1349,10 @@ namespace FmdlStudio.Scripts.Classes
             {
                 FmdlMeshInfo fmdlMeshInfo = new FmdlMeshInfo();
                 SkinnedMeshRenderer mesh = meshes[i];
+                FoxMesh foxMesh = mesh.GetComponent<FoxMesh>();
 
-                fmdlMeshInfo.alphaEnum = (byte)foxModel.meshDefinitions[i].alpha;
-                fmdlMeshInfo.shadowEnum = (byte)foxModel.meshDefinitions[i].shadow;
+                fmdlMeshInfo.alphaEnum = (byte)foxMesh.alpha;
+                fmdlMeshInfo.shadowEnum = (byte)foxMesh.shadow;
                 fmdlMeshInfo.materialInstanceIndex = (ushort)materials.IndexOf(mesh.sharedMaterial);
                 fmdlMeshInfo.boneGroupIndex = (ushort)i;
                 fmdlMeshInfo.index = (ushort)i;

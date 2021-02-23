@@ -8,13 +8,12 @@ namespace FmdlStudio.Scripts.MonoBehaviours
     public class FoxModel : MonoBehaviour
     {
         public FoxMeshGroup[] meshGroups;
-        public FoxMeshDefinition[] meshDefinitions;
 
         private void Awake()
         {
-            if (meshDefinitions == null)
+            if (meshGroups == null)
             {
-                List<Mesh> meshes = new List<Mesh>(0);
+                List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
                 List<string> meshGroupNames = new List<string>(0);
 
                 GetMeshes(transform, meshes, meshGroupNames);
@@ -31,26 +30,26 @@ namespace FmdlStudio.Scripts.MonoBehaviours
                         meshGroups[i].parent = 0;
                 } //for
 
-                meshDefinitions = new FoxMeshDefinition[meshes.Count];
+                int meshCount = meshes.Count;
 
-                for (int i = 0; i < meshDefinitions.Length; i++)
+                for (int i = 0; i < meshCount; i++)
                 {
-                    meshDefinitions[i] = new FoxMeshDefinition();
-                    meshDefinitions[i].mesh = meshes[i];
+                    SkinnedMeshRenderer mesh = meshes[i];
+                    FoxMesh foxMesh = mesh.gameObject.AddComponent<FoxMesh>();
 
                     string name;
 
-                    if (char.IsDigit(meshDefinitions[i].mesh.name[0]) && meshDefinitions[i].mesh.name.Contains("-"))
-                        name = meshDefinitions[i].mesh.name.Substring(meshDefinitions[i].mesh.name.IndexOf('-') + 2);
+                    if (char.IsDigit(mesh.name[0]) && mesh.name.Contains("-"))
+                        name = mesh.name.Substring(mesh.name.IndexOf('-') + 2);
                     else
-                        name = meshDefinitions[i].mesh.name;
+                        name = mesh.name;
 
-                    meshDefinitions[i].meshGroup = meshGroupNames.IndexOf(name);
+                    foxMesh.meshGroup = meshGroupNames.IndexOf(name);
                 } //for
             } //if
         } //Start
 
-        private void GetMeshes(Transform transform, List<Mesh> meshes, List<string> meshGroupNames)
+        private void GetMeshes(Transform transform, List<SkinnedMeshRenderer> meshes, List<string> meshGroupNames)
         {
             foreach (Transform t in transform)
             {
@@ -67,7 +66,7 @@ namespace FmdlStudio.Scripts.MonoBehaviours
 
                 if (t.GetComponent<SkinnedMeshRenderer>())
                 {
-                    Mesh mesh = t.GetComponent<SkinnedMeshRenderer>().sharedMesh;
+                    SkinnedMeshRenderer mesh = t.GetComponent<SkinnedMeshRenderer>();
                     string name;
 
                     if (char.IsDigit(mesh.name[0]) && mesh.name.Contains("-"))
@@ -82,18 +81,6 @@ namespace FmdlStudio.Scripts.MonoBehaviours
                 } //if
             } //foreach
         } //GetMeshes
-    } //class
-
-    [System.Serializable]
-    public class FoxMeshDefinition
-    {
-        public enum Alpha { NoAlpha = 0, Glass = 0x10, Glass2 = 0x11, NoBackfaceCulling = 0x20, Glass3 = 0x30, Glass4 = 0x31, Decal = 0x50, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0, UnknownOMBS = 0xC0 }
-        public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, TintedGlass = 4, Glass = 5, LightOMBS = 0x24, GlassOMBS = 0x25, Shadow2 = 0x40, NoShadow2 = 0x41 }
-
-        public Mesh mesh;
-        public int meshGroup;
-        public Alpha alpha = Alpha.NoAlpha;
-        public Shadow shadow = Shadow.Shadow;
     } //class
 
     [System.Serializable]
