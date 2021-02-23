@@ -91,6 +91,8 @@ namespace FmdlStudio.Scripts.Classes
         {
             public byte alphaEnum;
             public byte shadowEnum;
+            public byte unknown0;
+            public byte unknown1; //Used by net fmdls in PES
             public ushort materialInstanceIndex;
             public ushort boneGroupIndex;
             public ushort index;
@@ -310,7 +312,7 @@ namespace FmdlStudio.Scripts.Classes
         public Vector4[] fmdlMaterialParameterVectors { get; private set; }
         public FmdlMesh[] fmdlMeshes { get; private set; }
         public string[] fmdlStrings { get; private set; }
-
+        
         public Fmdl(string name)
         {
             this.name = name;
@@ -473,17 +475,17 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Reading!", "Strings", 25f / 26f);
                         ReadStrings(reader);
                     } //if
-
-                    stream.Close();
-                    EditorUtility.ClearProgressBar();
                 } //try
                 catch (Exception e)
                 {
-                    stream.Close();
                     Debug.LogError($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
                     Debug.LogError($"An exception occured{e.StackTrace}");
-                    EditorUtility.ClearProgressBar();
                 } //catch
+                finally
+                {
+                    stream.Close();
+                    EditorUtility.ClearProgressBar();
+                } //finally
             } //using
         } //Read
 
@@ -704,7 +706,8 @@ namespace FmdlStudio.Scripts.Classes
 
                 fmdlMeshInfo.alphaEnum = reader.ReadByte();
                 fmdlMeshInfo.shadowEnum = reader.ReadByte();
-                reader.BaseStream.Position += 2;
+                fmdlMeshInfo.unknown0 = reader.ReadByte();
+                fmdlMeshInfo.unknown1 = reader.ReadByte();
                 fmdlMeshInfo.materialInstanceIndex = reader.ReadUInt16();
                 fmdlMeshInfo.boneGroupIndex = reader.ReadUInt16();
                 fmdlMeshInfo.index = reader.ReadUInt16();
@@ -846,7 +849,7 @@ namespace FmdlStudio.Scripts.Classes
         private void ReadVertexFormats(BinaryReader reader)
         {
             reader.BaseStream.Position = section0Offset + section0Infos[vertexFormatsIndex].offset;
-
+            
             for (int i = 0; i < section0Infos[vertexFormatsIndex].entryCount; i++)
             {
                 FmdlVertexFormat fmdlVertexFormat = new FmdlVertexFormat();
@@ -1051,6 +1054,9 @@ namespace FmdlStudio.Scripts.Classes
                         case 0xE:
                             fmdlMesh.tangents = new Vector4Half[fmdlMeshInfos[i].vertexCount];
                             break;
+                        default:
+                            Debug.LogWarning($"Unknown Case: 0x{fmdlVertexFormats[j].type.ToString("x")}, Data Type: {fmdlVertexFormats[j].dataType.ToString("x")}");
+                            break;
                     } //switch
                 } //for
 
@@ -1069,7 +1075,7 @@ namespace FmdlStudio.Scripts.Classes
                     for (int h = fmdlMeshFormatInfos[i].firstVertexFormatIndex; h < fmdlMeshFormatInfos[i].firstVertexFormatIndex + fmdlMeshFormatInfos[i].vertexFormatCount; h++)
                     {
                         reader.BaseStream.Position = position + fmdlVertexFormats[h].offset;
-
+                        
                         switch (fmdlVertexFormats[h].type)
                         {
                             case 0:
@@ -1123,12 +1129,12 @@ namespace FmdlStudio.Scripts.Classes
                 reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlMeshInfos[i].firstFaceVertexIndex * 2;
 
                 fmdlMesh.triangles = new ushort[fmdlMeshInfos[i].faceVertexCount];
-
+                
                 for (int j = 0; j < fmdlMeshInfos[i].faceVertexCount; j++)
                 {
                     fmdlMesh.triangles[j] = reader.ReadUInt16();
                 } //for
-
+                
                 fmdlMeshes[i] = fmdlMesh;
             } //for
         } //ReadBuffer

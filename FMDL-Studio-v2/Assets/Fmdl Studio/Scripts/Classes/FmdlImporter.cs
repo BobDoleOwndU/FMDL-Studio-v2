@@ -312,6 +312,7 @@ namespace FmdlStudio.Scripts.Classes
                 gameObject.transform.parent = mainObject.transform;
                 SkinnedMeshRenderer skinnedMeshRenderer = gameObject.AddComponent<SkinnedMeshRenderer>();
                 foxModel.meshDefinitions[i] = new FoxMeshDefinition();
+                FoxMesh foxMesh = gameObject.AddComponent<FoxMesh>();
 
                 Fmdl.FmdlMesh fmdlMesh = fmdl.fmdlMeshes[i];
                 Fmdl.FmdlMeshInfo fmdlMeshInfo = fmdl.fmdlMeshInfos[i];
@@ -366,7 +367,7 @@ namespace FmdlStudio.Scripts.Classes
                 } //for
 
                 for (int j = 0; j < faceLength; j++)
-                    triangles[j] = fmdlMesh.triangles[j];
+                    triangles[j] = fmdlMesh.triangles[j] % vertexLength; // The % allows PES nets to import. Not sure if correct.
 
                 for (int j = 0; j < boneWeights.Length; j++)
                 {
@@ -450,6 +451,10 @@ namespace FmdlStudio.Scripts.Classes
                 foxModel.meshDefinitions[i].meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
                 foxModel.meshDefinitions[i].alpha = (FoxMeshDefinition.Alpha)fmdlMeshInfo.alphaEnum;
                 foxModel.meshDefinitions[i].shadow = (FoxMeshDefinition.Shadow)fmdlMeshInfo.shadowEnum;
+
+                foxMesh.meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
+                foxMesh.alpha = (FoxMesh.Alpha)fmdlMeshInfo.alphaEnum;
+                foxMesh.shadow = (FoxMesh.Shadow)fmdlMeshInfo.shadowEnum;
 
                 if (isGZFormat)
                     name = fmdl.fmdlStrings[fmdl.fmdlMeshGroups[foxModel.meshDefinitions[i].meshGroup].nameIndex];
