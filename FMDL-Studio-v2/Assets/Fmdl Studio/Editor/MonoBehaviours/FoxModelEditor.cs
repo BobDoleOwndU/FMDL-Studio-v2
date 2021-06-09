@@ -52,7 +52,77 @@ namespace FmdlStudio.Editor.MonoBehaviours
 
                         foxModel.meshGroups[i].name = EditorGUILayout.TextField("Name", foxModel.meshGroups[i].name);
                         foxModel.meshGroups[i].parent = (short)(EditorGUILayout.Popup("Parent", foxModel.meshGroups[i].parent + 1, meshGroupStrings) - 1);
+
+                        GUILayout.BeginHorizontal();
                         foxModel.meshGroups[i].visible = EditorGUILayout.Toggle("Is Visible", foxModel.meshGroups[i].visible);
+
+                        if (GUILayout.Button("+", GUILayout.Width(25)))
+                        {
+                            meshGroupsLength++;
+                            foxModel.meshGroups = SetArraySize(foxModel.meshGroups, meshGroupsLength);
+
+                            for(int j = meshGroupsLength - 1; j > i; j--)
+                            {
+                                foxModel.meshGroups[j] = foxModel.meshGroups[j - 1];
+
+                                if (foxModel.meshGroups[j].parent > i)
+                                    foxModel.meshGroups[j].parent++;
+                            } //for
+
+                            foxModel.meshGroups[i + 1] = new FoxMeshGroup();
+
+                            serializedObject.Update();
+                        } //if
+
+                        if (GUILayout.Button("-", GUILayout.Width(25)))
+                        {
+                            for (int j = i; j < meshGroupsLength - 1; j++)
+                            {
+                                foxModel.meshGroups[j] = foxModel.meshGroups[j + 1];
+
+                                if (foxModel.meshGroups[j].parent > i)
+                                    foxModel.meshGroups[j].parent--;
+                            } //for
+
+                            meshGroupsLength--;
+                            foxModel.meshGroups = SetArraySize(foxModel.meshGroups, meshGroupsLength);
+                            serializedObject.Update();
+                        } //if
+
+                        if (i != 0)
+                        {
+                            if (GUILayout.Button("▲", GUILayout.Width(25)))
+                            {
+                                FoxMeshGroup temp = foxModel.meshGroups[i];
+                                foxModel.meshGroups[i] = foxModel.meshGroups[i - 1];
+                                foxModel.meshGroups[i - 1] = temp;
+
+                                for (int j = 0; j < meshGroupsLength; j++)
+                                    if (foxModel.meshGroups[j].parent == i)
+                                        foxModel.meshGroups[j].parent--;
+                                    else if(foxModel.meshGroups[j].parent == i - 1)
+                                        foxModel.meshGroups[j].parent++;
+
+                            } //if
+                        } //if
+
+                        if (i != foxModel.meshGroups.Length - 1)
+                        {
+                            if (GUILayout.Button("▼", GUILayout.Width(25)))
+                            {
+                                FoxMeshGroup temp = foxModel.meshGroups[i];
+                                foxModel.meshGroups[i] = foxModel.meshGroups[i + 1];
+                                foxModel.meshGroups[i + 1] = temp;
+
+                                for (int j = 0; j < meshGroupsLength; j++)
+                                    if (foxModel.meshGroups[j].parent == i)
+                                        foxModel.meshGroups[j].parent++;
+                                    else if (foxModel.meshGroups[j].parent == i + 1)
+                                        foxModel.meshGroups[j].parent--;
+                            } //if
+                        } //if
+                        GUILayout.EndHorizontal();
+
                     } //if
                 } //for
             } //if
