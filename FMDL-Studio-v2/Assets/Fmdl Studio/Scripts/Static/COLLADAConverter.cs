@@ -219,6 +219,52 @@ namespace FmdlStudio.Scripts.Static
 
                 geometry.Mesh.Source.Add(normals);
 
+                //Colors
+                if (m.sharedMesh.colors.Length > 0)
+                {
+                    Source colors = new Source();
+                    colors.Id = $"{m.name.Replace(' ', '_')}_Colors";
+                    colors.Float_array = new Float_array();
+                    colors.Float_array.Id = $"{m.name.Replace(' ', '_')}_ColorArr";
+                    colors.Float_array.Count = (m.sharedMesh.colors.Length * 4).ToString();
+
+                    StringBuilder colorArr = new StringBuilder();
+
+                    foreach (Color c in m.sharedMesh.colors)
+                    {
+                        colorArr.Append($"{c.r} {c.g} {c.b} {c.a} ");
+                    } //foreach
+
+                    colorArr.Length--;
+
+                    colors.Float_array.Text = colorArr.ToString();
+                    colors.Technique_common = new Technique_common();
+                    colors.Technique_common.Accessor = new Accessor();
+                    colors.Technique_common.Accessor.Source = $"#{colors.Float_array.Id}";
+                    colors.Technique_common.Accessor.Count = m.sharedMesh.colors.Length.ToString();
+                    colors.Technique_common.Accessor.Stride = "4";
+
+                    Param r = new Param();
+                    Param g = new Param();
+                    Param b = new Param();
+                    Param a = new Param();
+                    r.Name = "R";
+                    g.Name = "G";
+                    b.Name = "B";
+                    a.Name = "A";
+                    r.Type = "float";
+                    g.Type = "float";
+                    b.Type = "float";
+                    a.Type = "float";
+                    colors.Technique_common.Accessor.Param = new List<Param>(0);
+                    colors.Technique_common.Accessor.Param.Add(r);
+                    colors.Technique_common.Accessor.Param.Add(g);
+                    colors.Technique_common.Accessor.Param.Add(b);
+                    colors.Technique_common.Accessor.Param.Add(a);
+
+                    geometry.Mesh.Source.Add(colors);
+                } //if
+
                 //UVs0
                 if (m.sharedMesh.uv.Length > 0)
                 {
@@ -396,6 +442,16 @@ namespace FmdlStudio.Scripts.Static
                 normal.Source = $"#{normals.Id}";
                 normal.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(normal);
+
+                if (m.sharedMesh.colors.Length > 0)
+                {
+                    Xml2CSharp.Input color = new Xml2CSharp.Input();
+                    color.Semantic = "COLOR";
+                    color.Source = $"#{m.name.Replace(' ', '_')}_Colors";
+                    color.Set = "0";
+                    color.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(color);
+                } //if
 
                 if (m.sharedMesh.uv.Length > 0)
                 {

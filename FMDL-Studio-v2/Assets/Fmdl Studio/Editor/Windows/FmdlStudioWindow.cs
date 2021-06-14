@@ -131,5 +131,41 @@ namespace FmdlStudio.Editor.Windows
             else
                 Debug.Log("No folder selected.");
         } //SetTextureFolder
+
+        [MenuItem("FMDL Studio/Bounding Box Tools/Copy Bounding Boxes", false, 300)]
+        public static void CopyBoundingBoxes()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                BoundingBoxTools.SetSource(Selection.activeGameObject.transform);
+                Debug.Log("Bounding Boxes Copied!");
+            } //if
+            else
+                Debug.Log("No objects selected.");
+        } //CopyBoundingBoxes
+
+        [MenuItem("FMDL Studio/Bounding Box Tools/Paste Bounding Boxes", false, 301)]
+        public static void PasteBoundingBoxes()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                BoundingBoxTools.SetTarget(Selection.activeGameObject.transform);
+                Debug.Log("Bounding Boxes Pasted!");
+            } //if
+            else
+                Debug.Log("No objects selected.");
+        } //CopyBoundingBoxes
+
+        [MenuItem("FMDL Studio/Bounding Box Tools/Clear Bounding Boxes", false, 302)]
+        public static void ClearBoundingBoxes()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                BoundingBoxTools.ClearBoundingBoxes(Selection.activeGameObject.transform);
+                Debug.Log("Bounding Boxes Cleared!");
+            } //if
+            else
+                Debug.Log("No objects selected.");
+        } //CopyBoundingBoxes
     } //class
 } //namespace
