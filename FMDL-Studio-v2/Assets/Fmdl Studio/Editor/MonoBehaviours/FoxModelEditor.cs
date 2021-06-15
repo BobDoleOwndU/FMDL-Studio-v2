@@ -1,4 +1,5 @@
 ﻿using FmdlStudio.Scripts.MonoBehaviours;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -72,6 +73,14 @@ namespace FmdlStudio.Editor.MonoBehaviours
                             foxModel.meshGroups[i + 1] = new FoxMeshGroup();
 
                             serializedObject.Update();
+
+                            List<FoxMesh> foxMeshes = GetFoxMeshes(foxModel.gameObject.transform);
+
+                            foreach(FoxMesh f in foxMeshes)
+                            {
+                                if (f.meshGroup > i)
+                                    f.meshGroup++;
+                            } //foreach
                         } //if
 
                         if (GUILayout.Button("-", GUILayout.Width(25)))
@@ -87,6 +96,14 @@ namespace FmdlStudio.Editor.MonoBehaviours
                             meshGroupsLength--;
                             foxModel.meshGroups = SetArraySize(foxModel.meshGroups, meshGroupsLength);
                             serializedObject.Update();
+
+                            List<FoxMesh> foxMeshes = GetFoxMeshes(foxModel.gameObject.transform);
+
+                            foreach (FoxMesh f in foxMeshes)
+                            {
+                                if (f.meshGroup > i)
+                                    f.meshGroup--;
+                            } //foreach
                         } //if
 
                         if (i != 0)
@@ -103,6 +120,15 @@ namespace FmdlStudio.Editor.MonoBehaviours
                                     else if(foxModel.meshGroups[j].parent == i - 1)
                                         foxModel.meshGroups[j].parent++;
 
+                                List<FoxMesh> foxMeshes = GetFoxMeshes(foxModel.gameObject.transform);
+
+                                foreach (FoxMesh f in foxMeshes)
+                                {
+                                    if (f.meshGroup == i)
+                                        f.meshGroup--;
+                                    else if (f.meshGroup == i - 1)
+                                        f.meshGroup++;
+                                } //foreach
                             } //if
                         } //if
 
@@ -119,10 +145,20 @@ namespace FmdlStudio.Editor.MonoBehaviours
                                         foxModel.meshGroups[j].parent++;
                                     else if (foxModel.meshGroups[j].parent == i + 1)
                                         foxModel.meshGroups[j].parent--;
+
+                                List<FoxMesh> foxMeshes = GetFoxMeshes(foxModel.gameObject.transform);
+
+                                foreach (FoxMesh f in foxMeshes)
+                                {
+                                    if (f.meshGroup == i)
+                                        f.meshGroup++;
+                                    else if (f.meshGroup == i + 1)
+                                        f.meshGroup--;
+                                } //foreach
                             } //if
                         } //if
-                        GUILayout.EndHorizontal();
 
+                        GUILayout.EndHorizontal();
                     } //if
                 } //for
             } //if
@@ -137,5 +173,16 @@ namespace FmdlStudio.Editor.MonoBehaviours
 
             return newArray;
         } //SetArraySize
+
+        private List<FoxMesh> GetFoxMeshes(Transform transform)
+        {
+            List<FoxMesh> foxMeshes = new List<FoxMesh>(0);
+
+            foreach(Transform t in transform)
+                if(t.gameObject.GetComponent<FoxMesh>())
+                    foxMeshes.Add(t.gameObject.GetComponent<FoxMesh>());
+
+            return foxMeshes;
+        } //GetFoxMeshes
     } //class
 } //namespace
