@@ -1968,7 +1968,7 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMesh.colors = mesh.colors.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
                 fmdlMesh.boneWeights = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
                 fmdlMesh.boneIndices = mesh.boneWeights.Length > 0 ? new Vector4[vertexCount] : new Vector4[0];
-                fmdlMesh.uv = new Vector2Half[vertexCount];
+                fmdlMesh.uv = mesh.uv.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv2 = mesh.uv2.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv3 = mesh.uv3.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv4 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
@@ -2017,18 +2017,22 @@ namespace FmdlStudio.Scripts.Classes
                             } //else
                         } //if
                     } //if
-                    fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(1 - mesh.uv[j].y));
-                    if (mesh.uv2.Length > 0)
+                    if (mesh.uv.Length > 0)
                     {
-                        fmdlMesh.uv2[j] = new Vector2Half(new Half(mesh.uv2[j].x), new Half(1 - mesh.uv2[j].y));
+                        fmdlMesh.uv[j] = new Vector2Half(new Half(mesh.uv[j].x), new Half(1 - mesh.uv[j].y));
 
-                        if (mesh.uv3.Length > 0)
+                        if (mesh.uv2.Length > 0)
                         {
-                            fmdlMesh.uv3[j] = new Vector2Half(new Half(mesh.uv3[j].x), new Half(1 - mesh.uv3[j].y));
+                            fmdlMesh.uv2[j] = new Vector2Half(new Half(mesh.uv2[j].x), new Half(1 - mesh.uv2[j].y));
 
-                            if (mesh.uv4.Length > 0)
+                            if (mesh.uv3.Length > 0)
                             {
-                                fmdlMesh.uv4[j] = new Vector2Half(new Half(mesh.uv4[j].x), new Half(1 - mesh.uv4[j].y));
+                                fmdlMesh.uv3[j] = new Vector2Half(new Half(mesh.uv3[j].x), new Half(1 - mesh.uv3[j].y));
+
+                                if (mesh.uv4.Length > 0)
+                                {
+                                    fmdlMesh.uv4[j] = new Vector2Half(new Half(mesh.uv4[j].x), new Half(1 - mesh.uv4[j].y));
+                                } //if
                             } //if
                         } //if
                     } //if
