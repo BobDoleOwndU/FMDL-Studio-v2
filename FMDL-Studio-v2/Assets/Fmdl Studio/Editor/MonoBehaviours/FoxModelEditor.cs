@@ -89,7 +89,7 @@ namespace FmdlStudio.Editor.MonoBehaviours
                             {
                                 foxModel.meshGroups[j] = foxModel.meshGroups[j + 1];
 
-                                if (foxModel.meshGroups[j].parent > i)
+                                if (foxModel.meshGroups[j].parent >= i)
                                     foxModel.meshGroups[j].parent--;
                             } //for
 
@@ -101,7 +101,7 @@ namespace FmdlStudio.Editor.MonoBehaviours
 
                             foreach (FoxMesh f in foxMeshes)
                             {
-                                if (f.meshGroup > i)
+                                if (f.meshGroup >= i && f.meshGroup != 0)
                                     f.meshGroup--;
                             } //foreach
                         } //if
