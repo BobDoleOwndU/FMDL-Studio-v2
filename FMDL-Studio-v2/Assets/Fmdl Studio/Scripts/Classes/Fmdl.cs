@@ -1288,12 +1288,6 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMeshGroup.nameIndex = (ushort)strings.Count;
                 strings.Add(foxMeshGroup.name);
 
-                /*if(i == 0 && foxMeshGroup.name != "MESH_ROOT")
-                {
-                    EditorUtility.DisplayDialog("MESH_ROOT missing!", "MESH_ROOT is missing from the mesh groups or is not the first mesh group!", "Ok");
-                    throw new Exception("MESH_ROOT missing!");
-                } //if*/
-
                 fmdlMeshGroup.invisibilityFlag = foxMeshGroup.visible ? (ushort)0 : (ushort)1;
                 fmdlMeshGroup.parentIndex = foxMeshGroup.parent;
                 fmdlMeshGroup.unknown0 = -1;
@@ -2511,21 +2505,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Bones", 2f / 25f);
                         section0Infos[bonesIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < boneCount; i++)
-                        {
-                            writer.Write(fmdlBones[i].nameIndex);
-                            writer.Write(fmdlBones[i].parentIndex);
-                            writer.Write(fmdlBones[i].boundingBoxIndex);
-                            writer.Write(fmdlBones[i].unknown0);
-                            writer.WriteZeroes(8);
-                            for (int j = 0; j < 4; j++)
-                                writer.Write(fmdlBones[i].localPosition[j]);
-                            for (int j = 0; j < 4; j++)
-                                writer.Write(fmdlBones[i].worldPosition[j]);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteBones(writer, boneCount);
                     } //if
 
                     if (meshGroupCount > 0)
@@ -2533,16 +2513,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Mesh Groups", 3f / 25f);
                         section0Infos[meshGroupsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshGroupCount; i++)
-                        {
-                            writer.Write(fmdlMeshGroups[i].nameIndex);
-                            writer.Write(fmdlMeshGroups[i].invisibilityFlag);
-                            writer.Write(fmdlMeshGroups[i].parentIndex);
-                            writer.Write(fmdlMeshGroups[i].unknown0);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMeshGroups(writer, meshGroupCount);
                     } //if
 
                     if (meshGroupEntryCount > 0)
@@ -2550,20 +2521,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Mesh Group Entries", 4f / 25f);
                         section0Infos[meshGroupEntriesIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshGroupEntryCount; i++)
-                        {
-                            writer.WriteZeroes(4);
-                            writer.Write(fmdlMeshGroupEntries[i].meshGroupIndex);
-                            writer.Write(fmdlMeshGroupEntries[i].meshCount);
-                            writer.Write(fmdlMeshGroupEntries[i].firstMeshIndex);
-                            writer.Write(fmdlMeshGroupEntries[i].index);
-                            writer.WriteZeroes(4);
-                            writer.Write(fmdlMeshGroupEntries[i].firstFaceInfoIndex);
-                            writer.WriteZeroes(0xE);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMeshGroupEntries(writer, meshGroupEntryCount);
                     } //if
 
                     if (meshCount > 0)
@@ -2571,24 +2529,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Mesh Info", 5f / 25f);
                         section0Infos[meshInfoIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            writer.Write(fmdlMeshInfos[i].alphaEnum);
-                            writer.Write(fmdlMeshInfos[i].shadowEnum);
-                            writer.WriteZeroes(2);
-                            writer.Write(fmdlMeshInfos[i].materialInstanceIndex);
-                            writer.Write(fmdlMeshInfos[i].boneGroupIndex);
-                            writer.Write(fmdlMeshInfos[i].index);
-                            writer.Write(fmdlMeshInfos[i].vertexCount);
-                            writer.WriteZeroes(4);
-                            writer.Write(fmdlMeshInfos[i].firstFaceVertexIndex);
-                            writer.Write(fmdlMeshInfos[i].faceVertexCount);
-                            writer.Write(fmdlMeshInfos[i].firstFaceInfoIndex);
-                            writer.WriteZeroes(0x10);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMeshInfos(writer, meshCount);
                     } //if
 
                     if (materialInstanceCount > 0)
@@ -2596,20 +2537,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Material Instances", 6f / 25f);
                         section0Infos[materialInstancesIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < materialInstanceCount; i++)
-                        {
-                            writer.Write(fmdlMaterialInstances[i].nameIndex);
-                            writer.WriteZeroes(2);
-                            writer.Write(fmdlMaterialInstances[i].materialIndex);
-                            writer.Write(fmdlMaterialInstances[i].textureCount);
-                            writer.Write(fmdlMaterialInstances[i].parameterCount);
-                            writer.Write(fmdlMaterialInstances[i].firstTextureIndex);
-                            writer.Write(fmdlMaterialInstances[i].firstParameterIndex);
-                            writer.WriteZeroes(4);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMaterialInstances(writer, materialInstanceCount);
                     } //if
 
                     if (boneGroupCount > 0)
@@ -2617,17 +2545,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Bone Groups", 7f / 25f);
                         section0Infos[boneGroupsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < boneGroupCount; i++)
-                        {
-                            writer.Write(fmdlBoneGroups[i].unknown0);
-                            writer.Write(fmdlBoneGroups[i].boneIndexCount);
-                            for (int j = 0; j < fmdlBoneGroups[i].boneIndexCount; j++)
-                                writer.Write(fmdlBoneGroups[i].boneIndices[j]);
-                            writer.WriteZeroes(0x40 - fmdlBoneGroups[i].boneIndexCount * 2);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteBoneGroups(writer, boneGroupCount);
                     } //if
 
                     if (textureCount > 0)
@@ -2635,14 +2553,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Textures", 8f / 25f);
                         section0Infos[texturesIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < textureCount; i++)
-                        {
-                            writer.Write(fmdlTextures[i].nameIndex);
-                            writer.Write(fmdlTextures[i].pathIndex);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteTextures(writer, textureCount);
                     } //if
 
                     if (materialParameterCount > 0)
@@ -2650,14 +2561,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Material Parameters", 9f / 25f);
                         section0Infos[materialParametersIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < materialParameterCount; i++)
-                        {
-                            writer.Write(fmdlMaterialParameters[i].nameIndex);
-                            writer.Write(fmdlMaterialParameters[i].referenceIndex);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMaterialParameters(writer, materialParameterCount);
                     } //if
 
                     if (materialCount > 0)
@@ -2665,14 +2569,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Materials", 10f / 25f);
                         section0Infos[materialsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < materialCount; i++)
-                        {
-                            writer.Write(fmdlMaterials[i].nameIndex);
-                            writer.Write(fmdlMaterials[i].typeIndex);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMaterials(writer, materialCount);
                     } //if
 
                     if (meshCount > 0)
@@ -2680,18 +2577,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Mesh Format Info", 11f / 25f);
                         section0Infos[meshFormatInfoIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            writer.Write(fmdlMeshFormatInfos[i].meshFormatCount);
-                            writer.Write(fmdlMeshFormatInfos[i].vertexFormatCount);
-                            writer.Write(fmdlMeshFormatInfos[i].unknown0);
-                            writer.Write(fmdlMeshFormatInfos[i].uvCount);
-                            writer.Write(fmdlMeshFormatInfos[i].firstMeshFormatIndex);
-                            writer.Write(fmdlMeshFormatInfos[i].firstVertexFormatIndex);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMeshFormatInfos(writer, meshCount);
                     } //if
 
                     if (meshFormatCount > 0)
@@ -2699,17 +2585,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Mesh Formats", 12f / 25f);
                         section0Infos[meshFormatsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshFormatCount; i++)
-                        {
-                            writer.Write(fmdlMeshFormats[i].bufferOffsetIndex);
-                            writer.Write(fmdlMeshFormats[i].vertexFormatCount);
-                            writer.Write(fmdlMeshFormats[i].length);
-                            writer.Write(fmdlMeshFormats[i].type);
-                            writer.Write(fmdlMeshFormats[i].offset);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMeshFormats(writer, meshFormatCount);
                     } //if
 
                     if (vertexFormatCount > 0)
@@ -2717,15 +2593,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Vertex Formats", 13f / 25f);
                         section0Infos[vertexFormatsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < vertexFormatCount; i++)
-                        {
-                            writer.Write(fmdlVertexFormats[i].type);
-                            writer.Write(fmdlVertexFormats[i].dataType);
-                            writer.Write(fmdlVertexFormats[i].offset);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteVertexFormats(writer, vertexFormatCount);
                     } //if
 
                     if (stringCount > 0)
@@ -2733,15 +2601,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "String Info", 14f / 25f);
                         section0Infos[stringInfoIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < stringCount; i++)
-                        {
-                            writer.Write(fmdlStringInfos[i].section1BlockIndex);
-                            writer.Write(fmdlStringInfos[i].length);
-                            writer.Write(fmdlStringInfos[i].offset);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteStringInfos(writer, stringCount);
                     } //if
 
                     if (boundingBoxCount > 0)
@@ -2749,18 +2609,12 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Bounding Boxes", 15f / 25f);
                         section0Infos[boundingBoxesIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < boundingBoxCount; i++)
-                        {
-                            for (int j = 0; j < 4; j++)
-                                writer.Write(fmdlBoundingBoxes[i].max[j]);
-                            for (int j = 0; j < 4; j++)
-                                writer.Write(fmdlBoundingBoxes[i].min[j]);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteBoundingBoxes(writer, boundingBoxCount);
                     } //if
 
+                    ////////////////////////////////////////////////////////////////
+                    //Section should eventually be split off into their own methods.
+                    //Until LODs are implemented, doesn't matter though.
                     EditorUtility.DisplayProgressBar("Writing!", "Buffer Offsets", 16f / 25f);
                     section0Infos[bufferOffsetsIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
@@ -2785,22 +2639,20 @@ namespace FmdlStudio.Scripts.Classes
 
                     if (writer.BaseStream.Position % 0x10 != 0)
                         writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                    //End
+                    ////////////////////////////////////////////////////////////////
 
                     if (meshCount > 0)
                     {
                         EditorUtility.DisplayProgressBar("Writing!", "Face Info", 18f / 25f);
                         section0Infos[faceInfoIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
 
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            writer.Write(fmdlFaceInfos[i].firstFaceVertexIndex);
-                            writer.Write(fmdlFaceInfos[i].faceVertexCount);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteFaceInfos(writer, meshCount);
                     } //if
 
+                    ////////////////////////////////////////////////////////////////
+                    //Another section that should eventually have its own methods.
+                    //Dunno what these do though; so doesn't matter for now.
                     EditorUtility.DisplayProgressBar("Writing!", "Type 12s", 19f / 25f);
                     section0Infos[type12Index].offset = (uint)writer.BaseStream.Position - section0Offset;
 
@@ -2822,6 +2674,8 @@ namespace FmdlStudio.Scripts.Classes
 
                     if (writer.BaseStream.Position % 0x10 != 0)
                         writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                    //End
+                    ////////////////////////////////////////////////////////////////
 
                     section0Length = (uint)writer.BaseStream.Position - section0Offset;
                     section1Offset = (uint)writer.BaseStream.Position;
@@ -2831,12 +2685,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Material Parameter Vectors", 21f / 25f);
                         section1Infos[materialParameterVectorsIndex].offset = (uint)writer.BaseStream.Position - section1Offset;
 
-                        for (int i = 0; i < materialParameterVectorCount; i++)
-                            for (int j = 0; j < 4; j++)
-                                writer.Write(fmdlMaterialParameterVectors[i][j]);
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+                        WriteMaterialParameterVectors(writer, materialParameterVectorCount);
 
                         section1Infos[materialParameterVectorsIndex].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[materialParameterVectorsIndex].offset;
                     } //if
@@ -2846,107 +2695,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Buffer", 22f / 25f);
                         section1Infos[bufferIndex].offset = (uint)writer.BaseStream.Position - section1Offset;
 
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            int vertexCount = fmdlMeshes[i].vertices.Length;
-
-                            for (int j = 0; j < vertexCount; j++)
-                                for (int h = 0; h < 3; h++)
-                                    writer.Write(fmdlMeshes[i].vertices[j][h]);
-
-                            if (writer.BaseStream.Position % 0x10 != 0)
-                                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-
-                        fmdlBufferOffsets[0].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
-                        fmdlBufferOffsets[1].offset = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
-
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            int vertexCount = fmdlMeshes[i].vertices.Length;
-
-                            for (int j = 0; j < vertexCount; j++)
-                            {
-                                if (fmdlMeshes[i].normals.Length > 0)
-                                {
-                                    for (int h = 0; h < 4; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].normals[j][h]));
-                                } //if
-
-                                if (fmdlMeshes[i].tangents.Length > 0)
-                                {
-                                    for (int h = 0; h < 4; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].tangents[j][h]));
-                                } //if
-
-                                if (fmdlMeshes[i].colors.Length > 0)
-                                {
-                                    for (int h = 0; h < 4; h++)
-                                        writer.Write((byte)fmdlMeshes[i].colors[j][h]);
-                                } //if
-
-                                if (fmdlMeshes[i].boneWeights.Length > 0)
-                                {
-                                    for (int h = 0; h < 4; h++)
-                                        writer.Write((byte)fmdlMeshes[i].boneWeights[j][h]);
-                                } //if
-
-                                if (fmdlMeshes[i].boneIndices.Length > 0)
-                                {
-                                    for (int h = 0; h < 4; h++)
-                                        writer.Write((byte)fmdlMeshes[i].boneIndices[j][h]);
-                                } //if
-
-                                if (fmdlMeshes[i].uv.Length > 0)
-                                {
-                                    for (int h = 0; h < 2; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].uv[j][h]));
-                                } //if
-
-                                if (fmdlMeshes[i].uv2.Length > 0)
-                                {
-                                    for (int h = 0; h < 2; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].uv2[j][h]));
-                                } //if
-
-                                if (fmdlMeshes[i].uv3.Length > 0)
-                                {
-                                    for (int h = 0; h < 2; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].uv3[j][h]));
-                                } //if
-
-                                if (fmdlMeshes[i].uv4.Length > 0)
-                                {
-                                    for (int h = 0; h < 2; h++)
-                                        writer.Write(Half.GetBytes(fmdlMeshes[i].uv4[j][h]));
-                                } //if
-                            } //for
-
-                            if (writer.BaseStream.Position % 0x10 != 0)
-                                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-
-                        fmdlBufferOffsets[1].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset - fmdlBufferOffsets[1].offset;
-                        fmdlBufferOffsets[2].offset = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
-
-                        for (int i = 0; i < meshCount; i++)
-                        {
-                            int faceVertexCount = fmdlMeshes[i].triangles.Length;
-
-                            for (int j = 0; j < faceVertexCount; j++)
-                                writer.Write(fmdlMeshes[i].triangles[j]);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-
-                        fmdlBufferOffsets[2].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset - fmdlBufferOffsets[2].offset;
+                        WriteBuffer(writer, meshCount);
 
                         section1Infos[bufferIndex].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
                     } //if
@@ -2956,20 +2705,7 @@ namespace FmdlStudio.Scripts.Classes
                         EditorUtility.DisplayProgressBar("Writing!", "Strings", 23f / 25f);
                         section1Infos[stringsIndex].offset = (uint)writer.BaseStream.Position - section1Offset;
 
-                        for (int i = 0; i < stringCount; i++)
-                        {
-                            int currentStringLength = fmdlStrings[i].Length;
-
-                            for (int j = 0; j < currentStringLength; j++)
-                                writer.Write(fmdlStrings[i][j]);
-
-                            writer.WriteZeroes(1);
-                        } //for
-
-                        if (writer.BaseStream.Position % 0x10 != 0)
-                            writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
-
-                        section1Infos[stringsIndex].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[stringsIndex].offset;
+                        WriteStrings(writer, stringCount);
 
                         section1Length = (uint)writer.BaseStream.Position - section1Offset;
                     } //if
@@ -3004,18 +2740,376 @@ namespace FmdlStudio.Scripts.Classes
                         writer.Write(fmdlBufferOffsets[i].offset);
                         writer.BaseStream.Position += 8;
                     } //for
-
-                    stream.Close();
-                    EditorUtility.ClearProgressBar();
                 } //try
                 catch (Exception e)
                 {
-                    stream.Close();
                     Debug.LogError($"{e.Message} The stream was at offset 0x{stream.Position.ToString("x")} when this exception occured.");
                     Debug.LogError($"An exception occured{e.StackTrace}");
-                    EditorUtility.ClearProgressBar();
                 } //catch
+                finally
+                {
+                    stream.Close();
+                    EditorUtility.ClearProgressBar();
+                } //finally
             } //using
         } //WriteFmdlData
-    } //ExpFmdl
+
+        private void WriteBones(BinaryWriter writer, int boneCount)
+        {
+            for (int i = 0; i < boneCount; i++)
+            {
+                writer.Write(fmdlBones[i].nameIndex);
+                writer.Write(fmdlBones[i].parentIndex);
+                writer.Write(fmdlBones[i].boundingBoxIndex);
+                writer.Write(fmdlBones[i].unknown0);
+                writer.WriteZeroes(8);
+                for (int j = 0; j < 4; j++)
+                    writer.Write(fmdlBones[i].localPosition[j]);
+                for (int j = 0; j < 4; j++)
+                    writer.Write(fmdlBones[i].worldPosition[j]);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteBones
+
+        private void WriteMeshGroups(BinaryWriter writer, int meshGroupCount)
+        {
+            for (int i = 0; i < meshGroupCount; i++)
+            {
+                writer.Write(fmdlMeshGroups[i].nameIndex);
+                writer.Write(fmdlMeshGroups[i].invisibilityFlag);
+                writer.Write(fmdlMeshGroups[i].parentIndex);
+                writer.Write(fmdlMeshGroups[i].unknown0);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMeshGroups
+
+        private void WriteMeshGroupEntries(BinaryWriter writer, int meshGroupEntryCount)
+        {
+            for (int i = 0; i < meshGroupEntryCount; i++)
+            {
+                writer.WriteZeroes(4);
+                writer.Write(fmdlMeshGroupEntries[i].meshGroupIndex);
+                writer.Write(fmdlMeshGroupEntries[i].meshCount);
+                writer.Write(fmdlMeshGroupEntries[i].firstMeshIndex);
+                writer.Write(fmdlMeshGroupEntries[i].index);
+                writer.WriteZeroes(4);
+                writer.Write(fmdlMeshGroupEntries[i].firstFaceInfoIndex);
+                writer.WriteZeroes(0xE);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMeshGroupEntries
+
+        private void WriteMeshInfos(BinaryWriter writer, int meshCount)
+        {
+            for (int i = 0; i < meshCount; i++)
+            {
+                writer.Write(fmdlMeshInfos[i].alphaEnum);
+                writer.Write(fmdlMeshInfos[i].shadowEnum);
+                writer.WriteZeroes(2);
+                writer.Write(fmdlMeshInfos[i].materialInstanceIndex);
+                writer.Write(fmdlMeshInfos[i].boneGroupIndex);
+                writer.Write(fmdlMeshInfos[i].index);
+                writer.Write(fmdlMeshInfos[i].vertexCount);
+                writer.WriteZeroes(4);
+                writer.Write(fmdlMeshInfos[i].firstFaceVertexIndex);
+                writer.Write(fmdlMeshInfos[i].faceVertexCount);
+                writer.Write(fmdlMeshInfos[i].firstFaceInfoIndex);
+                writer.WriteZeroes(0x10);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMeshInfos
+
+        private void WriteMaterialInstances(BinaryWriter writer, int materialInstanceCount)
+        {
+            for (int i = 0; i < materialInstanceCount; i++)
+            {
+                writer.Write(fmdlMaterialInstances[i].nameIndex);
+                writer.WriteZeroes(2);
+                writer.Write(fmdlMaterialInstances[i].materialIndex);
+                writer.Write(fmdlMaterialInstances[i].textureCount);
+                writer.Write(fmdlMaterialInstances[i].parameterCount);
+                writer.Write(fmdlMaterialInstances[i].firstTextureIndex);
+                writer.Write(fmdlMaterialInstances[i].firstParameterIndex);
+                writer.WriteZeroes(4);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMaterialInstances
+
+        private void WriteBoneGroups(BinaryWriter writer, int boneGroupCount)
+        {
+            for (int i = 0; i < boneGroupCount; i++)
+            {
+                writer.Write(fmdlBoneGroups[i].unknown0);
+                writer.Write(fmdlBoneGroups[i].boneIndexCount);
+                for (int j = 0; j < fmdlBoneGroups[i].boneIndexCount; j++)
+                    writer.Write(fmdlBoneGroups[i].boneIndices[j]);
+                writer.WriteZeroes(0x40 - fmdlBoneGroups[i].boneIndexCount * 2);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteBoneGroups
+
+        private void WriteTextures(BinaryWriter writer, int textureCount)
+        {
+            for (int i = 0; i < textureCount; i++)
+            {
+                writer.Write(fmdlTextures[i].nameIndex);
+                writer.Write(fmdlTextures[i].pathIndex);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteTextures
+
+        private void WriteMaterialParameters(BinaryWriter writer, int materialParameterCount)
+        {
+            for (int i = 0; i < materialParameterCount; i++)
+            {
+                writer.Write(fmdlMaterialParameters[i].nameIndex);
+                writer.Write(fmdlMaterialParameters[i].referenceIndex);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMaterialParameters
+
+        private void WriteMaterials(BinaryWriter writer, int materialCount)
+        {
+            for (int i = 0; i < materialCount; i++)
+            {
+                writer.Write(fmdlMaterials[i].nameIndex);
+                writer.Write(fmdlMaterials[i].typeIndex);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMaterials
+
+        private void WriteMeshFormatInfos(BinaryWriter writer, int meshCount)
+        {
+            for (int i = 0; i < meshCount; i++)
+            {
+                writer.Write(fmdlMeshFormatInfos[i].meshFormatCount);
+                writer.Write(fmdlMeshFormatInfos[i].vertexFormatCount);
+                writer.Write(fmdlMeshFormatInfos[i].unknown0);
+                writer.Write(fmdlMeshFormatInfos[i].uvCount);
+                writer.Write(fmdlMeshFormatInfos[i].firstMeshFormatIndex);
+                writer.Write(fmdlMeshFormatInfos[i].firstVertexFormatIndex);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMeshFormatInfos
+
+        private void WriteMeshFormats(BinaryWriter writer, int meshFormatCount)
+        {
+            for (int i = 0; i < meshFormatCount; i++)
+            {
+                writer.Write(fmdlMeshFormats[i].bufferOffsetIndex);
+                writer.Write(fmdlMeshFormats[i].vertexFormatCount);
+                writer.Write(fmdlMeshFormats[i].length);
+                writer.Write(fmdlMeshFormats[i].type);
+                writer.Write(fmdlMeshFormats[i].offset);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMeshFormats
+
+        private void WriteVertexFormats(BinaryWriter writer, int vertexFormatCount)
+        {
+            for (int i = 0; i < vertexFormatCount; i++)
+            {
+                writer.Write(fmdlVertexFormats[i].type);
+                writer.Write(fmdlVertexFormats[i].dataType);
+                writer.Write(fmdlVertexFormats[i].offset);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteVertexFormats
+
+        private void WriteStringInfos(BinaryWriter writer, int stringCount)
+        {
+            for (int i = 0; i < stringCount; i++)
+            {
+                writer.Write(fmdlStringInfos[i].section1BlockIndex);
+                writer.Write(fmdlStringInfos[i].length);
+                writer.Write(fmdlStringInfos[i].offset);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteStringInfos
+
+        private void WriteBoundingBoxes(BinaryWriter writer, int boundingBoxCount)
+        {
+            for (int i = 0; i < boundingBoxCount; i++)
+            {
+                for (int j = 0; j < 4; j++)
+                    writer.Write(fmdlBoundingBoxes[i].max[j]);
+                for (int j = 0; j < 4; j++)
+                    writer.Write(fmdlBoundingBoxes[i].min[j]);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteBoundingBoxes
+
+        private void WriteFaceInfos(BinaryWriter writer, int meshCount)
+        {
+            for (int i = 0; i < meshCount; i++)
+            {
+                writer.Write(fmdlFaceInfos[i].firstFaceVertexIndex);
+                writer.Write(fmdlFaceInfos[i].faceVertexCount);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteFaceInfos
+
+        private void WriteMaterialParameterVectors(BinaryWriter writer, int materialParameterVectorCount)
+        {
+            for (int i = 0; i < materialParameterVectorCount; i++)
+                for (int j = 0; j < 4; j++)
+                    writer.Write(fmdlMaterialParameterVectors[i][j]);
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteMaterialParameterVectors
+
+        private void WriteBuffer(BinaryWriter writer, int meshCount)
+        {
+            for (int i = 0; i < meshCount; i++)
+            {
+                int vertexCount = fmdlMeshes[i].vertices.Length;
+
+                for (int j = 0; j < vertexCount; j++)
+                    for (int h = 0; h < 3; h++)
+                        writer.Write(fmdlMeshes[i].vertices[j][h]);
+
+                if (writer.BaseStream.Position % 0x10 != 0)
+                    writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+
+            fmdlBufferOffsets[0].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
+            fmdlBufferOffsets[1].offset = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
+
+            for (int i = 0; i < meshCount; i++)
+            {
+                int vertexCount = fmdlMeshes[i].vertices.Length;
+
+                for (int j = 0; j < vertexCount; j++)
+                {
+                    if (fmdlMeshes[i].normals.Length > 0)
+                    {
+                        for (int h = 0; h < 4; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].normals[j][h]));
+                    } //if
+
+                    if (fmdlMeshes[i].tangents.Length > 0)
+                    {
+                        for (int h = 0; h < 4; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].tangents[j][h]));
+                    } //if
+
+                    if (fmdlMeshes[i].colors.Length > 0)
+                    {
+                        for (int h = 0; h < 4; h++)
+                            writer.Write((byte)fmdlMeshes[i].colors[j][h]);
+                    } //if
+
+                    if (fmdlMeshes[i].boneWeights.Length > 0)
+                    {
+                        for (int h = 0; h < 4; h++)
+                            writer.Write((byte)fmdlMeshes[i].boneWeights[j][h]);
+                    } //if
+
+                    if (fmdlMeshes[i].boneIndices.Length > 0)
+                    {
+                        for (int h = 0; h < 4; h++)
+                            writer.Write((byte)fmdlMeshes[i].boneIndices[j][h]);
+                    } //if
+
+                    if (fmdlMeshes[i].uv.Length > 0)
+                    {
+                        for (int h = 0; h < 2; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].uv[j][h]));
+                    } //if
+
+                    if (fmdlMeshes[i].uv2.Length > 0)
+                    {
+                        for (int h = 0; h < 2; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].uv2[j][h]));
+                    } //if
+
+                    if (fmdlMeshes[i].uv3.Length > 0)
+                    {
+                        for (int h = 0; h < 2; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].uv3[j][h]));
+                    } //if
+
+                    if (fmdlMeshes[i].uv4.Length > 0)
+                    {
+                        for (int h = 0; h < 2; h++)
+                            writer.Write(Half.GetBytes(fmdlMeshes[i].uv4[j][h]));
+                    } //if
+                } //for
+
+                if (writer.BaseStream.Position % 0x10 != 0)
+                    writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+
+            fmdlBufferOffsets[1].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset - fmdlBufferOffsets[1].offset;
+            fmdlBufferOffsets[2].offset = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset;
+
+            for (int i = 0; i < meshCount; i++)
+            {
+                int faceVertexCount = fmdlMeshes[i].triangles.Length;
+
+                for (int j = 0; j < faceVertexCount; j++)
+                    writer.Write(fmdlMeshes[i].triangles[j]);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+
+            fmdlBufferOffsets[2].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[bufferIndex].offset - fmdlBufferOffsets[2].offset;
+        } //WriteBuffer
+
+        private void WriteStrings(BinaryWriter writer, int stringCount)
+        {
+            for (int i = 0; i < stringCount; i++)
+            {
+                int currentStringLength = fmdlStrings[i].Length;
+
+                for (int j = 0; j < currentStringLength; j++)
+                    writer.Write(fmdlStrings[i][j]);
+
+                writer.WriteZeroes(1);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+
+            section1Infos[stringsIndex].length = (uint)writer.BaseStream.Position - section1Offset - section1Infos[stringsIndex].offset;
+        } //WriteStrings
+    } //Fmdl
 } //namespace
