@@ -48,6 +48,8 @@ namespace FmdlStudio.Scripts.Static
         public static void SetFmdlVersion(float fmdlVersion)
         {
             settings.fmdlVersion = fmdlVersion;
+
+            WriteSettings();
         } //GetIsTpp
 
         public static void ReadSettings()
