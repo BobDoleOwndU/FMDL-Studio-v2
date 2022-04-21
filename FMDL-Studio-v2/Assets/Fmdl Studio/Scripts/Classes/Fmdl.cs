@@ -1277,15 +1277,17 @@ namespace FmdlStudio.Scripts.Classes
                 } //if
                 else
                 {
+                    string boneName = bone.gameObject.name;
+
                     fmdlBone.nameIndex = (ushort)strCode64s.Count;
 
-                    if(bone.gameObject.name.Contains("UNKNOWN"))
+                    if(boneName.Contains("UNKNOWN"))
                     {
-                        bone.gameObject.name = bone.gameObject.name.Substring(bone.gameObject.name.IndexOf('(') + 1, (bone.gameObject.name.IndexOf(')') - bone.gameObject.name.IndexOf('(')) - 1);
+                        boneName = boneName.Substring(boneName.IndexOf('(') + 1, (boneName.IndexOf(')') - boneName.IndexOf('(')) - 1);
                     } //if
 
                     ulong nameHash;
-                    ulong.TryParse(bone.gameObject.name, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+                    ulong.TryParse(boneName, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
 
                     if (nameHash == 0)
                         nameHash = Hashing.HashFileNameLegacy(bone.gameObject.name);
