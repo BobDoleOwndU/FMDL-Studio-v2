@@ -958,7 +958,7 @@ namespace FmdlStudio.Scripts.Classes
 
         private void ReadType14(BinaryReader reader)
         {
-            reader.BaseStream.Position = section0Offset + section0Infos[type12Index].offset;
+            reader.BaseStream.Position = section0Offset + section0Infos[type14Index].offset;
 
             for (int i = 0; i < section0Infos[type14Index].entryCount; i++)
             {
