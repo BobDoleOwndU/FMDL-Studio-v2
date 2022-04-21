@@ -2,6 +2,7 @@
 using FmdlStudio.Scripts.Static;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -1200,6 +1201,9 @@ namespace FmdlStudio.Scripts.Classes
             List<Vector4> materialParameterVectors = new List<Vector4>(0);
             List<string> strings = new List<string>(0);
 
+            List<ulong> pathCode64s = new List<ulong>(0);
+            List<ulong> strCode64s = new List<ulong>(0);
+
             if(foxModel == null)
             {
                 EditorUtility.DisplayDialog("FoxModel not found!", "The model does not contain a FoxModel component!", "Ok");
@@ -1232,11 +1236,19 @@ namespace FmdlStudio.Scripts.Classes
 
             bones = SortIfValid(bones);
 
-            strings.Add("");
+            if (Globals.GetFmdlVersion() == 2.03f)
+                strings.Add("");
+            else
+                strCode64s.Add(Hashing.HashFileNameLegacy(""));
 
             EditorUtility.DisplayProgressBar("Getting Model Data!", "Header", 0f / 22f);
             signature = 0x4C444D46;
-            version = 2.03f;
+
+            if (Globals.GetFmdlVersion() == 2.03f)
+                version = 2.03f;
+            else
+                version = 2.04f;
+
             sectionInfoOffset = 0;
             section0BlockFlags = 0;
             section1BlockFlags = 0;
@@ -1258,8 +1270,28 @@ namespace FmdlStudio.Scripts.Classes
                 FmdlBone fmdlBone = new FmdlBone();
                 Transform bone = bones[i];
 
-                fmdlBone.nameIndex = (ushort)strings.Count;
-                strings.Add(bone.gameObject.name);
+                if (Globals.GetFmdlVersion() == 2.03f)
+                {
+                    fmdlBone.nameIndex = (ushort)strings.Count;
+                    strings.Add(bone.gameObject.name);
+                } //if
+                else
+                {
+                    fmdlBone.nameIndex = (ushort)strCode64s.Count;
+
+                    if(bone.gameObject.name.Contains("UNKNOWN"))
+                    {
+                        bone.gameObject.name = bone.gameObject.name.Substring(bone.gameObject.name.IndexOf('(') + 1, (bone.gameObject.name.IndexOf(')') - bone.gameObject.name.IndexOf('(')) - 1);
+                    } //if
+
+                    ulong nameHash;
+                    ulong.TryParse(bone.gameObject.name, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                    if (nameHash == 0)
+                        nameHash = Hashing.HashFileNameLegacy(bone.gameObject.name);
+
+                    strCode64s.Add(nameHash);
+                } //else
 
                 if (bone.parent == rootBone)
                     fmdlBone.parentIndex = -1;
@@ -1285,8 +1317,23 @@ namespace FmdlStudio.Scripts.Classes
                 FmdlMeshGroup fmdlMeshGroup = new FmdlMeshGroup();
                 FoxMeshGroup foxMeshGroup = foxModel.meshGroups[i];
 
-                fmdlMeshGroup.nameIndex = (ushort)strings.Count;
-                strings.Add(foxMeshGroup.name);
+                if (Globals.GetFmdlVersion() == 2.03f)
+                {
+                    fmdlMeshGroup.nameIndex = (ushort)strings.Count;
+                    strings.Add(foxMeshGroup.name);
+                } //if
+                else
+                {
+                    fmdlMeshGroup.nameIndex = (ushort)strCode64s.Count;
+
+                    ulong nameHash;
+                    ulong.TryParse(foxMeshGroup.name, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                    if (nameHash == 0)
+                        nameHash = Hashing.HashFileNameLegacy(foxMeshGroup.name);
+
+                    strCode64s.Add(nameHash);
+                } //else
 
                 fmdlMeshGroup.invisibilityFlag = foxMeshGroup.visible ? (ushort)0 : (ushort)1;
                 fmdlMeshGroup.parentIndex = foxMeshGroup.parent;
@@ -1382,12 +1429,30 @@ namespace FmdlStudio.Scripts.Classes
             {
                 FmdlMaterial fmdlMaterial = new FmdlMaterial();
 
-                int currentStringCount = strings.Count;
+                if (Globals.GetFmdlVersion() == 2.03f)
+                {
+                    int currentStringCount = strings.Count;
 
-                fmdlMaterial.nameIndex = (ushort)currentStringCount;
-                fmdlMaterial.typeIndex = (ushort)currentStringCount;
+                    fmdlMaterial.nameIndex = (ushort)currentStringCount;
+                    fmdlMaterial.typeIndex = (ushort)currentStringCount;
 
-                strings.Add(materialTypeNames[i]);
+                    strings.Add(materialTypeNames[i]);
+                } //if
+                else
+                {
+                    int currentStrCode64Count = strCode64s.Count;
+
+                    fmdlMaterial.nameIndex = (ushort)currentStrCode64Count;
+                    fmdlMaterial.typeIndex = (ushort)currentStrCode64Count;
+
+                    ulong nameHash;
+                    ulong.TryParse(materialTypeNames[i], NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                    if (nameHash == 0)
+                        nameHash = Hashing.HashFileNameLegacy(materialTypeNames[i]);
+
+                    strCode64s.Add(nameHash);
+                } //else
 
                 fmdlMaterials[i] = fmdlMaterial;
             } //for
@@ -1405,8 +1470,24 @@ namespace FmdlStudio.Scripts.Classes
                 int materialInstanceParameterCount = 0;
                 int propertyCount = ShaderUtil.GetPropertyCount(shader);
 
-                fmdlMaterialInstance.nameIndex = (ushort)strings.Count;
-                strings.Add(materials[i].name);
+                if (Globals.GetFmdlVersion() == 2.03f)
+                {
+                    fmdlMaterialInstance.nameIndex = (ushort)strings.Count;
+                    strings.Add(materials[i].name);
+                } //if
+                else
+                {
+                    fmdlMaterialInstance.nameIndex = (ushort)strCode64s.Count;
+
+                    ulong nameHash;
+                    ulong.TryParse(materials[i].name, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                    if (nameHash == 0)
+                        nameHash = Hashing.HashFileNameLegacy(materials[i].name);
+
+                    strCode64s.Add(nameHash);
+                } //else
+
                 fmdlMaterialInstance.materialIndex = (ushort)materialTypeNames.IndexOf(shader.name.Substring(shader.name.IndexOf('/') + 1));
 
                 for (int j = 0; j < propertyCount; j++)
@@ -1487,21 +1568,54 @@ namespace FmdlStudio.Scripts.Classes
                 string assetPath = AssetDatabase.GetAssetPath(texture);
 
                 if (assetPath == "" || assetPath.Contains(".fmdl"))
-                    assetPath = texture.name.Substring(1);
-
-                string textureName = Path.GetFileNameWithoutExtension(assetPath) + ".tga";
-                string texturePath = $"/{Path.GetDirectoryName(assetPath)}/".Replace('\\', '/');
-
-                fmdlTexture.nameIndex = (ushort)strings.Count;
-                strings.Add(textureName);
-
-                if (!strings.Contains(texturePath))
                 {
-                    fmdlTexture.pathIndex = (ushort)strings.Count;
-                    strings.Add(texturePath);
+                    assetPath = texture.name;
+                } //if
+
+                string textureName = Path.GetFileNameWithoutExtension(assetPath);
+                string texturePath = $"{Path.GetDirectoryName(assetPath)}/".Replace('\\', '/');
+
+                if (Globals.GetFmdlVersion() == 2.03f)
+                {
+                    textureName += ".tga";
+
+                    fmdlTexture.nameIndex = (ushort)strings.Count;
+                    strings.Add(textureName);
+
+                    if (!strings.Contains(texturePath))
+                    {
+                        fmdlTexture.pathIndex = (ushort)strings.Count;
+                        strings.Add(texturePath);
+                    } //if
+                    else
+                        fmdlTexture.pathIndex = (ushort)strings.IndexOf(texturePath);
                 } //if
                 else
-                    fmdlTexture.pathIndex = (ushort)strings.IndexOf(texturePath);
+                {
+                    texturePath = texturePath + textureName + ".ftex";
+
+                    fmdlTexture.nameIndex = (ushort)strCode64s.Count;
+
+                    ulong nameHash;
+                    ulong.TryParse(textureName, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                    if (nameHash == 0)
+                        nameHash = Hashing.HashFileNameLegacy(textureName);
+
+                    strCode64s.Add(nameHash);
+
+                    fmdlTexture.pathIndex = (ushort)pathCode64s.Count;
+
+                    ulong pathHash;
+                    ulong.TryParse(textureName, NumberStyles.HexNumber, new CultureInfo("en-US"), out pathHash);
+
+                    if (pathHash == 0)
+                        pathHash = Hashing.HashFileNameWithExtension(texturePath);
+                    else
+                        pathHash += 0x1568000000000000; //Add extension bytes.
+
+                    pathCode64s.Add(pathHash);
+                } //else
 
                 fmdlTextures[i] = fmdlTexture;
             } //for
@@ -1526,13 +1640,36 @@ namespace FmdlStudio.Scripts.Classes
 
                         if (material.GetTexture($"_{propertyName}"))
                         {
-                            if (!strings.Contains(propertyName))
+                            if (Globals.GetFmdlVersion() == 2.03f)
                             {
-                                fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
-                                strings.Add(propertyName);
+                                if (!strings.Contains(propertyName))
+                                {
+                                    fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
+                                    strings.Add(propertyName);
+                                } //if
+                                else
+                                {
+                                    fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+                                } //else
                             } //if
                             else
-                                fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+                            {
+                                ulong nameHash;
+                                ulong.TryParse(propertyName, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                                if (nameHash == 0)
+                                    nameHash = Hashing.HashFileNameLegacy(propertyName);
+
+                                if(!strCode64s.Contains(nameHash))
+                                {
+                                    fmdlMaterialParameter.nameIndex = (ushort)strCode64s.Count;
+                                    strCode64s.Add(nameHash);
+                                } //if
+                                else
+                                {
+                                    fmdlMaterialParameter.nameIndex = (ushort)strCode64s.IndexOf(nameHash);
+                                } //else
+                            } //else
 
                             fmdlMaterialParameter.referenceIndex = (ushort)textures.IndexOf(material.GetTexture($"_{propertyName}"));
 
@@ -1549,13 +1686,36 @@ namespace FmdlStudio.Scripts.Classes
                     {
                         string propertyName = ShaderUtil.GetPropertyName(shader, j).Substring(1);
 
-                        if (!strings.Contains(propertyName))
+                        if (Globals.GetFmdlVersion() == 2.03f)
                         {
-                            fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
-                            strings.Add(propertyName);
+                            if (!strings.Contains(propertyName))
+                            {
+                                fmdlMaterialParameter.nameIndex = (ushort)strings.Count;
+                                strings.Add(propertyName);
+                            } //if
+                            else
+                            {
+                                fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+                            } //else
                         } //if
                         else
-                            fmdlMaterialParameter.nameIndex = (ushort)strings.IndexOf(propertyName);
+                        {
+                            ulong nameHash;
+                            ulong.TryParse(propertyName, NumberStyles.HexNumber, new CultureInfo("en-US"), out nameHash);
+
+                            if (nameHash == 0)
+                                nameHash = Hashing.HashFileNameLegacy(propertyName);
+
+                            if (!strCode64s.Contains(nameHash))
+                            {
+                                fmdlMaterialParameter.nameIndex = (ushort)strCode64s.Count;
+                                strCode64s.Add(nameHash);
+                            } //if
+                            else
+                            {
+                                fmdlMaterialParameter.nameIndex = (ushort)strCode64s.IndexOf(nameHash);
+                            } //else
+                        } //else
 
                         fmdlMaterialParameter.referenceIndex = (ushort)materialParameterVectors.IndexOfEqualValue(material.GetVector($"_{propertyName}"));
 
@@ -1940,6 +2100,26 @@ namespace FmdlStudio.Scripts.Classes
             fmdlType14.unknown5 = 1;
 
             fmdlType14s[0] = fmdlType14;
+
+            //PathCode64s
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "PathCode64s", 17f / 22f);
+            int pathCode64Count = pathCode64s.Count;
+            fmdlPathCode64s = new ulong[pathCode64Count];
+
+            for (int i = 0; i < pathCode64Count; i++)
+            {
+                fmdlPathCode64s[i] = pathCode64s[i];
+            } //for
+
+            //StrCode64s
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "StrCode64s", 17f / 22f);
+            int strCode64Count = strCode64s.Count;
+            fmdlStrCode64s = new ulong[strCode64Count];
+
+            for (int i = 0; i < strCode64Count; i++)
+            {
+                fmdlStrCode64s[i] = strCode64s[i];
+            } //for
 
             //Material Parameter Vectors
             EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Parameter Vectors", 18f / 22f);
@@ -2330,6 +2510,34 @@ namespace FmdlStudio.Scripts.Classes
                 section0BlockFlags |= 1 << (int)Section0BlockType.Type14;
             } //if
 
+            if (pathCode64Count > 0)
+            {
+                Section0Info section0Info = new Section0Info();
+
+                section0Info.type = (ushort)Section0BlockType.PathCode64s;
+                section0Info.entryCount = (ushort)pathCode64Count;
+                section0Info.offset = 0;
+
+                section0Infos.Add(section0Info);
+                pathCode64sIndex = (int)section0BlockCount;
+                section0BlockCount++;
+                section0BlockFlags |= 1 << (int)Section0BlockType.PathCode64s;
+            } //if
+
+            if (strCode64Count > 0)
+            {
+                Section0Info section0Info = new Section0Info();
+
+                section0Info.type = (ushort)Section0BlockType.StrCode64s;
+                section0Info.entryCount = (ushort)strCode64Count;
+                section0Info.offset = 0;
+
+                section0Infos.Add(section0Info);
+                strCode64sIndex = (int)section0BlockCount;
+                section0BlockCount++;
+                section0BlockFlags |= 1 << (int)Section0BlockType.StrCode64s;
+            } //if
+
             this.section0Infos = section0Infos.ToArray();
 
             //Section 1 Info
@@ -2463,6 +2671,8 @@ namespace FmdlStudio.Scripts.Classes
                     int stringCount = fmdlStringInfos.Length;
                     int boundingBoxCount = fmdlBoundingBoxes.Length;
                     int materialParameterVectorCount = fmdlMaterialParameterVectors.Length;
+                    int strCode64Count = fmdlStrCode64s.Length;
+                    int pathCode64Count = fmdlPathCode64s.Length;
 
                     EditorUtility.DisplayProgressBar("Writing!", "Header", 0f / 25f);
                     writer.Write(signature);
@@ -2676,6 +2886,22 @@ namespace FmdlStudio.Scripts.Classes
                         writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
                     //End
                     ////////////////////////////////////////////////////////////////
+
+                    if (pathCode64Count > 0)
+                    {
+                        EditorUtility.DisplayProgressBar("Writing!", "PathCode64s", 20f / 25f);
+                        section0Infos[pathCode64sIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
+
+                        WritePathCode64s(writer, pathCode64Count);
+                    } //if
+
+                    if (strCode64Count > 0)
+                    {
+                        EditorUtility.DisplayProgressBar("Writing!", "StrCode64s", 20f / 25f);
+                        section0Infos[strCode64sIndex].offset = (uint)writer.BaseStream.Position - section0Offset;
+
+                        WriteStrCode64s(writer, strCode64Count);
+                    } //if
 
                     section0Length = (uint)writer.BaseStream.Position - section0Offset;
                     section1Offset = (uint)writer.BaseStream.Position;
@@ -2978,6 +3204,28 @@ namespace FmdlStudio.Scripts.Classes
             if (writer.BaseStream.Position % 0x10 != 0)
                 writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
         } //WriteFaceInfos
+
+        private void WritePathCode64s(BinaryWriter writer, int pathCode64Count)
+        {
+            for (int i = 0; i < pathCode64Count; i++)
+            {
+                writer.Write(fmdlPathCode64s[i]);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WritePathCode64s
+
+        private void WriteStrCode64s(BinaryWriter writer, int strCode64Count)
+        {
+            for(int i = 0; i < strCode64Count; i++)
+            {
+                writer.Write(fmdlStrCode64s[i]);
+            } //for
+
+            if (writer.BaseStream.Position % 0x10 != 0)
+                writer.WriteZeroes((int)(0x10 - writer.BaseStream.Position % 0x10));
+        } //WriteStrCode64s
 
         private void WriteMaterialParameterVectors(BinaryWriter writer, int materialParameterVectorCount)
         {

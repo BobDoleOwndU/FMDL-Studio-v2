@@ -40,6 +40,16 @@ namespace FmdlStudio.Scripts.Static
             WriteSettings();
         } //SetFbxConverterPath
 
+        public static float GetFmdlVersion()
+        {
+            return settings.fmdlVersion;
+        } //GetIsTpp
+
+        public static void SetFmdlVersion(float fmdlVersion)
+        {
+            settings.fmdlVersion = fmdlVersion;
+        } //GetIsTpp
+
         public static void ReadSettings()
         {
             if (File.Exists("settings.xml"))

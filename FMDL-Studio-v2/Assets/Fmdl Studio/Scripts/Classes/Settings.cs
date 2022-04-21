@@ -10,5 +10,8 @@ namespace FmdlStudio.Scripts.Classes
 
         [XmlElement(ElementName = "FbxConverterPath")]
         public string fbxConverterPath;
+
+        [XmlElement(ElementName = "fmdlVersion")]
+        public float fmdlVersion = 2.04f;
     } //class
 } //namespace
