@@ -1,5 +1,6 @@
 ﻿using FmdlStudio.Scripts.Classes;
 using FmdlStudio.Scripts.Static;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -180,6 +181,26 @@ namespace FmdlStudio.Editor.Windows
             } //if
             else
                 Debug.Log("No objects selected.");
+        } //CopyBoundingBoxes
+
+        [MenuItem("FMDL Studio/Debug/Print Tangents", false, 500)]
+        public static void PrintTangents()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                Transform transform = Selection.activeGameObject.transform;
+                List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+
+                foreach(Transform t in transform)
+                {
+                    if(t.GetComponent<SkinnedMeshRenderer>())
+                        meshes.Add(t.GetComponent<SkinnedMeshRenderer>());
+                } //foreach
+
+                foreach(SkinnedMeshRenderer mesh in meshes)
+                    foreach(Vector4 v in mesh.sharedMesh.tangents)
+                        Debug.Log(v);
+            } //if
         } //CopyBoundingBoxes
     } //class
 } //namespace

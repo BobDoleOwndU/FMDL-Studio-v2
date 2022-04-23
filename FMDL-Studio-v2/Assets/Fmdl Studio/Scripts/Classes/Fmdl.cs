@@ -1260,7 +1260,7 @@ namespace FmdlStudio.Scripts.Classes
             section1Length = 0;
 
             //Bones
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bones", 1f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bones", 1f / 24f);
             int boneCount = bones.Count;
 
             fmdlBones = new FmdlBone[boneCount];
@@ -1309,7 +1309,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Mesh Groups
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Groups", 2f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Groups", 2f / 24f);
             int meshGroupCount = foxModel.meshGroups.Length;
 
             fmdlMeshGroups = new FmdlMeshGroup[meshGroupCount];
@@ -1345,7 +1345,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Mesh Group Entries
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Group Entries", 3f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Group Entries", 3f / 24f);
             int meshCount = meshes.Count;
             List<FmdlMeshGroupEntry> meshGroupEntries = new List<FmdlMeshGroupEntry>(0);
             FmdlMeshGroupEntry fmdlMeshGroupEntry = new FmdlMeshGroupEntry();
@@ -1385,7 +1385,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlMeshGroupEntries = meshGroupEntries.ToArray();
 
             //Mesh Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Info", 4f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Info", 4f / 24f);
             fmdlMeshInfos = new FmdlMeshInfo[meshCount];
 
             for (int i = 0; i < meshCount; i++)
@@ -1411,7 +1411,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Materials
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Materials", 5f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Materials", 5f / 24f);
             int materialInstanceCount = materials.Count;
 
             for (int i = 0; i < materialInstanceCount; i++)
@@ -1460,7 +1460,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Material Instances
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Instances", 6f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Instances", 6f / 24f);
             fmdlMaterialInstances = new FmdlMaterialInstance[materialInstanceCount];
 
             for (int i = 0; i < materialInstanceCount; i++)
@@ -1528,7 +1528,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Bone Groups
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bone Groups", 7f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bone Groups", 7f / 24f);
             if (boneCount > 0)
             {
                 fmdlBoneGroups = new FmdlBoneGroup[meshCount];
@@ -1558,7 +1558,7 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlBoneGroups = new FmdlBoneGroup[0];
 
             //Textures
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Textures", 8f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Textures", 8f / 24f);
             int textureCount = textures.Count;
 
             fmdlTextures = new FmdlTexture[textureCount];
@@ -1576,6 +1576,10 @@ namespace FmdlStudio.Scripts.Classes
 
                 string textureName = Path.GetFileNameWithoutExtension(assetPath);
                 string texturePath = $"{Path.GetDirectoryName(assetPath)}/".Replace('\\', '/');
+
+                //Need to add a leading / to files loaded from within Unity itself.
+                if (texturePath.Contains("Assets") && texturePath[0] != '/')
+                    texturePath = "/" + texturePath;
 
                 if (Globals.GetFmdlVersion() == 2.03f)
                 {
@@ -1623,7 +1627,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Material Parameters
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Parameters", 9f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Parameters", 9f / 24f);
             List<FmdlMaterialParameter> materialParameters = new List<FmdlMaterialParameter>(0);
 
             for (int i = 0; i < materialInstanceCount; i++)
@@ -1729,7 +1733,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlMaterialParameters = materialParameters.ToArray();
 
             //Mesh Format Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Format Info", 10f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Mesh Format Info", 10f / 24f);
             List<FmdlVertexFormat> vertexFormats = new List<FmdlVertexFormat>(0);
             List<FmdlMeshFormat> meshFormats = new List<FmdlMeshFormat>(0);
             uint positionOffset = 0;
@@ -1995,7 +1999,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlVertexFormats = vertexFormats.ToArray();
 
             //String Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "String Info", 11f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "String Info", 11f / 24f);
             int stringCount = strings.Count;
 
             fmdlStringInfos = new FmdlStringInfo[stringCount];
@@ -2016,7 +2020,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Bounding Boxes
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bounding Boxes", 12f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Bounding Boxes", 12f / 24f);
             int boundingBoxCount = boundingBoxes.Count;
 
             fmdlBoundingBoxes = new FmdlBoundingBox[boundingBoxCount];
@@ -2034,7 +2038,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Buffer Offsets
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Buffer Offsets", 13f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Buffer Offsets", 13f / 24f);
             fmdlBufferOffsets = new FmdlBufferOffset[3];
 
             for (int i = 0; i < 3; i++)
@@ -2052,7 +2056,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Lod Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "LOD Info", 14f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "LOD Info", 14f / 24f);
             fmdlLodInfos = new FmdlLodInfo[1];
 
             FmdlLodInfo fmdlLodInfo = new FmdlLodInfo();
@@ -2065,7 +2069,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlLodInfos[0] = fmdlLodInfo;
 
             //Face Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Face Info", 15f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Face Info", 15f / 24f);
             fmdlFaceInfos = new FmdlFaceInfo[meshCount];
 
             for (int i = 0; i < meshCount; i++)
@@ -2079,7 +2083,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Type 12
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Type 12s", 16f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Type 12s", 16f / 24f);
             fmdlType12s = new FmdlType12[1];
 
             FmdlType12 fmdlType12 = new FmdlType12();
@@ -2089,7 +2093,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlType12s[0] = fmdlType12;
 
             //Type 14
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Type 14s", 17f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Type 14s", 17f / 24f);
             fmdlType14s = new FmdlType14[1];
 
             FmdlType14 fmdlType14 = new FmdlType14();
@@ -2104,7 +2108,7 @@ namespace FmdlStudio.Scripts.Classes
             fmdlType14s[0] = fmdlType14;
 
             //PathCode64s
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "PathCode64s", 17f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "PathCode64s", 18f / 24f);
             int pathCode64Count = pathCode64s.Count;
             fmdlPathCode64s = new ulong[pathCode64Count];
 
@@ -2114,7 +2118,7 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //StrCode64s
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "StrCode64s", 17f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "StrCode64s", 19f / 24f);
             int strCode64Count = strCode64s.Count;
             fmdlStrCode64s = new ulong[strCode64Count];
 
@@ -2124,11 +2128,11 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Material Parameter Vectors
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Parameter Vectors", 18f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Material Parameter Vectors", 20f / 24f);
             fmdlMaterialParameterVectors = materialParameterVectors.ToArray();
 
             //Meshes
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Buffer", 19f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Buffer", 21f / 24f);
             fmdlMeshes = new FmdlMesh[meshCount];
 
             for (int i = 0; i < meshCount; i++)
@@ -2221,11 +2225,11 @@ namespace FmdlStudio.Scripts.Classes
             } //for
 
             //Strings
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Strings", 20f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Strings", 22f / 24f);
             fmdlStrings = strings.ToArray();
 
             //Section 0 Info
-            EditorUtility.DisplayProgressBar("Getting Model Data!", "Section Info", 21f / 22f);
+            EditorUtility.DisplayProgressBar("Getting Model Data!", "Section Info", 23f / 24f);
             List<Section0Info> section0Infos = new List<Section0Info>(0);
 
             if (boneCount > 0)

@@ -131,7 +131,7 @@ namespace FmdlStudio.Scripts.Classes
                 Fmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[0];
 
                 Bounds bounds = new Bounds();
-                bounds.SetMinMax(new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
+                bounds.SetMinMax(new Vector3(-fmdlBoundingBox.max.x, fmdlBoundingBox.min.y, fmdlBoundingBox.min.z), new Vector3(-fmdlBoundingBox.min.x, fmdlBoundingBox.max.y, fmdlBoundingBox.max.z));
                 BoxCollider boxCollider = rootBone.gameObject.AddComponent<BoxCollider>();
                 boxCollider.center = rootBone.InverseTransformPoint(bounds.center);
                 boxCollider.size = bounds.size;
