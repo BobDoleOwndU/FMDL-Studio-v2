@@ -219,6 +219,72 @@ namespace FmdlStudio.Scripts.Static
 
                 geometry.Mesh.Source.Add(normals);
 
+                //Tangents
+                Source tangents = new Source();
+                tangents.Id = $"{m.name.Replace(' ', '_')}_Tangents";
+                tangents.Float_array = new Float_array();
+                tangents.Float_array.Id = $"{m.name.Replace(' ', '_')}_TangArr";
+                tangents.Float_array.Count = (m.sharedMesh.tangents.Length * 3).ToString();
+
+                StringBuilder tangArr = new StringBuilder();
+
+                foreach (Vector4 v in m.sharedMesh.tangents)
+                {
+                    tangArr.Append($"{-v.x} {v.y} {v.z} ");
+                } //foreach
+
+                tangArr.Length--;
+
+                tangents.Float_array.Text = tangArr.ToString();
+                tangents.Technique_common = new Technique_common();
+                tangents.Technique_common.Accessor = new Accessor();
+                tangents.Technique_common.Accessor.Source = $"#{tangents.Float_array.Id}";
+                tangents.Technique_common.Accessor.Count = m.sharedMesh.tangents.Length.ToString();
+                tangents.Technique_common.Accessor.Stride = "3";
+                
+                tangents.Technique_common.Accessor.Param = new List<Param>(0);
+                tangents.Technique_common.Accessor.Param.Add(x);
+                tangents.Technique_common.Accessor.Param.Add(y);
+                tangents.Technique_common.Accessor.Param.Add(z);
+
+                geometry.Mesh.Source.Add(tangents);
+
+                //Binormals
+                int binormalCount = m.sharedMesh.tangents.Length;
+                Vector3[] binormalVectors = new Vector3[binormalCount];
+
+                for(int i = 0; i < binormalCount; i++)
+                    binormalVectors[i] = Vector3.Cross(Vector3.Normalize(m.sharedMesh.normals[i]), Vector3.Normalize(m.sharedMesh.tangents[i]));
+
+                Source binormals = new Source();
+                binormals.Id = $"{m.name.Replace(' ', '_')}_Binormals";
+                binormals.Float_array = new Float_array();
+                binormals.Float_array.Id = $"{m.name.Replace(' ', '_')}_BinormArr";
+                binormals.Float_array.Count = (binormalCount * 3).ToString();
+
+                StringBuilder binormArr = new StringBuilder();
+
+                foreach (Vector3 v in binormalVectors)
+                {
+                    binormArr.Append($"{-v.x} {v.y} {v.z} ");
+                } //foreach
+
+                binormArr.Length--;
+
+                binormals.Float_array.Text = binormArr.ToString();
+                binormals.Technique_common = new Technique_common();
+                binormals.Technique_common.Accessor = new Accessor();
+                binormals.Technique_common.Accessor.Source = $"#{binormals.Float_array.Id}";
+                binormals.Technique_common.Accessor.Count = binormalCount.ToString();
+                binormals.Technique_common.Accessor.Stride = "3";
+
+                binormals.Technique_common.Accessor.Param = new List<Param>(0);
+                binormals.Technique_common.Accessor.Param.Add(x);
+                binormals.Technique_common.Accessor.Param.Add(y);
+                binormals.Technique_common.Accessor.Param.Add(z);
+
+                geometry.Mesh.Source.Add(binormals);
+
                 //Colors
                 if (m.sharedMesh.colors.Length > 0)
                 {
@@ -442,6 +508,24 @@ namespace FmdlStudio.Scripts.Static
                 normal.Source = $"#{normals.Id}";
                 normal.Offset = "0";
                 geometry.Mesh.Triangles.Input.Add(normal);
+
+                if(m.sharedMesh.tangents.Length > 0)
+                {
+                    Xml2CSharp.Input tangent = new Xml2CSharp.Input();
+                    tangent.Semantic = "TEXTANGENT";
+                    tangent.Source = $"#{tangents.Id}";
+                    tangent.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(tangent);
+                } //if
+
+                if (binormalCount > 0)
+                {
+                    Xml2CSharp.Input binormal = new Xml2CSharp.Input();
+                    binormal.Semantic = "TEXBINORMAL";
+                    binormal.Source = $"#{binormals.Id}";
+                    binormal.Offset = "0";
+                    geometry.Mesh.Triangles.Input.Add(binormal);
+                } //if
 
                 if (m.sharedMesh.colors.Length > 0)
                 {
