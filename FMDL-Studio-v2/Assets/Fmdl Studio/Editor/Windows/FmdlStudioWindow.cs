@@ -107,6 +107,26 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No objects selected.");
         } //FixTangents
 
+        [MenuItem("FMDL Studio/Reload Dictionaries", false, 102)]
+        public static void ReloadDictionaries()
+        {
+            Hashing.LoadDictionaries();
+        } //ReloadDictionaries
+
+        [MenuItem("FMDL Studio/Fmdl Version/2.03 (GZ\u200A\u2215\u200APES)", false, 103)]
+        public static void SetFmdlVersionToGZ()
+        {
+            Globals.SetFmdlVersion(2.03f);
+            Debug.Log("Fmdl version set to 2.03");
+        } //SetFmdlVersionToGZ
+
+        [MenuItem("FMDL Studio/Fmdl Version/2.04 (TPP)", false, 104)]
+        public static void SetFmdlVersionToTPP()
+        {
+            Globals.SetFmdlVersion(2.04f);
+            Debug.Log("Fmdl version set to 2.04");
+        } //SetFmdlVersionToTPP
+
         [MenuItem("FMDL Studio/Set Texture Folder", false, 200)]
         public static void SetTextureFolder()
         {
@@ -120,7 +140,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No folder selected.");
         } //SetTextureFolder
 
-        [MenuItem("FMDL Studio/Set FBX Converter Path", false, 202)]
+        [MenuItem("FMDL Studio/Set FBX Converter Path", false, 201)]
         public static void SetFbxConverterPath()
         {
             string filePath = EditorUtility.OpenFilePanel("Select FbxConverter.exe", "", "exe");
@@ -133,21 +153,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No folder selected.");
         } //SetFbxConverterPath
 
-        [MenuItem("FMDL Studio/Fmdl Version/2.03 (GZ\u200A\u2215\u200APES)", false, 203)]
-        public static void SetFmdlVersionToGZ()
-        {
-            Globals.SetFmdlVersion(2.03f);
-            Debug.Log("Fmdl version set to 2.03");
-        } //SetFmdlVersionToGZ
-
-        [MenuItem("FMDL Studio/Fmdl Version/2.04 (TPP)", false, 204)]
-        public static void SetFmdlVersionToTPP()
-        {
-            Globals.SetFmdlVersion(2.04f);
-            Debug.Log("Fmdl version set to 2.04");
-        } //SetFmdlVersionToTPP
-
-        [MenuItem("FMDL Studio/Bounding Box Tools/Copy Bounding Boxes", false, 300)]
+        [MenuItem("FMDL Studio/Bounding Box Tools/Copy Bounding Boxes", false, 301)]
         public static void CopyBoundingBoxes()
         {
             if (Selection.activeGameObject != null)
@@ -159,7 +165,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No objects selected.");
         } //CopyBoundingBoxes
 
-        [MenuItem("FMDL Studio/Bounding Box Tools/Paste Bounding Boxes", false, 301)]
+        [MenuItem("FMDL Studio/Bounding Box Tools/Paste Bounding Boxes", false, 302)]
         public static void PasteBoundingBoxes()
         {
             if (Selection.activeGameObject != null)
@@ -171,7 +177,7 @@ namespace FmdlStudio.Editor.Windows
                 Debug.Log("No objects selected.");
         } //CopyBoundingBoxes
 
-        [MenuItem("FMDL Studio/Bounding Box Tools/Clear Bounding Boxes", false, 302)]
+        [MenuItem("FMDL Studio/Bounding Box Tools/Clear Bounding Boxes", false, 303)]
         public static void ClearBoundingBoxes()
         {
             if (Selection.activeGameObject != null)

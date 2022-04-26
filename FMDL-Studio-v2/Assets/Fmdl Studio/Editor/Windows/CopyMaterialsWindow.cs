@@ -12,7 +12,7 @@ public class CopyMaterialsWindow : EditorWindow
     private GameObject sourceModel;
     private GameObject targetModel;
 
-    [MenuItem("FMDL Studio/Copy Mesh Settings", false, 400)]
+    [MenuItem("FMDL Studio/Copy Mesh Settings", false, 304)]
     static void Init()
     {
         CopyMaterialsWindow window = (CopyMaterialsWindow)GetWindow(typeof(CopyMaterialsWindow));

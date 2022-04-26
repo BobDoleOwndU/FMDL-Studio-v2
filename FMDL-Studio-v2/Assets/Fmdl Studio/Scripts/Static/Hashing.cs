@@ -161,8 +161,7 @@ namespace FmdlStudio.Scripts.Static
 
         static Hashing()
         {
-            ReadStringDictionary("Assets/Fmdl Studio/fmdl_dictionary.txt");
-            ReadPathDictionary("Assets/Fmdl Studio/qar_dictionary.txt");
+            LoadDictionaries();
         } //constructor
 
         public static ulong HashFileExtension(string fileExtension) //from private to public
@@ -290,6 +289,12 @@ namespace FmdlStudio.Scripts.Static
                 pathHashDictionary.Add(HashFileNameWithExtension(line));
             } //foreach
         } //ReadPathDictionary
+
+        public static void LoadDictionaries()
+        {
+            ReadStringDictionary("Assets/Fmdl Studio/fmdl_dictionary.txt");
+            ReadPathDictionary("Assets/Fmdl Studio/qar_dictionary.txt");
+        } //LoadDictionaries
 
         public static string TryGetStringName(ulong hash)
         {

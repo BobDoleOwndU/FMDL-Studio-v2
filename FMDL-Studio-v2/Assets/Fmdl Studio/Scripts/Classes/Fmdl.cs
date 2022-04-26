@@ -1598,8 +1598,6 @@ namespace FmdlStudio.Scripts.Classes
                 } //if
                 else
                 {
-                    texturePath = texturePath + textureName + ".ftex";
-
                     fmdlTexture.nameIndex = (ushort)strCode64s.Count;
 
                     ulong nameHash;
@@ -1612,13 +1610,24 @@ namespace FmdlStudio.Scripts.Classes
 
                     fmdlTexture.pathIndex = (ushort)pathCode64s.Count;
 
+                    Debug.Log($"Path: {texturePath}, Name: {textureName}");
+
                     ulong pathHash;
-                    ulong.TryParse(textureName, NumberStyles.HexNumber, new CultureInfo("en-US"), out pathHash);
+
+                    if (texturePath == "/")
+                        ulong.TryParse(textureName, NumberStyles.HexNumber, new CultureInfo("en-US"), out pathHash);
+                    else
+                        pathHash = 0;
 
                     if (pathHash == 0)
+                    {
+                        texturePath = texturePath + textureName + ".ftex";
                         pathHash = Hashing.HashFileNameWithExtension(texturePath);
+                    } //if
                     else
+                    {
                         pathHash += 0x1568000000000000; //Add extension bytes.
+                    } //else
 
                     pathCode64s.Add(pathHash);
                 } //else
