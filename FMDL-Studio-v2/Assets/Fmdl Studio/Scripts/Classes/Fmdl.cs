@@ -1610,8 +1610,6 @@ namespace FmdlStudio.Scripts.Classes
 
                     fmdlTexture.pathIndex = (ushort)pathCode64s.Count;
 
-                    Debug.Log($"Path: {texturePath}, Name: {textureName}");
-
                     ulong pathHash;
 
                     if (texturePath == "/")
