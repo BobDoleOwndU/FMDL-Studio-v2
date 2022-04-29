@@ -152,7 +152,7 @@ namespace FmdlStudio.Scripts.Classes
 
                 try
                 {
-                    UInt64.Parse(bones[i].gameObject.name, System.Globalization.NumberStyles.HexNumber);
+                    ulong.Parse(bones[i].gameObject.name, System.Globalization.NumberStyles.HexNumber);
                     bones[i].name = $"SKL_{(Int32.Parse(bones[i - 1].name.Substring(4, 3)) + 1).ToString("000")}_UNKNOWN ({bones[i].name})";
                 } //try
                 catch { }
@@ -316,7 +316,8 @@ namespace FmdlStudio.Scripts.Classes
                 Fmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups != null ? fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex] : new Fmdl.FmdlBoneGroup();
 
                 int vertexLength = fmdlMesh.vertices.Length;
-                int faceLength = fmdlMesh.triangles.Length;
+                int lodCount = (int)fmdl.fmdlLodInfos[0].lodCount;
+                int[] faceLengths = new int[lodCount];
                 string name;
 
                 Vector3[] vertices = new Vector3[vertexLength];
@@ -328,11 +329,17 @@ namespace FmdlStudio.Scripts.Classes
                 Vector2[] uv2 = fmdlMesh.uv2 != null ? new Vector2[vertexLength] : new Vector2[0];
                 Vector2[] uv3 = fmdlMesh.uv3 != null ? new Vector2[vertexLength] : new Vector2[0];
                 Vector2[] uv4 = fmdlMesh.uv4 != null ? new Vector2[vertexLength] : new Vector2[0];
-                int[] triangles = new int[faceLength];
+                int[][] triangles = new int[lodCount][];
                 Matrix4x4[] bindPoses;
 
                 List<Transform> usedBones = new List<Transform>(0);
                 Transform[] usedBonesArray;
+
+                for (int j = 0; j < lodCount; j++)
+                {
+                    faceLengths[j] = fmdlMesh.triangles[j].Length;
+                    triangles[j] = new int[faceLengths[j]];
+                } //for
 
                 for (int j = 0; j < vertexLength; j++)
                 {
@@ -363,8 +370,9 @@ namespace FmdlStudio.Scripts.Classes
                         uv4[j] = new Vector2(fmdlMesh.uv4[j].x, 1 - fmdlMesh.uv4[j].y);
                 } //for
 
-                for (int j = 0; j < faceLength; j++)
-                    triangles[j] = fmdlMesh.triangles[j] % vertexLength; // The % allows PES nets to import. Not sure if correct.
+                for(int j = 0; j < lodCount; j++)
+                    for (int h = 0; h < faceLengths[j]; h++)
+                        triangles[j][h] = fmdlMesh.triangles[j][h];
 
                 for (int j = 0; j < boneWeights.Length; j++)
                 {
@@ -436,7 +444,7 @@ namespace FmdlStudio.Scripts.Classes
                 meshes[i].uv2 = uv2;
                 meshes[i].uv3 = uv3;
                 meshes[i].uv4 = uv4;
-                meshes[i].triangles = triangles;
+                meshes[i].triangles = triangles[0];
                 meshes[i].bindposes = bindPoses;
 
                 skinnedMeshRenderer.bones = usedBonesArray;
@@ -454,6 +462,38 @@ namespace FmdlStudio.Scripts.Classes
                     name = Hashing.TryGetStringName(fmdl.fmdlStrCode64s[fmdl.fmdlMeshGroups[foxMesh.meshGroup].nameIndex]);
 
                 gameObject.name = $"{i} - {name}";
+
+                for(int j = 1; j < lodCount; j++)
+                {
+                    GameObject lodObject = new GameObject();
+                    Mesh lodMesh = new Mesh();
+                    SkinnedMeshRenderer lodRenderer = lodObject.AddComponent<SkinnedMeshRenderer>();
+                    lodObject.name = gameObject.name + $" - LOD {j}";
+
+                    Transform parent = gameObject.transform;
+
+                    while (parent.transform.childCount > 0)
+                        parent = parent.transform.GetChild(0);
+
+                    lodObject.transform.parent = parent.transform;
+
+                    lodMesh.vertices = vertices;
+                    lodMesh.normals = normals;
+                    lodMesh.tangents = tangents;
+                    lodMesh.colors = colors;
+                    lodMesh.boneWeights = boneWeights;
+                    lodMesh.uv = uv;
+                    lodMesh.uv2 = uv2;
+                    lodMesh.uv3 = uv3;
+                    lodMesh.uv4 = uv4;
+                    lodMesh.triangles = triangles[j];
+                    lodMesh.bindposes = bindPoses;
+
+                    lodRenderer.bones = usedBonesArray;
+                    lodRenderer.sharedMaterial = materials[fmdlMeshInfo.materialInstanceIndex];
+                    lodRenderer.sharedMesh = lodMesh;
+                    lodRenderer.rootBone = mainObject.transform;
+                } //for
             } //for
         } //Read
     } //class

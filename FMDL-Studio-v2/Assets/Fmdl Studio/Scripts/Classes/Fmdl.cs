@@ -242,7 +242,7 @@ namespace FmdlStudio.Scripts.Classes
             public Vector2Half[] uv4;
             public Vector4[] unknownWeights;
             public Vector4[] unknownIndices;
-            public ushort[] triangles;
+            public ushort[][] triangles;
         } //struct
 
         //Class vars
@@ -1127,13 +1127,18 @@ namespace FmdlStudio.Scripts.Classes
                     reader.BaseStream.Position = position + fmdlMeshFormats[fmdlMeshFormatInfos[i].firstMeshFormatIndex + 1].length;
                 } //for
 
-                reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlMeshInfos[i].firstFaceVertexIndex * 2;
+                fmdlMesh.triangles = new ushort[fmdlLodInfos[0].lodCount][];
 
-                fmdlMesh.triangles = new ushort[fmdlMeshInfos[i].faceVertexCount];
-                
-                for (int j = 0; j < fmdlMeshInfos[i].faceVertexCount; j++)
+                for (int j = 0; j < fmdlLodInfos[0].lodCount; j++)
                 {
-                    fmdlMesh.triangles[j] = reader.ReadUInt16();
+                    reader.BaseStream.Position = section1Offset + section1Infos[bufferIndex].offset + fmdlBufferOffsets[2].offset + fmdlMeshInfos[i].firstFaceVertexIndex * 2 + fmdlFaceInfos[i * fmdlLodInfos[0].lodCount + j].firstFaceVertexIndex * 2;
+
+                    fmdlMesh.triangles[j] = new ushort[fmdlFaceInfos[i * fmdlLodInfos[0].lodCount + j].faceVertexCount];
+
+                    for (int h = 0; h < fmdlFaceInfos[i * fmdlLodInfos[0].lodCount + j].faceVertexCount; h++)
+                    {
+                        fmdlMesh.triangles[j][h] = reader.ReadUInt16();
+                    } //for
                 } //for
                 
                 fmdlMeshes[i] = fmdlMesh;
@@ -2159,7 +2164,8 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMesh.uv2 = mesh.uv2.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv3 = mesh.uv3.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
                 fmdlMesh.uv4 = mesh.uv4.Length > 0 ? new Vector2Half[vertexCount] : new Vector2Half[0];
-                fmdlMesh.triangles = new ushort[triangleCount];
+                fmdlMesh.triangles = new ushort[1][];
+                fmdlMesh.triangles[0] = new ushort[triangleCount];
 
                 for (int j = 0; j < vertexCount; j++)
                 {
@@ -2226,7 +2232,7 @@ namespace FmdlStudio.Scripts.Classes
                 } //for
 
                 for (int j = 0; j < triangleCount; j++)
-                    fmdlMesh.triangles[j] = (ushort)mesh.triangles[j];
+                    fmdlMesh.triangles[0][j] = (ushort)mesh.triangles[j];
 
                 fmdlMeshes[i] = fmdlMesh;
             } //for
@@ -3346,7 +3352,7 @@ namespace FmdlStudio.Scripts.Classes
                 int faceVertexCount = fmdlMeshes[i].triangles.Length;
 
                 for (int j = 0; j < faceVertexCount; j++)
-                    writer.Write(fmdlMeshes[i].triangles[j]);
+                    writer.Write(fmdlMeshes[i].triangles[0][j]);
             } //for
 
             if (writer.BaseStream.Position % 0x10 != 0)
