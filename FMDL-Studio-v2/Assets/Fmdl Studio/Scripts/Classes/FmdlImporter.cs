@@ -126,6 +126,16 @@ namespace FmdlStudio.Scripts.Classes
             int textureCount = fmdl.fmdlTextures != null ? fmdl.fmdlTextures.Length : 0;
             int meshCount = fmdl.fmdlMeshInfos.Length;
             int meshGroupCount = fmdl.fmdlMeshGroups.Length;
+            int lodCount = (int)fmdl.fmdlLodInfos[0].lodCount;
+
+            LODGroup lodGroup = mainObject.AddComponent<LODGroup>();
+            LOD[] lods = new LOD[lodCount];
+
+            for (int i = 0; i < lodCount; i++)
+            {
+                lods[i].screenRelativeTransitionHeight = 0.6f / (i + 1);
+                lods[i].renderers = new Renderer[meshCount];
+            } //for
 
             {
                 Fmdl.FmdlBoundingBox fmdlBoundingBox = fmdl.fmdlBoundingBoxes[0];
@@ -214,7 +224,7 @@ namespace FmdlStudio.Scripts.Classes
 
                     textures[i] = texture;
                 } //else
-                
+
                 textures[i].name = name;
             } //for
 
@@ -247,7 +257,7 @@ namespace FmdlStudio.Scripts.Classes
                     materials[i] = new Material(Shader.Find($"FoxShaders/fox3DDF_Blin_LNM"));
                     Debug.LogWarning($"Material {materialName} trying to use missing shader: {shaderName}! Defaulting to fox3DDF_Blin_LNM!");
                 } //catch
-                
+
                 materials[i].name = materialName;
 
                 //Link textures.
@@ -316,7 +326,6 @@ namespace FmdlStudio.Scripts.Classes
                 Fmdl.FmdlBoneGroup fmdlBoneGroup = fmdl.fmdlBoneGroups != null ? fmdl.fmdlBoneGroups[fmdlMeshInfo.boneGroupIndex] : new Fmdl.FmdlBoneGroup();
 
                 int vertexLength = fmdlMesh.vertices.Length;
-                int lodCount = (int)fmdl.fmdlLodInfos[0].lodCount;
                 int[] faceLengths = new int[lodCount];
                 string name;
 
@@ -370,7 +379,7 @@ namespace FmdlStudio.Scripts.Classes
                         uv4[j] = new Vector2(fmdlMesh.uv4[j].x, 1 - fmdlMesh.uv4[j].y);
                 } //for
 
-                for(int j = 0; j < lodCount; j++)
+                for (int j = 0; j < lodCount; j++)
                     for (int h = 0; h < faceLengths[j]; h++)
                         triangles[j][h] = fmdlMesh.triangles[j][h];
 
@@ -463,12 +472,14 @@ namespace FmdlStudio.Scripts.Classes
 
                 gameObject.name = $"{i} - {name}";
 
-                for(int j = 1; j < lodCount; j++)
+                lods[0].renderers[i] = skinnedMeshRenderer;
+
+                for (int j = 1; j < lodCount; j++)
                 {
                     GameObject lodObject = new GameObject();
                     Mesh lodMesh = new Mesh();
                     SkinnedMeshRenderer lodRenderer = lodObject.AddComponent<SkinnedMeshRenderer>();
-                    lodObject.name = gameObject.name + $" - LOD {j}";
+                    lodObject.name = gameObject.name + $"_LOD{j}";
 
                     Transform parent = gameObject.transform;
 
@@ -493,8 +504,12 @@ namespace FmdlStudio.Scripts.Classes
                     lodRenderer.sharedMaterial = materials[fmdlMeshInfo.materialInstanceIndex];
                     lodRenderer.sharedMesh = lodMesh;
                     lodRenderer.rootBone = mainObject.transform;
+                    
+                    lods[j].renderers[i] = lodRenderer;
                 } //for
             } //for
+
+            lodGroup.SetLODs(lods);
         } //Read
     } //class
 } //namespace

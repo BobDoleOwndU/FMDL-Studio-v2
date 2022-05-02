@@ -3349,7 +3349,7 @@ namespace FmdlStudio.Scripts.Classes
 
             for (int i = 0; i < meshCount; i++)
             {
-                int faceVertexCount = fmdlMeshes[i].triangles.Length;
+                int faceVertexCount = fmdlMeshes[i].triangles[0].Length;
 
                 for (int j = 0; j < faceVertexCount; j++)
                     writer.Write(fmdlMeshes[i].triangles[0][j]);
