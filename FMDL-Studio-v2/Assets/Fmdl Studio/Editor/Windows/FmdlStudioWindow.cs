@@ -208,5 +208,32 @@ namespace FmdlStudio.Editor.Windows
                         Debug.Log(v);
             } //if
         } //CopyBoundingBoxes
+
+        [MenuItem("FMDL Studio/Debug/Rotate", false, 501)]
+        public static void Rotate()
+        {
+            if (Selection.activeGameObject != null)
+            {
+                Transform transform = Selection.activeGameObject.transform;
+                transform.position = new Vector3(0f + -0.1f/* + -0.0019072f*/, 0.154f + 0.25f/* + 0.1949148f*/, 0f + -0.25f/* + -0.1283597f*/);
+
+
+                Quaternion foxQuat0 = new Quaternion(0.3560068f, 0.6455829f, -0.328964919f, 0.590138853f);
+                float angle0 = 0.0f;
+                Vector3 axis0 = Vector3.zero;
+                foxQuat0.ToAngleAxis(out angle0, out axis0);
+                axis0.x = -axis0.x;
+                Quaternion quat0 = Quaternion.AngleAxis(-angle0, axis0);
+
+                /*Quaternion foxQuat1 = new Quaternion(0.04873222f, -0.456404716f, 0.888116f, -0.0238731913f);
+                float angle1 = 0.0f;
+                Vector3 axis1 = Vector3.zero;
+                foxQuat1.ToAngleAxis(out angle1, out axis1);
+                axis1.x = -axis1.x;
+                Quaternion quat1 = Quaternion.AngleAxis(-angle1, axis1);*/
+
+                transform.rotation = foxQuat0;
+            } //if
+        } //CopyBoundingBoxes
     } //class
 } //namespace

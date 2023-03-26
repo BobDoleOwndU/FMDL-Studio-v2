@@ -220,70 +220,73 @@ namespace FmdlStudio.Scripts.Static
                 geometry.Mesh.Source.Add(normals);
 
                 //Tangents
-                Source tangents = new Source();
-                tangents.Id = $"{m.name.Replace(' ', '_')}_Tangents";
-                tangents.Float_array = new Float_array();
-                tangents.Float_array.Id = $"{m.name.Replace(' ', '_')}_TangArr";
-                tangents.Float_array.Count = (m.sharedMesh.tangents.Length * 3).ToString();
-
-                StringBuilder tangArr = new StringBuilder();
-
-                foreach (Vector4 v in m.sharedMesh.tangents)
+                if (m.sharedMesh.tangents.Length > 0)
                 {
-                    tangArr.Append($"{-v.x} {v.y} {v.z} ");
-                } //foreach
+                    Source tangents = new Source();
+                    tangents.Id = $"{m.name.Replace(' ', '_')}_Tangents";
+                    tangents.Float_array = new Float_array();
+                    tangents.Float_array.Id = $"{m.name.Replace(' ', '_')}_TangArr";
+                    tangents.Float_array.Count = (m.sharedMesh.tangents.Length * 3).ToString();
 
-                tangArr.Length--;
+                    StringBuilder tangArr = new StringBuilder();
 
-                tangents.Float_array.Text = tangArr.ToString();
-                tangents.Technique_common = new Technique_common();
-                tangents.Technique_common.Accessor = new Accessor();
-                tangents.Technique_common.Accessor.Source = $"#{tangents.Float_array.Id}";
-                tangents.Technique_common.Accessor.Count = m.sharedMesh.tangents.Length.ToString();
-                tangents.Technique_common.Accessor.Stride = "3";
-                
-                tangents.Technique_common.Accessor.Param = new List<Param>(0);
-                tangents.Technique_common.Accessor.Param.Add(x);
-                tangents.Technique_common.Accessor.Param.Add(y);
-                tangents.Technique_common.Accessor.Param.Add(z);
+                    foreach (Vector4 v in m.sharedMesh.tangents)
+                    {
+                        tangArr.Append($"{-v.x} {v.y} {v.z} ");
+                    } //foreach
 
-                geometry.Mesh.Source.Add(tangents);
+                    tangArr.Length--;
 
-                //Binormals
-                int binormalCount = m.sharedMesh.tangents.Length;
-                Vector3[] binormalVectors = new Vector3[binormalCount];
+                    tangents.Float_array.Text = tangArr.ToString();
+                    tangents.Technique_common = new Technique_common();
+                    tangents.Technique_common.Accessor = new Accessor();
+                    tangents.Technique_common.Accessor.Source = $"#{tangents.Float_array.Id}";
+                    tangents.Technique_common.Accessor.Count = m.sharedMesh.tangents.Length.ToString();
+                    tangents.Technique_common.Accessor.Stride = "3";
 
-                for(int i = 0; i < binormalCount; i++)
-                    binormalVectors[i] = Vector3.Cross(Vector3.Normalize(m.sharedMesh.normals[i]), Vector3.Normalize(m.sharedMesh.tangents[i]));
+                    tangents.Technique_common.Accessor.Param = new List<Param>(0);
+                    tangents.Technique_common.Accessor.Param.Add(x);
+                    tangents.Technique_common.Accessor.Param.Add(y);
+                    tangents.Technique_common.Accessor.Param.Add(z);
 
-                Source binormals = new Source();
-                binormals.Id = $"{m.name.Replace(' ', '_')}_Binormals";
-                binormals.Float_array = new Float_array();
-                binormals.Float_array.Id = $"{m.name.Replace(' ', '_')}_BinormArr";
-                binormals.Float_array.Count = (binormalCount * 3).ToString();
+                    geometry.Mesh.Source.Add(tangents);
 
-                StringBuilder binormArr = new StringBuilder();
+                    //Binormals
+                    int binormalCount = m.sharedMesh.tangents.Length;
+                    Vector3[] binormalVectors = new Vector3[binormalCount];
 
-                foreach (Vector3 v in binormalVectors)
-                {
-                    binormArr.Append($"{-v.x} {v.y} {v.z} ");
-                } //foreach
+                    for (int i = 0; i < binormalCount; i++)
+                        binormalVectors[i] = Vector3.Cross(Vector3.Normalize(m.sharedMesh.normals[i]), Vector3.Normalize(m.sharedMesh.tangents[i]));
 
-                binormArr.Length--;
+                    Source binormals = new Source();
+                    binormals.Id = $"{m.name.Replace(' ', '_')}_Binormals";
+                    binormals.Float_array = new Float_array();
+                    binormals.Float_array.Id = $"{m.name.Replace(' ', '_')}_BinormArr";
+                    binormals.Float_array.Count = (binormalCount * 3).ToString();
 
-                binormals.Float_array.Text = binormArr.ToString();
-                binormals.Technique_common = new Technique_common();
-                binormals.Technique_common.Accessor = new Accessor();
-                binormals.Technique_common.Accessor.Source = $"#{binormals.Float_array.Id}";
-                binormals.Technique_common.Accessor.Count = binormalCount.ToString();
-                binormals.Technique_common.Accessor.Stride = "3";
+                    StringBuilder binormArr = new StringBuilder();
 
-                binormals.Technique_common.Accessor.Param = new List<Param>(0);
-                binormals.Technique_common.Accessor.Param.Add(x);
-                binormals.Technique_common.Accessor.Param.Add(y);
-                binormals.Technique_common.Accessor.Param.Add(z);
+                    foreach (Vector3 v in binormalVectors)
+                    {
+                        binormArr.Append($"{-v.x} {v.y} {v.z} ");
+                    } //foreach
 
-                geometry.Mesh.Source.Add(binormals);
+                    binormArr.Length--;
+
+                    binormals.Float_array.Text = binormArr.ToString();
+                    binormals.Technique_common = new Technique_common();
+                    binormals.Technique_common.Accessor = new Accessor();
+                    binormals.Technique_common.Accessor.Source = $"#{binormals.Float_array.Id}";
+                    binormals.Technique_common.Accessor.Count = binormalCount.ToString();
+                    binormals.Technique_common.Accessor.Stride = "3";
+
+                    binormals.Technique_common.Accessor.Param = new List<Param>(0);
+                    binormals.Technique_common.Accessor.Param.Add(x);
+                    binormals.Technique_common.Accessor.Param.Add(y);
+                    binormals.Technique_common.Accessor.Param.Add(z);
+
+                    geometry.Mesh.Source.Add(binormals);
+                } //if
 
                 //Colors
                 if (m.sharedMesh.colors.Length > 0)
@@ -513,16 +516,16 @@ namespace FmdlStudio.Scripts.Static
                 {
                     Xml2CSharp.Input tangent = new Xml2CSharp.Input();
                     tangent.Semantic = "TEXTANGENT";
-                    tangent.Source = $"#{tangents.Id}";
+                    tangent.Source = $"#{m.name.Replace(' ', '_')}_Tangents";
                     tangent.Offset = "0";
                     geometry.Mesh.Triangles.Input.Add(tangent);
                 } //if
 
-                if (binormalCount > 0)
+                if (m.sharedMesh.tangents.Length > 0)
                 {
                     Xml2CSharp.Input binormal = new Xml2CSharp.Input();
                     binormal.Semantic = "TEXBINORMAL";
-                    binormal.Source = $"#{binormals.Id}";
+                    binormal.Source = $"#{m.name.Replace(' ', '_')}_Binormals";
                     binormal.Offset = "0";
                     geometry.Mesh.Triangles.Input.Add(binormal);
                 } //if
