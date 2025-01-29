@@ -49,8 +49,8 @@ public class CopyMaterialsWindow : EditorWindow
 
     private void CopySettings()
     {
-        List<SkinnedMeshRenderer> sourceMeshes = GetMeshes(sourceModel);
-        List<SkinnedMeshRenderer> targetMeshes = GetMeshes(targetModel);
+        List<Renderer> sourceMeshes = GetMeshes(sourceModel);
+        List<Renderer> targetMeshes = GetMeshes(targetModel);
         int count = Mathf.Min(sourceMeshes.Count, targetMeshes.Count);
 
         FoxModel foxModel = targetModel.AddComponent<FoxModel>();
@@ -68,16 +68,16 @@ public class CopyMaterialsWindow : EditorWindow
         } //for
     } //CopySettings
 
-    private List<SkinnedMeshRenderer> GetMeshes(GameObject obj)
+    private List<Renderer> GetMeshes(GameObject obj)
     {
         Transform transform = obj.transform;
-        List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+        List<Renderer> meshes = new List<Renderer>(0);
 
         foreach(Transform t in transform)
         {
-            if(t.GetComponent<SkinnedMeshRenderer>())
+            if(t.GetComponent<Renderer>())
             {
-                meshes.Add(t.GetComponent<SkinnedMeshRenderer>());
+                meshes.Add(t.GetComponent<Renderer>());
             } //if
         } //foreach
 
