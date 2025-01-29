@@ -234,6 +234,6 @@ namespace FmdlStudio.Editor.Windows
 
                 transform.rotation = foxQuat0;
             } //if
-        } //CopyBoundingBoxes
+        } //Rotate
     } //class
 } //namespace

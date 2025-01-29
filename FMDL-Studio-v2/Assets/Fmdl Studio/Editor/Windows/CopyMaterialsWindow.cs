@@ -63,8 +63,8 @@ public class CopyMaterialsWindow : EditorWindow
             FoxMesh sourceFoxMesh = sourceMeshes[i].gameObject.GetComponent<FoxMesh>();
 
             targetFoxMesh.meshGroup = sourceFoxMesh.meshGroup;
-            targetFoxMesh.alpha = sourceFoxMesh.alpha;
-            targetFoxMesh.shadow = sourceFoxMesh.shadow;
+            targetFoxMesh.alpha.value = sourceFoxMesh.alpha.value;
+            targetFoxMesh.shadow.value = sourceFoxMesh.shadow.value;
         } //for
     } //CopySettings
 

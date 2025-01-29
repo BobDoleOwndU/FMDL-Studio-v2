@@ -1,3 +1,21 @@
+/Assets/tpp/tqui/arms_no_stockings_qui_bsm
+/Assets/tpp/tqui/arms_no_stockings_qui_dtm
+/Assets/tpp/tqui/arms_no_stockings_qui_lbm
+/Assets/tpp/tqui/arms_no_stockings_qui_nrm
+/Assets/tpp/tqui/arms_no_stockings_qui_srm
+/Assets/tpp/tqui/arms_no_stockings_qui_trm
+/Assets/tpp/tqui/body_no_stockings_qui_bsm
+/Assets/tpp/tqui/body_no_stockings_qui_dtm
+/Assets/tpp/tqui/body_no_stockings_qui_lbm
+/Assets/tpp/tqui/body_no_stockings_qui_nrm
+/Assets/tpp/tqui/body_no_stockings_qui_srm
+/Assets/tpp/tqui/body_no_stockings_qui_trm
+/Assets/tpp/tqui/feet_no_stockings_qui_bsm
+/Assets/tpp/tqui/feet_no_stockings_qui_dtm
+/Assets/tpp/tqui/feet_no_stockings_qui_lbm
+/Assets/tpp/tqui/feet_no_stockings_qui_nrm
+/Assets/tpp/tqui/feet_no_stockings_qui_srm
+/Assets/tpp/tqui/feet_no_stockings_qui_trm
 
 /Assets/fox/effect/gr_pic/base_FILTERLUT
 /Assets/fox/effect/gr_pic/default_reflection
