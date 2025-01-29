@@ -83,7 +83,7 @@ namespace FmdlStudio.Scripts.Classes
             public ushort meshGroupIndex;
             public ushort meshCount;
             public ushort firstMeshIndex;
-            public ushort index;
+            public ushort boundingBoxIndex;
             public ushort firstFaceInfoIndex;
         } //struct
 
@@ -688,7 +688,7 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlMeshGroupEntry.meshGroupIndex = reader.ReadUInt16();
                 fmdlMeshGroupEntry.meshCount = reader.ReadUInt16();
                 fmdlMeshGroupEntry.firstMeshIndex = reader.ReadUInt16();
-                fmdlMeshGroupEntry.index = reader.ReadUInt16();
+                fmdlMeshGroupEntry.boundingBoxIndex = reader.ReadUInt16();
                 reader.BaseStream.Position += 4;
                 fmdlMeshGroupEntry.firstFaceInfoIndex = reader.ReadUInt16();
                 reader.BaseStream.Position += 0xE;
@@ -1236,8 +1236,10 @@ namespace FmdlStudio.Scripts.Classes
                 throw new Exception("[Root] not found!");
             } //if
 
-            GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
+            //Changing stuff here. Hopefully it doesn't break.
             GetMeshesMaterialsTexturesAndVectors(gameObject, meshes, materials, textures, materialParameterVectors);
+            GenerateMeshGroupBoundingBoxes(gameObject, foxModel, meshes, boundingBoxes);
+            GetBonesAndBoundingBoxes(rootBone, bones, boundingBoxes);
 
             bones = SortIfValid(bones);
 
@@ -1364,7 +1366,7 @@ namespace FmdlStudio.Scripts.Classes
                     fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxMesh.meshGroup;
                     fmdlMeshGroupEntry.meshCount = 1;
                     fmdlMeshGroupEntry.firstMeshIndex = 0;
-                    fmdlMeshGroupEntry.index = 0;
+                    fmdlMeshGroupEntry.boundingBoxIndex = 0;
                     fmdlMeshGroupEntry.firstFaceInfoIndex = 0;
                 } //if
                 else
@@ -1380,7 +1382,7 @@ namespace FmdlStudio.Scripts.Classes
                         fmdlMeshGroupEntry.meshGroupIndex = (ushort)foxMesh.meshGroup;
                         fmdlMeshGroupEntry.meshCount = 1;
                         fmdlMeshGroupEntry.firstMeshIndex = (ushort)i;
-                        fmdlMeshGroupEntry.index = (ushort)meshGroupEntries.Count;
+                        fmdlMeshGroupEntry.boundingBoxIndex = (ushort)meshGroupEntries.Count;
                         fmdlMeshGroupEntry.firstFaceInfoIndex = (ushort)i;
                     } //else
                 } //else
@@ -2050,6 +2052,14 @@ namespace FmdlStudio.Scripts.Classes
                 fmdlBoundingBoxes[i] = fmdlBoundingBox;
             } //for
 
+            //Remove temporary box colliders.
+            BoxCollider[] tempColliders = gameObject.GetComponents<BoxCollider>();
+
+            foreach (BoxCollider boundingBox in tempColliders)
+            {
+                UnityEngine.Object.DestroyImmediate(boundingBox);
+            } //foreach
+
             //Buffer Offsets
             EditorUtility.DisplayProgressBar("Getting Model Data!", "Buffer Offsets", 13f / 24f);
             fmdlBufferOffsets = new FmdlBufferOffset[3];
@@ -2610,6 +2620,41 @@ namespace FmdlStudio.Scripts.Classes
             this.section1Infos = section1Infos.ToArray();
         } //GetFmdlData
 
+        private void GenerateMeshGroupBoundingBoxes(GameObject gameObject, FoxModel foxModel, List<SkinnedMeshRenderer> meshes, List<BoxCollider> boundingBoxes)
+        {
+            List<string> meshGroups = new List<string>(0);
+            List<SkinnedMeshRenderer> groupMeshes = new List<SkinnedMeshRenderer>(0);
+            int meshGroupCount;
+
+            meshGroupCount = foxModel.meshGroups.Length;
+
+            for (int i = 0; i < meshGroupCount; i++)
+            {
+                groupMeshes.Clear();
+
+                foreach (SkinnedMeshRenderer m in meshes)
+                {
+                    FoxMesh foxMesh = m.GetComponent<FoxMesh>();
+
+                    if (foxMesh.meshGroup == i)
+                        groupMeshes.Add(m);
+                } //for
+
+                Bounds bounds = new Bounds();
+                BoxCollider collider = gameObject.AddComponent<BoxCollider>();
+
+                foreach (SkinnedMeshRenderer m in groupMeshes)
+                {
+                    bounds.Encapsulate(m.bounds);
+                } //foreach
+
+                collider.center = bounds.center;
+                collider.size = bounds.size;
+
+                boundingBoxes.Add(collider);
+            } //for
+        } //GenerateMeshGroupBoundingBoxes
+
         private void GetBonesAndBoundingBoxes(Transform transform, List<Transform> bones, List<BoxCollider> boundingBoxes)
         {
             foreach (Transform t in transform)
@@ -3041,7 +3086,7 @@ namespace FmdlStudio.Scripts.Classes
                 writer.Write(fmdlMeshGroupEntries[i].meshGroupIndex);
                 writer.Write(fmdlMeshGroupEntries[i].meshCount);
                 writer.Write(fmdlMeshGroupEntries[i].firstMeshIndex);
-                writer.Write(fmdlMeshGroupEntries[i].index);
+                writer.Write(fmdlMeshGroupEntries[i].boundingBoxIndex);
                 writer.WriteZeroes(4);
                 writer.Write(fmdlMeshGroupEntries[i].firstFaceInfoIndex);
                 writer.WriteZeroes(0xE);
