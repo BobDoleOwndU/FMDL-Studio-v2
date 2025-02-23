@@ -38,6 +38,50 @@ namespace FmdlStudio.Scripts.Static
             return -1;
         } //IndexOfEqualValue
 
+        public static void AddUnique<T>(this List<T> list, T value)
+        {
+            if (true == list.Contains(value)) { return; }
+            list.Add(value);
+        }
+
+        public static void AddRangeUnique<T>(this List<T> list, List<T> values)
+        {
+            for (int i = 0; i < values.Count; ++i)
+            {
+                list.AddUnique(values[i]);
+            }
+        }
+
+        //HashSet<T>
+        public static int IntersectCount<T>(this HashSet<T> setA, HashSet<T> setB)
+        {
+            int count = 0;
+            foreach (T elementB in setB)
+            {
+                if (setA.Contains(elementB))
+                {
+                    ++count;
+                }
+            }
+            return count;
+        }
+
+        //Array[]
+        public static T[] CloneSubset<T>(this T[] data, List<int> indices)
+        {
+            if (data.Length < indices.Count)
+            {
+                return (T[])data.Clone();
+            }
+
+            T[] subset = new T[indices.Count];
+            for (int i = 0; i < indices.Count; ++i)
+            {
+                subset[i] = data[indices[i]];
+            }
+            return subset;
+        }
+
         //Vector2[]
         public static bool IsNullOrZeroes(this Vector2[] array)
         {
