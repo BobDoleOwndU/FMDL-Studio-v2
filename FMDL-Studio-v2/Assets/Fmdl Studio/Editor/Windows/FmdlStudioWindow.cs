@@ -120,12 +120,24 @@ namespace FmdlStudio.Editor.Windows
             Debug.Log("Fmdl version set to 2.03");
         } //SetFmdlVersionToGZ
 
+        [MenuItem("FMDL Studio/Fmdl Version/2.03 (GZ\u200A\u2215\u200APES)", true)]
+        public static bool ValidateSetFmdlVersionToGZ()
+        {
+            return Globals.GetFmdlVersion() != 2.03f;
+        } //ValidateSetFmdlVersionToGZ
+
         [MenuItem("FMDL Studio/Fmdl Version/2.04 (TPP)", false, 104)]
         public static void SetFmdlVersionToTPP()
         {
             Globals.SetFmdlVersion(2.04f);
             Debug.Log("Fmdl version set to 2.04");
         } //SetFmdlVersionToTPP
+
+        [MenuItem("FMDL Studio/Fmdl Version/2.04 (TPP)", true)]
+        public static bool ValidateSetFmdlVersionToTPP()
+        {
+            return Globals.GetFmdlVersion() != 2.04f;
+        } //ValidateSetFmdlVersionToGZ
 
         [MenuItem("FMDL Studio/Set Texture Folder", false, 200)]
         public static void SetTextureFolder()
