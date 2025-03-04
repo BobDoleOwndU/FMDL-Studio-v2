@@ -1173,7 +1173,7 @@ namespace FmdlStudio.Scripts.Classes
             return sortedList;
         } //SortIfValid
 
-        public void Write(GameObject gameObject, string filePath)
+        public bool Write(GameObject gameObject, string filePath)
         {
             try
             {
@@ -1185,7 +1185,9 @@ namespace FmdlStudio.Scripts.Classes
                 Debug.LogError($"{e.Message}");
                 Debug.LogError($"An exception occured{e.StackTrace}");
                 EditorUtility.ClearProgressBar();
+                return false;
             } //catch
+            return true;
         } //Write
 
         private void GetFmdlData(GameObject gameObject)

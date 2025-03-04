@@ -59,8 +59,8 @@ namespace FmdlStudio.Editor.Windows
                 if (!string.IsNullOrWhiteSpace(windowPath))
                 {
                     Fmdl fmdl = new Fmdl(Selection.activeGameObject.name);
-                    fmdl.Write(Selection.activeGameObject, windowPath);
-                    Debug.Log("Fmdl Exported to: " + windowPath);
+                    if (fmdl.Write(Selection.activeGameObject, windowPath))
+                        Debug.Log("Fmdl Exported to: " + windowPath);
                 } //if
                 else
                     Debug.Log("No path selected.");
