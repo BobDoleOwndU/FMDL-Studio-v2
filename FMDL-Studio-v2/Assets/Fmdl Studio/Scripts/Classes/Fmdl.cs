@@ -313,7 +313,10 @@ namespace FmdlStudio.Scripts.Classes
         public Vector4[] fmdlMaterialParameterVectors { get; private set; }
         public FmdlMesh[] fmdlMeshes { get; private set; }
         public string[] fmdlStrings { get; private set; }
-        
+
+        //Static vars
+        public static readonly int maxBonesPerMesh = 32;
+
         public Fmdl(string name)
         {
             this.name = name;
@@ -1173,7 +1176,7 @@ namespace FmdlStudio.Scripts.Classes
             return sortedList;
         } //SortIfValid
 
-        public void Write(GameObject gameObject, string filePath)
+        public bool Write(GameObject gameObject, string filePath)
         {
             try
             {
@@ -1185,7 +1188,9 @@ namespace FmdlStudio.Scripts.Classes
                 Debug.LogError($"{e.Message}");
                 Debug.LogError($"An exception occured{e.StackTrace}");
                 EditorUtility.ClearProgressBar();
+                return false;
             } //catch
+            return true;
         } //Write
 
         private void GetFmdlData(GameObject gameObject)
@@ -1194,7 +1199,7 @@ namespace FmdlStudio.Scripts.Classes
             Transform rootBone = gameObject.transform;
             List<Transform> bones = new List<Transform>(0);
             List<BoxCollider> boundingBoxes = new List<BoxCollider>(0);
-            List<SkinnedMeshRenderer> meshes = new List<SkinnedMeshRenderer>(0);
+            List<SkinnedMeshChunk> meshes = new List<SkinnedMeshChunk>(0);
             List<Material> materials = new List<Material>(0);
             List<string> materialTypeNames = new List<string>(0);
             List<Texture> textures = new List<Texture>(0);
@@ -1352,7 +1357,7 @@ namespace FmdlStudio.Scripts.Classes
 
             for (int i = 0; i < meshCount; i++)
             {
-                FoxMesh foxMesh = meshes[i].GetComponent<FoxMesh>();
+                FoxMesh foxMesh = meshes[i].foxMesh;
 
                 if (i == 0)
                 {
@@ -1364,7 +1369,7 @@ namespace FmdlStudio.Scripts.Classes
                 } //if
                 else
                 {
-                    if (foxMesh.meshGroup == meshes[i - 1].GetComponent<FoxMesh>().meshGroup)
+                    if (foxMesh.meshGroup == meshes[i - 1].foxMesh.meshGroup)
                         fmdlMeshGroupEntry.meshCount += 1;
                     else
                     {
@@ -1391,8 +1396,8 @@ namespace FmdlStudio.Scripts.Classes
             for (int i = 0; i < meshCount; i++)
             {
                 FmdlMeshInfo fmdlMeshInfo = new FmdlMeshInfo();
-                SkinnedMeshRenderer mesh = meshes[i];
-                FoxMesh foxMesh = mesh.GetComponent<FoxMesh>();
+                SkinnedMeshRenderer mesh = meshes[i].skinnedMeshRenderer;
+                FoxMesh foxMesh = meshes[i].foxMesh;
 
                 fmdlMeshInfo.alphaEnum = (byte)foxMesh.alpha;
                 fmdlMeshInfo.shadowEnum = (byte)foxMesh.shadow;
@@ -1536,12 +1541,13 @@ namespace FmdlStudio.Scripts.Classes
                 for (int i = 0; i < meshCount; i++)
                 {
                     FmdlBoneGroup fmdlBoneGroup = new FmdlBoneGroup();
-                    int meshBoneCount = meshes[i].bones.Length;
+                    int meshBoneCount = meshes[i].BonesCount;
 
-                    if (meshBoneCount > 32)
+                    if (meshBoneCount > maxBonesPerMesh)
                     {
-                        EditorUtility.DisplayDialog("Bone Group has more than 32 bones!", "A mesh cannot be weighted to more than 32 bones!", "Ok");
-                        throw new Exception("A mesh cannot be weighted to more than 32 bones!");
+                        // This part should not be called anymore as the MeshChunkGenerator would throw an exception first.
+                        EditorUtility.DisplayDialog("Bone Group has more than " + maxBonesPerMesh + " bones!", "A mesh cannot be weighted to more than " + maxBonesPerMesh + " bones!", "Ok");
+                        throw new Exception("A mesh cannot be weighted to more than " + maxBonesPerMesh + " bones!");
                     } //if
 
                     fmdlBoneGroup.unknown0 = 4;
@@ -1549,7 +1555,7 @@ namespace FmdlStudio.Scripts.Classes
                     fmdlBoneGroup.boneIndices = new ushort[meshBoneCount];
 
                     for (int j = 0; j < meshBoneCount; j++)
-                        fmdlBoneGroup.boneIndices[j] = (ushort)bones.IndexOf(meshes[i].bones[j]);
+                        fmdlBoneGroup.boneIndices[j] = (ushort)bones.IndexOf(meshes[i].skinnedMeshRenderer.bones[j]);
 
                     fmdlBoneGroups[i] = fmdlBoneGroup;
                 } //for
@@ -1751,7 +1757,7 @@ namespace FmdlStudio.Scripts.Classes
             for (int i = 0; i < meshCount; i++)
             {
                 FmdlMeshFormatInfo fmdlMeshFormatInfo = new FmdlMeshFormatInfo();
-                Mesh mesh = meshes[i].sharedMesh;
+                Mesh mesh = meshes[i].Mesh;
 
                 fmdlMeshFormatInfo.meshFormatCount = 0;
                 fmdlMeshFormatInfo.vertexFormatCount = 0;
@@ -2145,7 +2151,7 @@ namespace FmdlStudio.Scripts.Classes
             for (int i = 0; i < meshCount; i++)
             {
                 FmdlMesh fmdlMesh = new FmdlMesh();
-                Mesh mesh = meshes[i].sharedMesh;
+                Mesh mesh = meshes[i].Mesh;
                 int vertexCount = mesh.vertices.Length;
                 int triangleCount = mesh.triangles.Length;
 
@@ -2229,6 +2235,8 @@ namespace FmdlStudio.Scripts.Classes
                     fmdlMesh.triangles[j] = (ushort)mesh.triangles[j];
 
                 fmdlMeshes[i] = fmdlMesh;
+
+                meshes[i].DestroyAndClear(); // clean up temporary GameObjects
             } //for
 
             //Strings
@@ -2613,44 +2621,49 @@ namespace FmdlStudio.Scripts.Classes
             } //foreach
         } //GetBones
 
-        private void GetMeshesMaterialsTexturesAndVectors(GameObject gameObject, List<SkinnedMeshRenderer> meshes, List<Material> materials, List<Texture> textures, List<Vector4> vectors)
+        private void GetMeshesMaterialsTexturesAndVectors(GameObject gameObject, List<SkinnedMeshChunk> meshes, List<Material> materials, List<Texture> textures, List<Vector4> vectors)
         {
             string errors = "";
 
+            List<SkinnedMeshRenderer> skinnedMeshRenderers = new List<SkinnedMeshRenderer>();
             foreach (Transform t in gameObject.transform)
             {
-                if (t.gameObject.GetComponent<SkinnedMeshRenderer>())
+                SkinnedMeshRenderer smr = t.gameObject.GetComponent<SkinnedMeshRenderer>();
+                if (smr)
                 {
-                    SkinnedMeshRenderer skinnedMeshRenderer = t.gameObject.GetComponent<SkinnedMeshRenderer>();
-                    Material material = skinnedMeshRenderer.sharedMaterial;
+                    skinnedMeshRenderers.Add(smr);
+                } //if
+            } //foreach
 
-                    meshes.Add(skinnedMeshRenderer);
+            foreach (SkinnedMeshRenderer skinnedMeshRenderer in skinnedMeshRenderers)
+            {
+                meshes.AddRange(SkinnedMeshChunkGenerator.GenerateMeshChunks(skinnedMeshRenderer, true, true, Fmdl.maxBonesPerMesh));
 
-                    if (!materials.Contains(material))
-                    {
-                        materials.Add(material);
-                        Shader shader = material.shader;
-                        int propertyCount = ShaderUtil.GetPropertyCount(shader);
+                Material material = skinnedMeshRenderer.sharedMaterial;
+                if (!materials.Contains(material))
+                {
+                    materials.Add(material);
+                    Shader shader = material.shader;
+                    int propertyCount = ShaderUtil.GetPropertyCount(shader);
 
-                        if (!shader.name.Contains("FoxShaders"))
-                            errors += $"{skinnedMeshRenderer.name}\n";
+                    if (!shader.name.Contains("FoxShaders"))
+                        errors += $"{skinnedMeshRenderer.name}\n";
 
-                        for (int i = 0; i < propertyCount; i++)
-                            if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
-                            {
-                                Texture texture = material.GetTexture(ShaderUtil.GetPropertyName(shader, i));
+                    for (int i = 0; i < propertyCount; i++)
+                        if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.TexEnv)
+                        {
+                            Texture texture = material.GetTexture(ShaderUtil.GetPropertyName(shader, i));
 
-                                if (texture != null && !textures.Contains(texture))
-                                    textures.Add(texture);
-                            } //if
-                            else if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Vector)
-                            {
-                                Vector4 vector = material.GetVector(ShaderUtil.GetPropertyName(shader, i));
+                            if (texture != null && !textures.Contains(texture))
+                                textures.Add(texture);
+                        } //if
+                        else if (ShaderUtil.GetPropertyType(shader, i) == ShaderUtil.ShaderPropertyType.Vector)
+                        {
+                            Vector4 vector = material.GetVector(ShaderUtil.GetPropertyName(shader, i));
 
-                                if (!vectors.ContainsEqualValue(vector))
-                                    vectors.Add(vector);
-                            } //else
-                    } //if
+                            if (!vectors.ContainsEqualValue(vector))
+                                vectors.Add(vector);
+                        } //else
                 } //if
             } //foreach
 

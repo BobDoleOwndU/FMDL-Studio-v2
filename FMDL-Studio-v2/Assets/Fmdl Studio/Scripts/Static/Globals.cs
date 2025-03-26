@@ -9,6 +9,7 @@ namespace FmdlStudio.Scripts.Static
     {
         private static Settings settings = new Settings();
         public static MaterialPresetList materialPresetList = new MaterialPresetList();
+        private static string FmdlPath = "Assets/Fmdl Studio/";
 
         static Globals()
         {
@@ -54,11 +55,11 @@ namespace FmdlStudio.Scripts.Static
 
         public static void ReadSettings()
         {
-            if (File.Exists("settings.xml"))
+            if (File.Exists(FmdlPath + "settings.xml"))
             {
                 XmlSerializer xmlSerializer = new XmlSerializer(typeof(Settings));
 
-                using (FileStream stream = new FileStream("settings.xml", FileMode.Open))
+                using (FileStream stream = new FileStream(FmdlPath + "settings.xml", FileMode.Open))
                 {
                     settings = (Settings)xmlSerializer.Deserialize(stream);
                     stream.Close();
@@ -70,7 +71,7 @@ namespace FmdlStudio.Scripts.Static
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof(Settings));
 
-            using (FileStream stream = new FileStream("settings.xml", FileMode.Create))
+            using (FileStream stream = new FileStream(FmdlPath + "settings.xml", FileMode.Create))
             {
                 xmlSerializer.Serialize(stream, settings);
                 stream.Close();
@@ -79,11 +80,11 @@ namespace FmdlStudio.Scripts.Static
 
         public static void ReadPresetList()
         {
-            if (File.Exists("Assets/Fmdl Studio/presets.xml"))
+            if (File.Exists(FmdlPath + "presets.xml"))
             {
                 XmlSerializer serializer = new XmlSerializer(typeof(MaterialPresetList));
 
-                using (FileStream stream = new FileStream("Assets/Fmdl Studio/presets.xml", FileMode.Open))
+                using (FileStream stream = new FileStream(FmdlPath + "presets.xml", FileMode.Open))
                 {
                     materialPresetList = (MaterialPresetList)serializer.Deserialize(stream);
                     stream.Close();
@@ -99,7 +100,7 @@ namespace FmdlStudio.Scripts.Static
 
             XmlSerializer serializer = new XmlSerializer(typeof(MaterialPresetList));
 
-            using (FileStream stream = new FileStream("Assets/Fmdl Studio/presets.xml", FileMode.Create))
+            using (FileStream stream = new FileStream(FmdlPath + "presets.xml", FileMode.Create))
             {
                 serializer.Serialize(stream, materialPresetList);
                 stream.Close();
