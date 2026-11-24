@@ -859,6 +859,7 @@ AlphaMax
 amb_glass1
 amb_glass2
 amb_glass3
+amb_wire
 ambient
 AmbientLight
 AnglePow
@@ -3008,6 +3009,8 @@ flor_gmg
 flor1m
 flor2m
 Fluid
+flyk_bedd001
+flyk_grss004
 fndt003
 for_shadow
 fox_3ddc_basic
@@ -8375,6 +8378,7 @@ MESH_ARM_R_DEF
 MESH_arm_r1
 MESH_arm_r1_B
 MESH_arm1
+MESH_ARMED_IV
 MESH_armor_arm_l
 MESH_armor_arm_l_B
 MESH_armor_arm_r
@@ -9440,6 +9444,11 @@ MESH_flg_2_IV
 MESH_flg_3_IV
 MESH_FLLEG
 MESH_FLLEG_JOINT
+MESH_flyk_bedd001
+MESH_flyk_brrc001
+MESH_flyk_brrc001_dbri001
+MESH_flyk_cage001
+MESH_flyk_grss004
 MESH_foot_a
 MESH_foot_b
 MESH_foot_c
@@ -13323,6 +13332,14 @@ MESH_PHOTO33
 MESH_PILE
 MESH_poff
 MESH_pon
+MESH_PT_LB_BRE_IV
+MESH_PT_LB_DEF
+MESH_PT_LF_BRE_IV
+MESH_PT_LF_DEF
+MESH_PT_RB_BRE_IV
+MESH_PT_RB_DEF
+MESH_PT_RF_BRE_IV
+MESH_PT_RF_DEF
 MESH_r_foot_a
 MESH_r_foot_b
 MESH_r_foot_c
@@ -20523,10 +20540,12 @@ uth_ammo
 uth_body
 uth_body_bre
 uth_body1
+uth_bult
 uth_const_panel1
 uth_const_panel2
 uth_const_panel3
 uth_decal
+uth_fence
 uth_glass_bre
 uth_glass_color
 uth_glass_color2
@@ -20538,8 +20557,10 @@ uth_interior_door1
 uth_interior_multi
 uth_interior_multi_nc
 uth_interior_multi1
+uth_minigun_multi
 uth_option_bre
 uth_option_Multi
+uth_seat_multi
 uth_weapon_multi
 uth_weapon_multi1
 uth_weapon_multi2

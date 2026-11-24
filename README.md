@@ -7,7 +7,7 @@ See the [GitHub Wiki](https://github.com/BobDoleOwndU/FMDL-Studio-v2/wiki) for i
 ## Credits
 BobDoleOwndU: Programming and reverse-engineering.
 
-Joey35233: Programming.
+Joey35233: Programming and reverse-engineering.
 
 youarebritish (sai): General help/debugging.
 

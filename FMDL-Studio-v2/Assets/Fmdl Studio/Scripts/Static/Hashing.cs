@@ -260,13 +260,16 @@ namespace FmdlStudio.Scripts.Static
             return filePath.Replace("\\", "/");
         } //DenormalizeFilePath
 
-        public static void ReadStringDictionary(string path)
+        public static void ReadStringDictionary(string path, bool clearDictionary)
         {
             if (!File.Exists(path))
                 return;
 
-            stringDictionary.Clear();
-            stringHashDictionary.Clear();
+            if (clearDictionary)
+            {
+                stringDictionary.Clear();
+                stringHashDictionary.Clear();
+            } //if
 
             foreach (string line in File.ReadAllLines(path))
             {
@@ -275,13 +278,16 @@ namespace FmdlStudio.Scripts.Static
             } //foreach
         } //ReadStringDictionary
 
-        public static void ReadPathDictionary(string path)
+        public static void ReadPathDictionary(string path, bool clearDictionary)
         {
             if (!File.Exists(path))
                 return;
 
-            pathDictionary.Clear();
-            pathHashDictionary.Clear();
+            if (clearDictionary)
+            {
+                pathDictionary.Clear();
+                pathHashDictionary.Clear();
+            } //if
 
             foreach (string line in File.ReadAllLines(path))
             {
@@ -292,8 +298,10 @@ namespace FmdlStudio.Scripts.Static
 
         public static void LoadDictionaries()
         {
-            ReadStringDictionary("Assets/Fmdl Studio/fmdl_dictionary.txt");
-            ReadPathDictionary("Assets/Fmdl Studio/qar_dictionary.txt");
+            ReadStringDictionary("Assets/Fmdl Studio/fmdl_dictionary.txt", true);
+            ReadStringDictionary("Assets/Fmdl Studio/cust_fmdl_dictionary.txt", false);
+            ReadPathDictionary("Assets/Fmdl Studio/qar_dictionary.txt", true);
+            ReadPathDictionary("Assets/Fmdl Studio/cust_qar_dictionary.txt", false);
         } //LoadDictionaries
 
         public static string TryGetStringName(ulong hash)

@@ -5,8 +5,8 @@ namespace FmdlStudio
 {
     public struct BitField
     {
-        private const int MAX_BIT_COUNT = 7; //Size of variable - 1;
-        public byte value;
+        private const int MAX_BIT_COUNT = 31; //Size of variable - 1;
+        public uint value;
 
         public bool GetBit(int idx)
         {
@@ -15,7 +15,7 @@ namespace FmdlStudio
                 throw new IndexOutOfRangeException();
             } //if
 
-            byte temp = (byte)(this.value << MAX_BIT_COUNT - idx);
+            uint temp = (uint)(this.value << MAX_BIT_COUNT - idx);
 
             return (temp >> MAX_BIT_COUNT == 1);
         } //GetBit
@@ -29,11 +29,11 @@ namespace FmdlStudio
 
             if (value)
             {
-                this.value |= (byte)(1 << idx);
+                this.value |= (uint)(1 << idx);
             } //if
             else if (GetBit(idx))
             {
-                this.value ^= (byte)(1 << idx);
+                this.value ^= (uint)(1 << idx);
             } //else
         } //SetBit
     } //class

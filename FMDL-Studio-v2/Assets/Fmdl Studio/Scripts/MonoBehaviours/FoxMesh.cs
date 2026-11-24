@@ -5,30 +5,40 @@ namespace FmdlStudio.Scripts.MonoBehaviours
     [AddComponentMenu("Fmdl Studio/FoxMesh")]
     public class FoxMesh : MonoBehaviour
     {
-        //public enum Alpha { NoAlpha = 0, Glass = 0x10, Glass2 = 0x11, NoBackfaceCulling = 0x20, Glass3 = 0x30, Glass4 = 0x31, Decal = 0x50, Eyelash = 0x70, Parasite = 0x80, Alpha = 0xA0, UnknownOMBS = 0xC0 }
-        //public enum Shadow { Shadow = 0, NoShadow = 1, InvisibleMeshVisibleShadow = 2, TintedGlass = 4, Glass = 5, LightOMBS = 0x24, GlassOMBS = 0x25, Shadow2 = 0x40, NoShadow2 = 0x41 }
-        
         public int meshGroup;
-        public BitField alpha;
-        public BitField shadow;
-        //public Alpha alpha = Alpha.NoAlpha;
-        //public Shadow shadow = Shadow.Shadow;
-        public bool alphaBit0;
-        public bool alphaBit1;
-        public bool alphaBit2;
-        public bool alphaBit3;
-        public bool alphaBit4;
-        public bool alphaBit5;
-        public bool alphaBit6;
-        public bool alphaBit7;
+        public BitField flags;
 
-        public bool shadowBit0;
-        public bool shadowBit1;
-        public bool shadowBit2;
-        public bool shadowBit3;
-        public bool shadowBit4;
-        public bool shadowBit5;
-        public bool shadowBit6;
-        public bool shadowBit7;
+        public bool flag0;
+        public bool flag1;
+        public bool flag2;
+        public bool flag3;
+        public bool flag4;
+        public bool flag5;
+        public bool flag6;
+        public bool flag7;
+        public bool flag8;
+        public bool flag9;
+        public bool flag10;
+        public bool flag11;
+        public bool flag12;
+        public bool flag13;
+        public bool flag14;
+        public bool flag15;
+        public bool flag16;
+        public bool flag17;
+        public bool flag18;
+        public bool flag19;
+        public bool flag20;
+        public bool flag21;
+        public bool flag22;
+        public bool flag23;
+        public bool flag24;
+        public bool flag25;
+        public bool flag26;
+        public bool flag27;
+        public bool flag28;
+        public bool flag29;
+        public bool flag30;
+        public bool flag31;
     } //class
 } //namespace

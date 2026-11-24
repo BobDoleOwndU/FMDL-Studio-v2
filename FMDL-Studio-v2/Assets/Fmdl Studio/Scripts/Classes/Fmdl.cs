@@ -90,10 +90,7 @@ namespace FmdlStudio.Scripts.Classes
         //0x3
         public struct FmdlMeshInfo
         {
-            public byte alphaFlags;
-            public byte shadowFlags;
-            public byte unknown0;
-            public byte unknown1; //Used by net fmdls in PES
+            public uint meshFlags;
             public ushort materialInstanceIndex;
             public ushort boneGroupIndex;
             public ushort index;
@@ -705,10 +702,7 @@ namespace FmdlStudio.Scripts.Classes
             {
                 FmdlMeshInfo fmdlMeshInfo = new FmdlMeshInfo();
 
-                fmdlMeshInfo.alphaFlags = reader.ReadByte();
-                fmdlMeshInfo.shadowFlags = reader.ReadByte();
-                fmdlMeshInfo.unknown0 = reader.ReadByte();
-                fmdlMeshInfo.unknown1 = reader.ReadByte();
+                fmdlMeshInfo.meshFlags = reader.ReadUInt32();
                 fmdlMeshInfo.materialInstanceIndex = reader.ReadUInt16();
                 fmdlMeshInfo.boneGroupIndex = reader.ReadUInt16();
                 fmdlMeshInfo.index = reader.ReadUInt16();
@@ -1401,8 +1395,7 @@ namespace FmdlStudio.Scripts.Classes
                 SkinnedMeshRenderer mesh = meshes[i];
                 FoxMesh foxMesh = mesh.GetComponent<FoxMesh>();
 
-                fmdlMeshInfo.alphaFlags = foxMesh.alpha.value;
-                fmdlMeshInfo.shadowFlags = foxMesh.shadow.value;
+                fmdlMeshInfo.meshFlags = foxMesh.flags.value;
 
                 fmdlMeshInfo.materialInstanceIndex = (ushort)materials.IndexOf(mesh.sharedMaterial);
                 fmdlMeshInfo.boneGroupIndex = (ushort)i;
@@ -3100,9 +3093,7 @@ namespace FmdlStudio.Scripts.Classes
         {
             for (int i = 0; i < meshCount; i++)
             {
-                writer.Write(fmdlMeshInfos[i].alphaFlags);
-                writer.Write(fmdlMeshInfos[i].shadowFlags);
-                writer.WriteZeroes(2);
+                writer.Write(fmdlMeshInfos[i].meshFlags);
                 writer.Write(fmdlMeshInfos[i].materialInstanceIndex);
                 writer.Write(fmdlMeshInfos[i].boneGroupIndex);
                 writer.Write(fmdlMeshInfos[i].index);

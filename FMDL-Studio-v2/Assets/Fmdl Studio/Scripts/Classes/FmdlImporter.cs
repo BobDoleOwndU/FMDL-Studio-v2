@@ -462,8 +462,7 @@ namespace FmdlStudio.Scripts.Classes
                 skinnedMeshRenderer.rootBone = mainObject.transform;
 
                 foxMesh.meshGroup = Array.Find(fmdl.fmdlMeshGroupEntries, x => x.firstMeshIndex <= i && x.firstMeshIndex + x.meshCount > i).meshGroupIndex;
-                foxMesh.alpha.value = fmdlMeshInfo.alphaFlags;
-                foxMesh.shadow.value = fmdlMeshInfo.shadowFlags;
+                foxMesh.flags.value = fmdlMeshInfo.meshFlags;
 
                 if (isGZFormat)
                     name = fmdl.fmdlStrings[fmdl.fmdlMeshGroups[foxMesh.meshGroup].nameIndex];
